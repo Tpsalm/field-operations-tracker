@@ -1,0 +1,6 @@
+{
+  "name": "KEA Operations Suite",
+  "description": "Executive operations, VSR allocations, field merchandiser telemetry, and head office staffing control system.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
