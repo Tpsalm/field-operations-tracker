@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
 import {
   Region,
   TenureFilter,
@@ -25,19 +25,40 @@ import { SignInPage } from './components/SignInPage';
 import { KPIStats } from './components/KPIStats';
 import { StaffCard } from './components/StaffCard';
 import { RightSidebarWidgets } from './components/RightSidebarWidgets';
-import { NewVSRModal } from './components/NewVSRModal';
-import { StaffDetailModal } from './components/StaffDetailModal';
-import { FieldMerchandisersView } from './components/FieldMerchandisersView';
-import { PerformanceTrendsView } from './components/PerformanceTrendsView';
-import { ComplianceDashboardView } from './components/ComplianceDashboardView';
-import { HeadOfficeView } from './components/HeadOfficeView';
-import { ArchiveView } from './components/ArchiveView';
-import { NotificationDrawer } from './components/NotificationDrawer';
-import { ShiftComplianceModal } from './components/ShiftComplianceModal';
-import { TelemetryPreferencesPanel } from './components/TelemetryPreferencesPanel';
 import { TelemetrySparkline } from './components/TelemetrySparkline';
 import { TelemetryPreferencesConfig } from './types';
 import { loadTelemetryPreferences } from './data/telemetryPreferencesData';
+
+const FieldMerchandisersView = lazy(() =>
+  import('./components/FieldMerchandisersView').then((module) => ({ default: module.FieldMerchandisersView }))
+);
+const PerformanceTrendsView = lazy(() =>
+  import('./components/PerformanceTrendsView').then((module) => ({ default: module.PerformanceTrendsView }))
+);
+const ComplianceDashboardView = lazy(() =>
+  import('./components/ComplianceDashboardView').then((module) => ({ default: module.ComplianceDashboardView }))
+);
+const HeadOfficeView = lazy(() =>
+  import('./components/HeadOfficeView').then((module) => ({ default: module.HeadOfficeView }))
+);
+const ArchiveView = lazy(() =>
+  import('./components/ArchiveView').then((module) => ({ default: module.ArchiveView }))
+);
+const NewVSRModal = lazy(() =>
+  import('./components/NewVSRModal').then((module) => ({ default: module.NewVSRModal }))
+);
+const StaffDetailModal = lazy(() =>
+  import('./components/StaffDetailModal').then((module) => ({ default: module.StaffDetailModal }))
+);
+const NotificationDrawer = lazy(() =>
+  import('./components/NotificationDrawer').then((module) => ({ default: module.NotificationDrawer }))
+);
+const ShiftComplianceModal = lazy(() =>
+  import('./components/ShiftComplianceModal').then((module) => ({ default: module.ShiftComplianceModal }))
+);
+const TelemetryPreferencesPanel = lazy(() =>
+  import('./components/TelemetryPreferencesPanel').then((module) => ({ default: module.TelemetryPreferencesPanel }))
+);
 
 // Store opening hours per Nigerian regional hub (in West Africa Time / WAT)
 interface RegionalStoreShiftSchedule {
@@ -1134,45 +1155,55 @@ export default function App() {
 
           {/* SCREEN 2: Field Merchandisers */}
           {currentScreen === 'merchandisers' && (
-            <FieldMerchandisersView
-              hubs={enrichedMerchandiserHubs}
-              onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
-              onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
-              onOpenTrends={() => setCurrentScreen('trends')}
-              onOpenCompliance={() => setCurrentScreen('compliance')}
-            />
+            <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading merchandiser dashboard...</div>}>
+              <FieldMerchandisersView
+                hubs={enrichedMerchandiserHubs}
+                onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
+                onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
+                onOpenTrends={() => setCurrentScreen('trends')}
+                onOpenCompliance={() => setCurrentScreen('compliance')}
+              />
+            </Suspense>
           )}
 
           {/* SCREEN 3: Regional Performance Trends (D3 Line Chart) */}
           {currentScreen === 'trends' && (
-            <PerformanceTrendsView
-              onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
-              onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
-            />
+            <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading trends dashboard...</div>}>
+              <PerformanceTrendsView
+                onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
+                onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
+              />
+            </Suspense>
           )}
 
           {/* SCREEN 4: Centralized Shift Compliance Dashboard (30-Day D3 Adherence) */}
           {currentScreen === 'compliance' && (
-            <ComplianceDashboardView
-              onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
-              onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
-            />
+            <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading compliance dashboard...</div>}>
+              <ComplianceDashboardView
+                onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
+                onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
+              />
+            </Suspense>
           )}
 
           {/* SCREEN 5: Head Office & Hiring */}
           {currentScreen === 'head_office' && (
-            <HeadOfficeView
-              requisitions={requisitions}
-              onAddRequisition={(newReq) => setRequisitions((prev) => [newReq, ...prev])}
-            />
+            <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading head office hub...</div>}>
+              <HeadOfficeView
+                requisitions={requisitions}
+                onAddRequisition={(newReq) => setRequisitions((prev) => [newReq, ...prev])}
+              />
+            </Suspense>
           )}
 
           {/* SCREEN 5: Archive & Disengaged */}
           {currentScreen === 'archive' && (
-            <ArchiveView
-              archivedStaff={archiveStaff}
-              onRestoreStaff={handleRestoreStaff}
-            />
+            <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading archive...</div>}>
+              <ArchiveView
+                archivedStaff={archiveStaff}
+                onRestoreStaff={handleRestoreStaff}
+              />
+            </Suspense>
           )}
         </main>
 
@@ -1187,46 +1218,56 @@ export default function App() {
       </div>
 
       {/* MODALS */}
-      <NewVSRModal
-        isOpen={isNewVSRModalOpen}
-        onClose={() => setIsNewVSRModalOpen(false)}
-        onSubmit={handleAddVSR}
-        defaultRegion={selectedRegion}
-      />
+      <Suspense fallback={null}>
+        <NewVSRModal
+          isOpen={isNewVSRModalOpen}
+          onClose={() => setIsNewVSRModalOpen(false)}
+          onSubmit={handleAddVSR}
+          defaultRegion={selectedRegion}
+        />
+      </Suspense>
 
-      <StaffDetailModal
-        staff={selectedStaff}
-        onClose={() => setSelectedStaff(null)}
-        onToggleStatus={handleToggleStatus}
-        onDisburseFunding={handleDisburseFunding}
-        onAddDirective={handleSendDirective}
-      />
+      <Suspense fallback={null}>
+        <StaffDetailModal
+          staff={selectedStaff}
+          onClose={() => setSelectedStaff(null)}
+          onToggleStatus={handleToggleStatus}
+          onDisburseFunding={handleDisburseFunding}
+          onAddDirective={handleSendDirective}
+        />
+      </Suspense>
 
-      <NotificationDrawer
-        isOpen={isNotificationOpen}
-        onClose={() => setIsNotificationOpen(false)}
-        notifications={notifications}
-        onMarkAllRead={() =>
-          setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })))
-        }
-      />
+      <Suspense fallback={null}>
+        <NotificationDrawer
+          isOpen={isNotificationOpen}
+          onClose={() => setIsNotificationOpen(false)}
+          notifications={notifications}
+          onMarkAllRead={() =>
+            setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })))
+          }
+        />
+      </Suspense>
 
-      <ShiftComplianceModal
-        isOpen={isShiftComplianceOpen}
-        onClose={() => setIsShiftComplianceOpen(false)}
-        regionalTelemetry={regionalTelemetry}
-        isOverrunSimulated={isOverrunSimulated}
-        hubs={enrichedMerchandiserHubs}
-      />
+      <Suspense fallback={null}>
+        <ShiftComplianceModal
+          isOpen={isShiftComplianceOpen}
+          onClose={() => setIsShiftComplianceOpen(false)}
+          regionalTelemetry={regionalTelemetry}
+          isOverrunSimulated={isOverrunSimulated}
+          hubs={enrichedMerchandiserHubs}
+        />
+      </Suspense>
 
       {/* EXECUTIVE TELEMETRY PREFERENCES MODAL */}
-      <TelemetryPreferencesPanel
-        isOpen={isTelemetryPreferencesOpen}
-        onClose={() => setIsTelemetryPreferencesOpen(false)}
-        preferences={telemetryPreferences}
-        onUpdatePreferences={setTelemetryPreferences}
-        regionalTelemetry={regionalTelemetry}
-      />
+      <Suspense fallback={null}>
+        <TelemetryPreferencesPanel
+          isOpen={isTelemetryPreferencesOpen}
+          onClose={() => setIsTelemetryPreferencesOpen(false)}
+          preferences={telemetryPreferences}
+          onUpdatePreferences={setTelemetryPreferences}
+          regionalTelemetry={regionalTelemetry}
+        />
+      </Suspense>
     </div>
   );
 }
