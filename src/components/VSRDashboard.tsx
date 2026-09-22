@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
+import { ChevronDown, CircleDot, Search, Signpost, Truck, Users, X } from 'lucide-react';
 import { AuthUser } from '../types';
 
 interface VSRDashboardProps {
@@ -6,149 +7,90 @@ interface VSRDashboardProps {
   onSignOut: () => void;
 }
 
+type CrewStatus = 'En Route' | 'Delayed' | 'Completed' | 'Idle';
+type KpiFilter = 'all' | 'vsr' | 'assistants' | 'routes' | 'fleet';
+
+interface CrewRecord {
+  id: string;
+  name: string;
+  assistant: string;
+  assistantId: string;
+  region: 'Lagos' | 'Ibadan' | 'Ogun' | 'Benin';
+  state: string;
+  lga: string;
+  territory: string;
+  route: string;
+  routeCode: string;
+  visits: number;
+  status: CrewStatus;
+  vanStatus: 'On road' | 'Idle';
+  color: string;
+  points: [number, number][];
+  lastPing: string;
+}
+
+const CREW: CrewRecord[] = [
+  { id: 'VSR-LG-1042', name: 'Ruth Eze', assistant: 'Chinedu Okafor', assistantId: 'AV-LG-218', region: 'Lagos', state: 'Lagos', lga: 'Lagos Island', territory: 'Island Core', route: 'Mile 2 - Eko Atlantic', routeCode: 'LG-IS-04', visits: 14, status: 'En Route', vanStatus: 'On road', color: '#9bd34b', points: [[18, 74], [31, 64], [43, 57], [55, 43], [67, 38], [81, 24]], lastPing: '2 min ago' },
+  { id: 'VSR-LG-1068', name: 'Folashade Alabi', assistant: 'Mariam Bello', assistantId: 'AV-LG-231', region: 'Lagos', state: 'Lagos', lga: 'Ikeja', territory: 'Trade Fair Corridor', route: 'Ikeja - Alaba', routeCode: 'LG-TF-12', visits: 9, status: 'Delayed', vanStatus: 'On road', color: '#f59e0b', points: [[13, 52], [28, 48], [39, 42], [51, 51], [60, 62]], lastPing: '7 min ago' },
+  { id: 'VSR-IB-0891', name: 'Akinfolarin Dada', assistant: 'Tosin Adeyemi', assistantId: 'AV-IB-142', region: 'Ibadan', state: 'Oyo', lga: 'Ibadan North', territory: 'Bodija Cluster', route: 'Bodija - Mokola', routeCode: 'IB-BD-07', visits: 18, status: 'Completed', vanStatus: 'Idle', color: '#38bdf8', points: [[22, 70], [34, 63], [43, 52], [56, 48], [73, 49], [82, 35]], lastPing: '12 min ago' },
+  { id: 'VSR-OG-0714', name: 'Emeka Nwosu', assistant: 'Bisi Adebayo', assistantId: 'AV-OG-104', region: 'Ogun', state: 'Ogun', lga: 'Abeokuta South', territory: 'Abeokuta Trade', route: 'Abeokuta - Sagamu', routeCode: 'OG-AS-03', visits: 11, status: 'En Route', vanStatus: 'On road', color: '#c084fc', points: [[14, 65], [27, 59], [38, 61], [48, 45], [62, 38], [75, 28]], lastPing: '4 min ago' },
+  { id: 'VSR-BN-0549', name: 'Grace Omoregie', assistant: 'Peter Igbinovia', assistantId: 'AV-BN-077', region: 'Benin', state: 'Edo', lga: 'Oredo', territory: 'Central Benin', route: 'Ring Road - Airport', routeCode: 'BN-OR-02', visits: 7, status: 'Idle', vanStatus: 'Idle', color: '#fb7185', points: [[20, 54], [35, 44], [49, 38], [65, 43], [79, 31]], lastPing: '26 min ago' },
+  { id: 'VSR-LG-1102', name: 'Yusuf Lawal', assistant: 'Ifeoma Obi', assistantId: 'AV-LG-246', region: 'Lagos', state: 'Lagos', lga: 'Surulere', territory: 'Mainland West', route: 'Surulere - Yaba', routeCode: 'LG-SY-08', visits: 16, status: 'Completed', vanStatus: 'Idle', color: '#22d3ee', points: [[16, 32], [29, 38], [41, 29], [54, 34], [68, 22], [83, 27]], lastPing: '18 min ago' }
+];
+
+const statusStyles: Record<CrewStatus, string> = {
+  'En Route': 'border-[#92C842]/30 bg-[#92C842]/10 text-[#b5e86d]',
+  Delayed: 'border-amber-400/30 bg-amber-400/10 text-amber-300',
+  Completed: 'border-sky-400/30 bg-sky-400/10 text-sky-300',
+  Idle: 'border-slate-500/30 bg-slate-500/10 text-slate-300'
+};
+
+const selectClass = 'w-full appearance-none rounded-lg border border-[#263653] bg-[#0d1729] px-3 py-2 text-xs text-slate-200 outline-none transition focus:border-[#92C842]';
+
 export const VSRDashboard: React.FC<VSRDashboardProps> = ({ user, onSignOut }) => {
   const loginMeta = user.sessionMeta;
-  const formattedSignedIn = loginMeta
-    ? new Date(loginMeta.signedInAt).toLocaleString('en-NG', {
-        timeZone: loginMeta.timezone,
-        dateStyle: 'medium',
-        timeStyle: 'short'
-      })
-    : 'Not captured';
+  const [activeKpi, setActiveKpi] = useState<KpiFilter>('all');
+  const [selectedId, setSelectedId] = useState(CREW[0].id);
+  const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState({ region: 'All', state: 'All', lga: 'All', territory: 'All', route: 'All', crew: 'All' });
+  const selectedCrew = CREW.find((crew) => crew.id === selectedId) || CREW[0];
+  const formatSignedIn = loginMeta ? new Date(loginMeta.signedInAt).toLocaleString('en-NG', { timeZone: loginMeta.timezone, dateStyle: 'medium', timeStyle: 'short' }) : 'Not captured';
 
-  const routeChecklist = [
-    { label: 'Mile 2 Retail Route', status: 'checked-in', time: '08:10 WAT' },
-    { label: 'Sabo POS Verification', status: 'in-progress', time: '10:25 WAT' },
-    { label: 'Eko Atlantic Merchandising', status: 'pending', time: '14:00 WAT' }
-  ];
+  const available = useMemo(() => {
+    let result = CREW.filter((crew) => {
+      const query = search.toLowerCase();
+      const matchesText = !query || [crew.name, crew.id, crew.assistant, crew.routeCode].some((value) => value.toLowerCase().includes(query));
+      const matchesFilters = (filters.region === 'All' || crew.region === filters.region) && (filters.state === 'All' || crew.state === filters.state) && (filters.lga === 'All' || crew.lga === filters.lga) && (filters.territory === 'All' || crew.territory === filters.territory) && (filters.route === 'All' || crew.routeCode === filters.route) && (filters.crew === 'All' || crew.id === filters.crew);
+      return matchesText && matchesFilters;
+    });
+    if (activeKpi === 'assistants') result = result.filter((crew) => crew.assistant);
+    if (activeKpi === 'routes') result = result.filter((crew) => crew.routeCode);
+    if (activeKpi === 'fleet') result = result.filter((crew) => crew.vanStatus === 'On road');
+    if (activeKpi === 'vsr') result = result.filter((crew) => crew.status !== 'Idle');
+    return result;
+  }, [activeKpi, filters, search]);
 
-  const teamToday = [
-    { title: 'Assigned Retail Outlets', value: '18', note: '+3 new route visits' },
-    { title: 'Stock Reconciliation', value: '96%', note: 'Above target' },
-    { title: 'POS Uptime', value: '99.1%', note: 'Healthy' },
-    { title: 'Pending Disbursement', value: '₦142k', note: '2 approvals due' }
+  const updateFilter = (key: keyof typeof filters, value: string) => setFilters((current) => ({ ...current, [key]: value }));
+  const resetFilters = () => { setSearch(''); setFilters({ region: 'All', state: 'All', lga: 'All', territory: 'All', route: 'All', crew: 'All' }); setActiveKpi('all'); };
+  const kpis = [
+    { id: 'vsr' as const, label: 'Total VSRs', value: '6', note: 'Primary drivers', icon: Users, color: '#92C842' },
+    { id: 'assistants' as const, label: 'Assistant VSRs', value: '6', note: 'Active in field', icon: Users, color: '#38bdf8' },
+    { id: 'routes' as const, label: 'Total Routes', value: '12', note: '6 active corridors', icon: Signpost, color: '#c084fc' },
+    { id: 'fleet' as const, label: 'Active Fleet Status', value: '4 / 6', note: 'Vans on road / total', icon: Truck, color: '#f59e0b' }
   ];
 
   return (
-    <div className="min-h-screen bg-[#070b14] text-slate-100">
-      <header className="border-b border-[#1e2d4d] bg-[#090e1c] px-5 py-4">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-          <div>
-            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-[#92C842]">VSR Portal</div>
-            <h1 className="mt-1 text-2xl font-bold text-white">{user.name}</h1>
-          </div>
+    <div className="min-h-screen bg-[#07101d] text-slate-100">
+      <header className="border-b border-[#20314d] bg-[#091625] px-5 py-4"><div className="mx-auto flex max-w-[1500px] items-center justify-between gap-4"><div className="flex items-center gap-4"><div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#92C842]/30 bg-[#92C842]/10 text-[#b5e86d]"><Signpost size={20} /></div><div><div className="text-[10px] font-mono uppercase tracking-[0.28em] text-[#92C842]">KEA Field Operations</div><h1 className="text-xl font-bold text-white">VSR Route Command</h1></div></div><div className="flex items-center gap-3"><div className="hidden rounded-lg border border-[#20314d] bg-[#0d1729] px-3 py-2 text-right sm:block"><div className="text-[9px] uppercase tracking-[0.2em] text-slate-500">Session</div><div className="text-xs font-mono text-slate-300">{formatSignedIn}</div></div><div className="flex items-center gap-2 rounded-lg border border-[#20314d] bg-[#0d1729] px-3 py-2"><span className="h-2 w-2 animate-pulse rounded-full bg-[#92C842]" /><span className="text-xs font-semibold text-slate-300">Live operations</span></div><button onClick={onSignOut} className="rounded-lg border border-[#2d405e] bg-[#15243a] px-3 py-2 text-xs font-bold text-slate-200 hover:border-[#92C842]/50">Sign out</button></div></div></header>
 
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] px-3 py-2 text-right">
-              <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Signed in</div>
-              <div className="text-xs font-mono text-slate-200">{formattedSignedIn}</div>
-            </div>
-            <button
-              onClick={onSignOut}
-              className="rounded-lg border border-[#1e2d4d] bg-[#151f38] px-3 py-2 text-xs font-bold text-slate-200 hover:bg-[#1a2745]"
-            >
-              Sign Out
-            </button>
-          </div>
-        </div>
-      </header>
+      <main className="mx-auto max-w-[1500px] space-y-6 px-5 py-6">
+        <section><div className="mb-3 flex items-end justify-between gap-3"><div><div className="text-[10px] font-mono uppercase tracking-[0.25em] text-slate-500">Fleet overview / today</div><h2 className="mt-1 text-lg font-bold text-white">Field coverage at a glance</h2></div><div className="text-xs text-slate-500">Last network sync {selectedCrew.lastPing}</div></div><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{kpis.map((kpi) => { const Icon = kpi.icon; const active = activeKpi === kpi.id; return <button key={kpi.id} onClick={() => setActiveKpi(active ? 'all' : kpi.id)} className={`group rounded-xl border p-4 text-left transition ${active ? 'border-[#92C842] bg-[#12231d] shadow-[0_0_0_1px_rgba(146,200,66,0.25)]' : 'border-[#20314d] bg-[#0d1729] hover:border-[#46627c]'}`}><div className="flex items-start justify-between"><div><div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400">{kpi.label}</div><div className="mt-2 text-2xl font-bold text-white">{kpi.value}</div><div className="mt-1 text-xs text-slate-500">{kpi.note}</div></div><span className="rounded-lg p-2" style={{ color: kpi.color, backgroundColor: `${kpi.color}18` }}><Icon size={18} /></span></div><div className="mt-3 text-[10px] font-semibold uppercase tracking-wider" style={{ color: active ? kpi.color : '#64748b' }}>{active ? 'Filtering view' : 'Click to filter'}</div></button>; })}</div></section>
 
-      <main className="mx-auto max-w-7xl space-y-8 px-5 py-8">
-        <section className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-          <div className="rounded-2xl border border-[#1e2d4d] bg-[#0e1628] p-6 shadow-2xl">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <div className="text-[10px] uppercase tracking-[0.25em] text-slate-400">Access status</div>
-                <h2 className="mt-2 text-2xl font-bold text-white">Field rep dashboard</h2>
-              </div>
-              <div className="rounded-full border border-[#92C842]/40 bg-[#92C842]/10 px-3 py-1 text-xs font-bold text-[#92C842]">
-                ONLINE
-              </div>
-            </div>
+        <section className="grid min-h-[535px] gap-5 lg:grid-cols-[minmax(320px,0.4fr)_minmax(0,0.6fr)]"><article className="overflow-hidden rounded-xl border border-[#20314d] bg-[#0b1627]"><div className="border-b border-[#20314d] p-4"><div className="flex items-center justify-between"><div><div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">Crew directory</div><h2 className="mt-1 text-base font-bold text-white">VSR &amp; assistant detail</h2></div><span className="text-xs font-mono text-slate-500">{available.length} crews</span></div><div className="relative mt-4"><Search size={15} className="absolute left-3 top-2.5 text-slate-500" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search name, ID, route..." className="w-full rounded-lg border border-[#263653] bg-[#0d1729] py-2 pl-9 pr-3 text-xs text-white outline-none focus:border-[#92C842]" /></div></div><div className="max-h-[445px] divide-y divide-[#20314d] overflow-y-auto">{available.map((crew) => <button key={crew.id} onClick={() => setSelectedId(crew.id)} className={`w-full p-4 text-left transition ${selectedId === crew.id ? 'bg-[#14283a]' : 'hover:bg-[#101f32]'}`}><div className="flex items-start justify-between gap-3"><div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-lg text-xs font-bold text-[#07101d]" style={{ backgroundColor: crew.color }}>{crew.name.split(' ').map((part) => part[0]).join('')}</span><div><div className="text-sm font-semibold text-white">{crew.name}</div><div className="text-[10px] font-mono text-slate-500">{crew.id} · {crew.routeCode}</div></div></div><span className={`rounded-full border px-2 py-1 text-[9px] font-bold uppercase ${statusStyles[crew.status]}`}>{crew.status}</span></div><div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-[11px]"><div><span className="text-slate-500">Assistant</span><div className="text-slate-200">{crew.assistant}</div></div><div><span className="text-slate-500">Territory</span><div className="text-slate-200">{crew.territory}</div></div><div><span className="text-slate-500">Route</span><div className="text-slate-200">{crew.route}</div></div><div><span className="text-slate-500">Visits today</span><div className="text-slate-200">{crew.visits} completed</div></div></div></button>)}{available.length === 0 && <div className="p-8 text-center text-sm text-slate-500">No crews match the current view.</div>}</div></article>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {teamToday.map((item) => (
-                <div key={item.title} className="rounded-xl border border-[#1e2d4d] bg-[#090e1c] p-4">
-                  <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">{item.title}</div>
-                  <div className="mt-3 text-2xl font-bold text-white">{item.value}</div>
-                  <div className="mt-2 text-[11px] text-slate-300">{item.note}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <article className="relative overflow-hidden rounded-xl border border-[#20314d] bg-[#0b1627]"><div className="absolute inset-0 opacity-90" style={{ backgroundImage: 'linear-gradient(rgba(39,67,94,.2) 1px, transparent 1px), linear-gradient(90deg, rgba(39,67,94,.2) 1px, transparent 1px)', backgroundSize: '42px 42px' }} /><div className="relative z-10 flex items-start justify-between border-b border-[#20314d] bg-[#0b1627]/90 p-4"><div><div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">Live route map / {selectedCrew.region}</div><h2 className="mt-1 text-base font-bold text-white">{selectedCrew.name} <span className="font-normal text-slate-400">· {selectedCrew.routeCode}</span></h2></div><div className="flex items-center gap-3 text-[10px] text-slate-400"><span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#92C842]" />Completed</span><span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-amber-400" />Live van</span></div></div><div className="relative h-[450px] overflow-hidden"><svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full"><path d="M 8 86 L 22 76 L 33 78 L 46 64 L 57 68 L 72 50 L 86 40 L 94 22" fill="none" stroke="#31506d" strokeWidth="5" opacity=".45" /><polyline points={selectedCrew.points.map((point) => point.join(',')).join(' ')} fill="none" stroke="#92C842" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round" /><polyline points={selectedCrew.points.slice(0, -1).map((point) => point.join(',')).join(' ')} fill="none" stroke="#d8f59b" strokeWidth="0.35" strokeDasharray="1.3 1.2" />{selectedCrew.points.map((point, index) => <g key={`${point[0]}-${point[1]}`}><circle cx={point[0]} cy={point[1]} r={index === selectedCrew.points.length - 1 ? 2.3 : 1.5} fill={index === selectedCrew.points.length - 1 ? '#f59e0b' : '#92C842'} stroke="#07101d" strokeWidth=".7" /><text x={point[0] + 2} y={point[1] - 2} fill="#b9c7d8" fontSize="3">{index === selectedCrew.points.length - 1 ? 'LIVE' : `STOP ${index + 1}`}</text></g>)}</svg><div className="absolute left-[7%] top-[15%] text-[10px] font-mono text-slate-500">NORTH CORRIDOR</div><div className="absolute bottom-[12%] right-[8%] text-[10px] font-mono text-slate-500">SOUTH CORRIDOR</div><div className="absolute bottom-4 left-4 rounded-lg border border-[#29405b] bg-[#0b1627]/90 px-3 py-2 text-xs text-slate-300"><div className="flex items-center gap-2"><CircleDot size={14} className="text-amber-400" />Van {selectedCrew.vanStatus.toLowerCase()} · GPS validated {selectedCrew.lastPing}</div></div><div className="absolute right-4 top-4 flex flex-col gap-1"><button className="rounded border border-[#2c4662] bg-[#0b1627]/90 px-2 py-1 text-xs text-slate-300">+</button><button className="rounded border border-[#2c4662] bg-[#0b1627]/90 px-2 py-1 text-xs text-slate-300">−</button></div></div><div className="relative z-10 grid grid-cols-3 border-t border-[#20314d] bg-[#0b1627]/95"><div className="p-3"><div className="text-[10px] uppercase tracking-wider text-slate-500">Stops validated</div><div className="mt-1 text-sm font-bold text-white">{selectedCrew.visits} / 22</div></div><div className="border-x border-[#20314d] p-3"><div className="text-[10px] uppercase tracking-wider text-slate-500">Territory</div><div className="mt-1 text-sm font-bold text-white">{selectedCrew.territory}</div></div><div className="p-3"><div className="text-[10px] uppercase tracking-wider text-slate-500">Route status</div><div className={`mt-1 text-sm font-bold ${selectedCrew.status === 'Delayed' ? 'text-amber-300' : 'text-[#b5e86d]'}`}>{selectedCrew.status}</div></div></div></article></section>
 
-          <div className="rounded-2xl border border-[#1e2d4d] bg-[#0e1628] p-6 shadow-2xl">
-            <div className="text-[10px] uppercase tracking-[0.25em] text-slate-400">Session metadata</div>
-            <div className="mt-4 space-y-4 text-sm">
-              <div className="rounded-xl border border-[#1e2d4d] bg-[#090e1c] p-3">
-                <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Location</div>
-                <div className="mt-2 font-semibold text-white">{loginMeta?.location.label ?? 'Location unavailable'}</div>
-                <div className="text-xs text-slate-400">{loginMeta?.location.city ?? 'Unknown city'}</div>
-              </div>
-
-              <div className="rounded-xl border border-[#1e2d4d] bg-[#090e1c] p-3">
-                <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Timezone</div>
-                <div className="mt-2 font-mono text-white">{loginMeta?.timezone ?? 'UTC'}</div>
-              </div>
-
-              <div className="rounded-xl border border-[#1e2d4d] bg-[#090e1c] p-3">
-                <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Role</div>
-                <div className="mt-2 text-white">{user.roleTitle}</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-2xl border border-[#1e2d4d] bg-[#0e1628] p-6 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-white">Today’s route checklist</h3>
-              <span className="rounded-full border border-[#92C842]/30 bg-[#92C842]/10 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#92C842]">
-                Active route
-              </span>
-            </div>
-
-            <div className="mt-5 space-y-3">
-              {routeChecklist.map((item) => (
-                <div key={item.label} className="flex items-center justify-between rounded-xl border border-[#1e2d4d] bg-[#090e1c] px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`h-2.5 w-2.5 rounded-full ${
-                        item.status === 'checked-in'
-                          ? 'bg-[#92C842]'
-                          : item.status === 'in-progress'
-                          ? 'bg-[#F17F31]'
-                          : 'bg-slate-500'
-                      }`}
-                    />
-                    <div>
-                      <div className="text-sm font-semibold text-white">{item.label}</div>
-                      <div className="text-[11px] text-slate-400">{item.time}</div>
-                    </div>
-                  </div>
-                  <span className="rounded-full border border-[#1e2d4d] bg-[#151f38] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300">
-                    {item.status}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-[#1e2d4d] bg-[#0e1628] p-6 shadow-2xl">
-            <div className="text-[10px] uppercase tracking-[0.25em] text-slate-400">Quick actions</div>
-            <div className="mt-5 space-y-3">
-              {['Check in location', 'Submit stock count', 'Update route notes', 'Request aid / support'].map((action) => (
-                <button
-                  key={action}
-                  className="flex w-full items-center justify-between rounded-xl border border-[#1e2d4d] bg-[#090e1c] p-3 text-left text-sm text-slate-200 transition hover:border-[#92C842]/50"
-                >
-                  <span>{action}</span>
-                  <span className="text-[#92C842]">→</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
+        <section className="rounded-xl border border-[#20314d] bg-[#0b1627]"><div className="border-b border-[#20314d] p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">Fleet operations ledger</div><h2 className="mt-1 text-base font-bold text-white">VSR roster &amp; route activity</h2></div><button onClick={resetFilters} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white"><X size={14} /> Clear filters</button></div><div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">{(['region', 'state', 'lga', 'territory', 'route', 'crew'] as const).map((key) => { const options = Array.from(new Set(CREW.map((crew) => key === 'crew' ? crew.id : key === 'route' ? crew.routeCode : crew[key]))); return <label key={key} className="relative"><span className="mb-1 block text-[9px] font-mono uppercase tracking-wider text-slate-500">{key === 'crew' ? 'VSR name / ID' : key}</span><select className={selectClass} value={filters[key]} onChange={(event) => updateFilter(key, event.target.value)}><option>All</option>{options.map((option) => <option key={option} value={option}>{option}</option>)}</select><ChevronDown size={14} className="pointer-events-none absolute right-2 top-7 text-slate-500" /></label>; })}</div></div><div className="overflow-x-auto"><table className="w-full min-w-[900px] text-left"><thead className="bg-[#0d1729] text-[10px] uppercase tracking-wider text-slate-500"><tr><th className="px-4 py-3">Staff ID</th><th className="px-4 py-3">VSR name</th><th className="px-4 py-3">Assigned crew</th><th className="px-4 py-3">Current territory</th><th className="px-4 py-3">Active route code</th><th className="px-4 py-3">Visits completed</th><th className="px-4 py-3">Activity status</th></tr></thead><tbody className="divide-y divide-[#20314d]">{available.map((crew) => <tr key={crew.id} onClick={() => setSelectedId(crew.id)} className={`cursor-pointer text-xs transition ${selectedId === crew.id ? 'bg-[#14283a]' : 'hover:bg-[#101f32]'}`}><td className="px-4 py-3 font-mono text-slate-400">{crew.id}</td><td className="px-4 py-3 font-semibold text-white">{crew.name}</td><td className="px-4 py-3 text-slate-300">{crew.assistant}<div className="text-[10px] text-slate-500">{crew.assistantId}</div></td><td className="px-4 py-3 text-slate-300">{crew.territory}<div className="text-[10px] text-slate-500">{crew.lga}, {crew.state}</div></td><td className="px-4 py-3 font-mono text-slate-300">{crew.routeCode}</td><td className="px-4 py-3 font-semibold text-white">{crew.visits} <span className="font-normal text-slate-500">/ 22</span></td><td className="px-4 py-3"><span className={`rounded-full border px-2 py-1 text-[10px] font-bold ${statusStyles[crew.status]}`}>{crew.status}</span></td></tr>)}</tbody></table></div></section>
       </main>
     </div>
   );
