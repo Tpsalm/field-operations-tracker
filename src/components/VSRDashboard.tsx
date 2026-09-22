@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ChevronDown, CircleDot, Search, Signpost, Truck, Users, X } from 'lucide-react';
+import { ChevronDown, Search, Signpost, Truck, Users, X } from 'lucide-react';
 import { AuthUser } from '../types';
 import { WorkflowCenter } from './WorkflowCenter';
 import { VSRPlatformShell } from './VSRPlatformShell';
@@ -51,11 +51,20 @@ const selectClass = 'w-full appearance-none rounded-lg border border-[#263653] b
 
 export const VSRDashboard: React.FC<VSRDashboardProps> = ({ user, onSignOut }) => {
   const loginMeta = user.sessionMeta;
-  const [activeSection, setActiveSection] = useState('route-command');
+  const validSections = ['route-command', 'crew-directory', 'live-route-map', 'fleet-operations', 'performance-trends'] as const;
+
+  const getInitialSection = () => {
+    if (typeof window === 'undefined') return 'route-command';
+    const hash = window.location.hash.replace('#', '');
+    return validSections.includes(hash as (typeof validSections)[number]) ? hash : 'route-command';
+  };
+
+  const [activeSection, setActiveSection] = useState<string>(getInitialSection());
   const [activeKpi, setActiveKpi] = useState<KpiFilter>('all');
   const [selectedId, setSelectedId] = useState(CREW[0].id);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({ region: 'All', state: 'All', lga: 'All', territory: 'All', route: 'All', crew: 'All' });
+
   const selectedCrew = CREW.find((crew) => crew.id === selectedId) || CREW[0];
   const formatSignedIn = loginMeta ? new Date(loginMeta.signedInAt).toLocaleString('en-NG', { timeZone: loginMeta.timezone, dateStyle: 'medium', timeStyle: 'short' }) : 'Not captured';
 
@@ -63,9 +72,15 @@ export const VSRDashboard: React.FC<VSRDashboardProps> = ({ user, onSignOut }) =
     let result = CREW.filter((crew) => {
       const query = search.toLowerCase();
       const matchesText = !query || [crew.name, crew.id, crew.assistant, crew.routeCode].some((value) => value.toLowerCase().includes(query));
-      const matchesFilters = (filters.region === 'All' || crew.region === filters.region) && (filters.state === 'All' || crew.state === filters.state) && (filters.lga === 'All' || crew.lga === filters.lga) && (filters.territory === 'All' || crew.territory === filters.territory) && (filters.route === 'All' || crew.routeCode === filters.route) && (filters.crew === 'All' || crew.id === filters.crew);
+      const matchesFilters = (filters.region === 'All' || crew.region === filters.region)
+        && (filters.state === 'All' || crew.state === filters.state)
+        && (filters.lga === 'All' || crew.lga === filters.lga)
+        && (filters.territory === 'All' || crew.territory === filters.territory)
+        && (filters.route === 'All' || crew.routeCode === filters.route)
+        && (filters.crew === 'All' || crew.id === filters.crew);
       return matchesText && matchesFilters;
     });
+
     if (activeKpi === 'assistants') result = result.filter((crew) => crew.assistant);
     if (activeKpi === 'routes') result = result.filter((crew) => crew.routeCode);
     if (activeKpi === 'fleet') result = result.filter((crew) => crew.vanStatus === 'On road');
@@ -74,16 +89,39 @@ export const VSRDashboard: React.FC<VSRDashboardProps> = ({ user, onSignOut }) =
   }, [activeKpi, filters, search]);
 
   const updateFilter = (key: keyof typeof filters, value: string) => setFilters((current) => ({ ...current, [key]: value }));
-  const resetFilters = () => { setSearch(''); setFilters({ region: 'All', state: 'All', lga: 'All', territory: 'All', route: 'All', crew: 'All' }); setActiveKpi('all'); };
-  const navigateToSection = (section: string) => {
-    setActiveSection(section);
-    window.requestAnimationFrame(() => document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  const resetFilters = () => {
+    setSearch('');
+    setFilters({ region: 'All', state: 'All', lga: 'All', territory: 'All', route: 'All', crew: 'All' });
+    setActiveKpi('all');
   };
+
+  const navigateToSection = (section: string) => {
+    if (!validSections.includes(section as (typeof validSections)[number])) return;
+    setActiveSection(section);
+    const nextHash = `#${section}`;
+    if (window.history.pushState) {
+      window.history.pushState(null, '', nextHash);
+    } else {
+      window.location.hash = section;
+    }
+  };
+
+  React.useEffect(() => {
+    const handleHash = () => {
+      const nextSection = getInitialSection();
+      setActiveSection(nextSection);
+    };
+
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
   const trendBars = [
     { label: 'Visits completed', value: 78, color: '#92C842' },
     { label: 'Route adherence', value: 91, color: '#38bdf8' },
     { label: 'Fleet availability', value: 67, color: '#f59e0b' }
   ];
+
   const kpis = [
     { id: 'vsr' as const, label: 'Total VSRs', value: '6', note: 'Primary drivers', icon: Users, color: '#92C842' },
     { id: 'assistants' as const, label: 'Assistant VSRs', value: '6', note: 'Active in field', icon: Users, color: '#38bdf8' },
@@ -91,24 +129,330 @@ export const VSRDashboard: React.FC<VSRDashboardProps> = ({ user, onSignOut }) =
     { id: 'fleet' as const, label: 'Active Fleet Status', value: '4 / 6', note: 'Vans on road / total', icon: Truck, color: '#f59e0b' }
   ];
 
+  const renderActiveSection = () => {
+    switch (activeSection) {
+      case 'crew-directory':
+        return (
+          <>
+            <section className="grid min-h-[535px] gap-5 lg:grid-cols-[minmax(320px,0.4fr)_minmax(0,0.6fr)]">
+              <article id="crew-directory" className="scroll-mt-28 overflow-hidden rounded-xl border border-[#20314d] bg-[#0b1627]">
+                <div className="border-b border-[#20314d] p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">Crew directory</div>
+                      <h2 className="mt-1 text-base font-bold text-white">VSR &amp; assistant detail</h2>
+                    </div>
+                    <span className="text-xs font-mono text-slate-500">{available.length} crews</span>
+                  </div>
+                  <div className="relative mt-4">
+                    <Search size={15} className="absolute left-3 top-2.5 text-slate-500" />
+                    <input
+                      value={search}
+                      onChange={(event) => setSearch(event.target.value)}
+                      placeholder="Search name, ID, route..."
+                      className="w-full rounded-lg border border-[#263653] bg-[#0d1729] py-2 pl-9 pr-3 text-xs text-white outline-none focus:border-[#92C842]"
+                    />
+                  </div>
+                </div>
+                <div className="max-h-[445px] divide-y divide-[#20314d] overflow-y-auto">
+                  {available.map((crew) => (
+                    <button
+                      key={crew.id}
+                      onClick={() => setSelectedId(crew.id)}
+                      className={`w-full p-4 text-left transition ${selectedId === crew.id ? 'bg-[#14283a]' : 'hover:bg-[#101f32]'}`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-9 w-9 items-center justify-center rounded-lg text-xs font-bold text-[#07101d]" style={{ backgroundColor: crew.color }}>
+                            {crew.name.split(' ').map((part) => part[0]).join('')}
+                          </span>
+                          <div>
+                            <div className="text-sm font-semibold text-white">{crew.name}</div>
+                            <div className="text-[10px] font-mono text-slate-500">{crew.id} · {crew.routeCode}</div>
+                          </div>
+                        </div>
+                        <span className={`rounded-full border px-2 py-1 text-[9px] font-bold uppercase ${statusStyles[crew.status]}`}>{crew.status}</span>
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-[11px]">
+                        <div>
+                          <span className="text-slate-500">Assistant</span>
+                          <div className="text-slate-200">{crew.assistant}</div>
+                        </div>
+                        <div>
+                          <span className="text-slate-500">Region</span>
+                          <div className="text-slate-200">{crew.region}</div>
+                        </div>
+                        <div>
+                          <span className="text-slate-500">Visits</span>
+                          <div className="text-slate-200">{crew.visits}</div>
+                        </div>
+                        <div>
+                          <span className="text-slate-500">Last ping</span>
+                          <div className="text-slate-200">{crew.lastPing}</div>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </article>
+
+              <article className="overflow-hidden rounded-xl border border-[#20314d] bg-[#0b1627]">
+                <div className="border-b border-[#20314d] p-4">
+                  <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">Selected VSR</div>
+                  <h2 className="mt-1 text-base font-bold text-white">{selectedCrew.name}</h2>
+                </div>
+                <div className="space-y-4 p-4 text-sm text-slate-300">
+                  <div className="flex items-center justify-between rounded-lg border border-[#20314d] bg-[#0d1729] px-3 py-2">
+                    <span className="text-slate-400">Route</span>
+                    <span className="font-semibold text-white">{selectedCrew.route}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-lg border border-[#20314d] bg-[#0d1729] p-3">
+                      <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">Status</div>
+                      <div className="mt-1 font-semibold text-white">{selectedCrew.status}</div>
+                    </div>
+                    <div className="rounded-lg border border-[#20314d] bg-[#0d1729] p-3">
+                      <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">Van</div>
+                      <div className="mt-1 font-semibold text-white">{selectedCrew.vanStatus}</div>
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-[#20314d] bg-[#0d1729] p-3">
+                    <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">Assistant</div>
+                    <div className="mt-1 font-semibold text-white">{selectedCrew.assistant}</div>
+                  </div>
+                  <div className="rounded-lg border border-[#20314d] bg-[#0d1729] p-3">
+                    <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">Coverage</div>
+                    <div className="mt-1 text-white">{selectedCrew.visits} visits completed</div>
+                  </div>
+                </div>
+              </article>
+            </section>
+            <WorkflowCenter user={user} />
+          </>
+        );
+
+      case 'live-route-map':
+        return (
+          <>
+            <section className="scroll-mt-28 rounded-xl border border-[#20314d] bg-[#0b1627]">
+              <div className="flex items-start justify-between border-b border-[#20314d] bg-[#0b1627]/90 p-4">
+                <div>
+                  <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">Live route map / {selectedCrew.region}</div>
+                  <h2 className="mt-1 text-base font-bold text-white">{selectedCrew.name} <span className="font-normal text-slate-400">· {selectedCrew.routeCode}</span></h2>
+                </div>
+                <div className="flex items-center gap-3 text-[10px] text-slate-400">
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#92C842]" />Completed</span>
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-amber-400" />Live van</span>
+                </div>
+              </div>
+              <div className="relative h-[500px] overflow-hidden">
+                <div className="absolute inset-0 opacity-90" style={{ backgroundImage: 'linear-gradient(rgba(39,67,94,.2) 1px, transparent 1px), linear-gradient(90deg, rgba(39,67,94,.2) 1px, transparent 1px)', backgroundSize: '42px 42px' }} />
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
+                  <path d="M 8 86 L 22 76 L 33 78 L 46 64 L 57 68 L 72 50 L 86 40 L 94 22" fill="none" stroke="#31506d" strokeWidth="5" opacity=".45" />
+                  <polyline points={selectedCrew.points.map((point) => point.join(',')).join(' ')} fill="none" stroke="#92C842" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round" />
+                  <polyline points={selectedCrew.points.slice(0, -1).map((point) => point.join(',')).join(' ')} fill="none" stroke="#d8f59b" strokeWidth="0.35" strokeDasharray="1.3 1.2" />
+                  {selectedCrew.points.map((point, index) => (
+                    <g key={`${point[0]}-${point[1]}`}>
+                      <circle
+                        cx={point[0]}
+                        cy={point[1]}
+                        r={index === selectedCrew.points.length - 1 ? 2.3 : 1.5}
+                        fill={index === selectedCrew.points.length - 1 ? '#f59e0b' : '#92C842'}
+                        stroke="#07101d"
+                        strokeWidth=".7"
+                      />
+                      <text x={point[0] + 2} y={point[1] - 3} fontSize="3" fill="#e2e8f0" fontWeight="600">{index + 1}</text>
+                    </g>
+                  ))}
+                </svg>
+                <div className="absolute bottom-5 right-5 rounded-xl border border-[#20314d] bg-[#0d1729]/85 p-3 text-xs text-slate-300">
+                  <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">Route progress</div>
+                  <div className="mt-2 text-lg font-bold text-white">{selectedCrew.visits}/18 visits</div>
+                  <div className="mt-1 text-[11px] text-slate-400">{selectedCrew.route}</div>
+                </div>
+              </div>
+            </section>
+            <WorkflowCenter user={user} />
+          </>
+        );
+
+      case 'fleet-operations':
+        return (
+          <>
+            <section id="fleet-operations" className="scroll-mt-28 rounded-xl border border-[#20314d] bg-[#0b1627]">
+              <div className="border-b border-[#20314d] p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">Fleet operations ledger</div>
+                    <h2 className="mt-1 text-base font-bold text-white">VSR roster &amp; route activity</h2>
+                  </div>
+                  <button onClick={resetFilters} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white"><X size={14} /> Clear filters</button>
+                </div>
+                <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                  {(['region', 'state', 'lga', 'territory', 'route', 'crew'] as const).map((key) => {
+                    const options = Array.from(new Set(CREW.map((crew) => key === 'crew' ? crew.id : key === 'route' ? crew.routeCode : crew[key])));
+                    return (
+                      <label key={key} className="relative">
+                        <span className="mb-1 block text-[9px] font-mono uppercase tracking-wider text-slate-500">{key === 'crew' ? 'VSR name / ID' : key}</span>
+                        <select className={selectClass} value={filters[key]} onChange={(event) => updateFilter(key, event.target.value)}>
+                          <option>All</option>
+                          {options.map((option) => (
+                            <option key={option} value={option}>{option}</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={14} className="pointer-events-none absolute right-2 top-7 text-slate-500" />
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[900px] text-left">
+                  <thead className="bg-[#0d1729] text-[10px] uppercase tracking-wider text-slate-500">
+                    <tr>
+                      <th className="px-4 py-3">Staff ID</th>
+                      <th className="px-4 py-3">VSR name</th>
+                      <th className="px-4 py-3">Assigned crew</th>
+                      <th className="px-4 py-3">Current territory</th>
+                      <th className="px-4 py-3">Active route code</th>
+                      <th className="px-4 py-3">Visits completed</th>
+                      <th className="px-4 py-3">Activity status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#20314d]">
+                    {available.map((crew) => (
+                      <tr key={crew.id} className="cursor-pointer hover:bg-[#101f32]" onClick={() => setSelectedId(crew.id)}>
+                        <td className="px-4 py-3 text-xs font-mono text-slate-300">{crew.id}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <span className="flex h-7 w-7 items-center justify-center rounded-md text-[9px] font-bold text-[#07101d]" style={{ backgroundColor: crew.color }}>
+                              {crew.name.split(' ').map((part) => part[0]).join('')}
+                            </span>
+                            <span className="text-xs font-semibold text-white">{crew.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-xs text-slate-300">{crew.assistant}</td>
+                        <td className="px-4 py-3 text-xs text-slate-300">{crew.territory}</td>
+                        <td className="px-4 py-3 text-xs font-mono text-slate-300">{crew.routeCode}</td>
+                        <td className="px-4 py-3 text-xs text-slate-300">{crew.visits}</td>
+                        <td className="px-4 py-3">
+                          <span className={`rounded-full border px-2 py-1 text-[9px] font-bold uppercase ${statusStyles[crew.status]}`}>{crew.status}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            <WorkflowCenter user={user} />
+          </>
+        );
+
+      case 'performance-trends':
+        return (
+          <>
+            <section id="performance-trends" className="scroll-mt-28 rounded-xl border border-[#20314d] bg-[#0b1627] p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">Performance trends</div>
+                  <h2 className="mt-1 text-base font-bold text-white">Field network health</h2>
+                </div>
+                <span className="rounded-full border border-[#92C842]/30 bg-[#92C842]/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#b5e86d]">Live snapshot</span>
+              </div>
+              <div className="mt-5 grid gap-4 md:grid-cols-3">
+                {trendBars.map((trend) => (
+                  <div key={trend.label} className="rounded-lg border border-[#20314d] bg-[#0d1729] p-4">
+                    <div className="flex items-center justify-between text-xs text-slate-400">
+                      <span>{trend.label}</span>
+                      <span className="font-mono text-white">{trend.value}%</span>
+                    </div>
+                    <div className="mt-3 h-2 rounded-full bg-[#1a2940]">
+                      <div className="h-2 rounded-full" style={{ width: `${trend.value}%`, backgroundColor: trend.color }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+            <WorkflowCenter user={user} />
+          </>
+        );
+
+      case 'route-command':
+      default:
+        return (
+          <>
+            <section id="route-command">
+              <div className="mb-3 flex items-end justify-between gap-3">
+                <div>
+                  <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-slate-500">Fleet overview / today</div>
+                  <h2 className="mt-1 text-lg font-bold text-white">Field coverage at a glance</h2>
+                </div>
+                <div className="text-xs text-slate-500">Last network sync {selectedCrew.lastPing}</div>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {kpis.map((kpi) => {
+                  const Icon = kpi.icon;
+                  const active = activeKpi === kpi.id;
+                  return (
+                    <button
+                      key={kpi.id}
+                      onClick={() => setActiveKpi(active ? 'all' : kpi.id)}
+                      className={`group rounded-xl border p-4 text-left transition ${active ? 'border-[#92C842] bg-[#12231d] shadow-[0_0_0_1px_rgba(146,200,66,0.25)]' : 'border-[#20314d] bg-[#0d1729] hover:border-[#46627c]'}`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400">{kpi.label}</div>
+                          <div className="mt-2 text-2xl font-bold text-white">{kpi.value}</div>
+                          <div className="mt-1 text-xs text-slate-500">{kpi.note}</div>
+                        </div>
+                        <span className="rounded-lg p-2" style={{ color: kpi.color, backgroundColor: `${kpi.color}18` }}>
+                          <Icon size={18} />
+                        </span>
+                      </div>
+                      <div className="mt-3 text-[10px] font-semibold uppercase tracking-wider" style={{ color: active ? kpi.color : '#64748b' }}>
+                        {active ? 'Filtering view' : 'Click to filter'}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+            <WorkflowCenter user={user} />
+          </>
+        );
+    }
+  };
+
   return (
     <VSRPlatformShell user={user} onSignOut={onSignOut} activeSection={activeSection} onNavigate={navigateToSection} onHubChange={(hub) => updateFilter('region', hub === 'All Hubs' ? 'All' : hub === 'Ogun / Abeokuta' ? 'Ogun' : hub)}>
-    <div className="min-h-screen bg-[#07101d] text-slate-100">
-      <header className="hidden border-b border-[#20314d] bg-[#091625] px-5 py-4"><div className="mx-auto flex max-w-[1500px] items-center justify-between gap-4"><div className="flex items-center gap-4"><div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#92C842]/30 bg-[#92C842]/10 text-[#b5e86d]"><Signpost size={20} /></div><div><div className="text-[10px] font-mono uppercase tracking-[0.28em] text-[#92C842]">KEA Field Operations</div><h1 className="text-xl font-bold text-white">VSR Route Command</h1></div></div><div className="flex items-center gap-3"><div className="hidden rounded-lg border border-[#20314d] bg-[#0d1729] px-3 py-2 text-right sm:block"><div className="text-[9px] uppercase tracking-[0.2em] text-slate-500">Session</div><div className="text-xs font-mono text-slate-300">{formatSignedIn}</div></div><div className="flex items-center gap-2 rounded-lg border border-[#20314d] bg-[#0d1729] px-3 py-2"><span className="h-2 w-2 animate-pulse rounded-full bg-[#92C842]" /><span className="text-xs font-semibold text-slate-300">Live operations</span></div><button onClick={onSignOut} className="rounded-lg border border-[#2d405e] bg-[#15243a] px-3 py-2 text-xs font-bold text-slate-200 hover:border-[#92C842]/50">Sign out</button></div></div></header>
+      <div className="min-h-screen bg-[#07101d] text-slate-100">
+        <header className="hidden border-b border-[#20314d] bg-[#091625] px-5 py-4">
+          <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#92C842]/30 bg-[#92C842]/10 text-[#b5e86d]">
+                <Signpost size={20} />
+              </div>
+              <div>
+                <div className="text-[10px] font-mono uppercase tracking-[0.28em] text-[#92C842]">KEA Field Operations</div>
+                <h1 className="text-xl font-bold text-white">VSR Route Command</h1>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="hidden rounded-lg border border-[#20314d] bg-[#0d1729] px-3 py-2 text-right sm:block">
+                <div className="text-[9px] uppercase tracking-[0.2em] text-slate-500">Session</div>
+                <div className="text-xs font-mono text-slate-300">{formatSignedIn}</div>
+              </div>
+              <div className="flex items-center gap-2 rounded-lg border border-[#20314d] bg-[#0d1729] px-3 py-2">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-[#92C842]" />
+                <span className="text-xs font-semibold text-slate-300">Live operations</span>
+              </div>
+              <button onClick={onSignOut} className="rounded-lg border border-[#2d405e] bg-[#15243a] px-3 py-2 text-xs font-bold text-slate-200 hover:border-[#92C842]/50">Sign out</button>
+            </div>
+          </div>
+        </header>
 
-      <main className="mx-auto max-w-[1500px] space-y-6 px-5 py-6">
-        <section id="route-command"><div className="mb-3 flex items-end justify-between gap-3"><div><div className="text-[10px] font-mono uppercase tracking-[0.25em] text-slate-500">Fleet overview / today</div><h2 className="mt-1 text-lg font-bold text-white">Field coverage at a glance</h2></div><div className="text-xs text-slate-500">Last network sync {selectedCrew.lastPing}</div></div><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{kpis.map((kpi) => { const Icon = kpi.icon; const active = activeKpi === kpi.id; return <button key={kpi.id} onClick={() => setActiveKpi(active ? 'all' : kpi.id)} className={`group rounded-xl border p-4 text-left transition ${active ? 'border-[#92C842] bg-[#12231d] shadow-[0_0_0_1px_rgba(146,200,66,0.25)]' : 'border-[#20314d] bg-[#0d1729] hover:border-[#46627c]'}`}><div className="flex items-start justify-between"><div><div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400">{kpi.label}</div><div className="mt-2 text-2xl font-bold text-white">{kpi.value}</div><div className="mt-1 text-xs text-slate-500">{kpi.note}</div></div><span className="rounded-lg p-2" style={{ color: kpi.color, backgroundColor: `${kpi.color}18` }}><Icon size={18} /></span></div><div className="mt-3 text-[10px] font-semibold uppercase tracking-wider" style={{ color: active ? kpi.color : '#64748b' }}>{active ? 'Filtering view' : 'Click to filter'}</div></button>; })}</div></section>
-
-        <section className="grid min-h-[535px] gap-5 lg:grid-cols-[minmax(320px,0.4fr)_minmax(0,0.6fr)]"><article id="crew-directory" className="scroll-mt-28 overflow-hidden rounded-xl border border-[#20314d] bg-[#0b1627]"><div className="border-b border-[#20314d] p-4"><div className="flex items-center justify-between"><div><div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">Crew directory</div><h2 className="mt-1 text-base font-bold text-white">VSR &amp; assistant detail</h2></div><span className="text-xs font-mono text-slate-500">{available.length} crews</span></div><div className="relative mt-4"><Search size={15} className="absolute left-3 top-2.5 text-slate-500" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search name, ID, route..." className="w-full rounded-lg border border-[#263653] bg-[#0d1729] py-2 pl-9 pr-3 text-xs text-white outline-none focus:border-[#92C842]" /></div></div><div className="max-h-[445px] divide-y divide-[#20314d] overflow-y-auto">{available.map((crew) => <button key={crew.id} onClick={() => setSelectedId(crew.id)} className={`w-full p-4 text-left transition ${selectedId === crew.id ? 'bg-[#14283a]' : 'hover:bg-[#101f32]'}`}><div className="flex items-start justify-between gap-3"><div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-lg text-xs font-bold text-[#07101d]" style={{ backgroundColor: crew.color }}>{crew.name.split(' ').map((part) => part[0]).join('')}</span><div><div className="text-sm font-semibold text-white">{crew.name}</div><div className="text-[10px] font-mono text-slate-500">{crew.id} · {crew.routeCode}</div></div></div><span className={`rounded-full border px-2 py-1 text-[9px] font-bold uppercase ${statusStyles[crew.status]}`}>{crew.status}</span></div><div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-[11px]"><div><span className="text-slate-500">Assistant</span><div className="text-slate-200">{crew.assistant}</div></div><div><span className="text-slate-500">Territory</span><div className="text-slate-200">{crew.territory}</div></div><div><span className="text-slate-500">Route</span><div className="text-slate-200">{crew.route}</div></div><div><span className="text-slate-500">Visits today</span><div className="text-slate-200">{crew.visits} completed</div></div></div></button>)}{available.length === 0 && <div className="p-8 text-center text-sm text-slate-500">No crews match the current view.</div>}</div></article>
-
-          <article id="live-route-map" className="scroll-mt-28 relative overflow-hidden rounded-xl border border-[#20314d] bg-[#0b1627]"><div className="absolute inset-0 opacity-90" style={{ backgroundImage: 'linear-gradient(rgba(39,67,94,.2) 1px, transparent 1px), linear-gradient(90deg, rgba(39,67,94,.2) 1px, transparent 1px)', backgroundSize: '42px 42px' }} /><div className="relative z-10 flex items-start justify-between border-b border-[#20314d] bg-[#0b1627]/90 p-4"><div><div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">Live route map / {selectedCrew.region}</div><h2 className="mt-1 text-base font-bold text-white">{selectedCrew.name} <span className="font-normal text-slate-400">· {selectedCrew.routeCode}</span></h2></div><div className="flex items-center gap-3 text-[10px] text-slate-400"><span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#92C842]" />Completed</span><span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-amber-400" />Live van</span></div></div><div className="relative h-[450px] overflow-hidden"><svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full"><path d="M 8 86 L 22 76 L 33 78 L 46 64 L 57 68 L 72 50 L 86 40 L 94 22" fill="none" stroke="#31506d" strokeWidth="5" opacity=".45" /><polyline points={selectedCrew.points.map((point) => point.join(',')).join(' ')} fill="none" stroke="#92C842" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round" /><polyline points={selectedCrew.points.slice(0, -1).map((point) => point.join(',')).join(' ')} fill="none" stroke="#d8f59b" strokeWidth="0.35" strokeDasharray="1.3 1.2" />{selectedCrew.points.map((point, index) => <g key={`${point[0]}-${point[1]}`}><circle cx={point[0]} cy={point[1]} r={index === selectedCrew.points.length - 1 ? 2.3 : 1.5} fill={index === selectedCrew.points.length - 1 ? '#f59e0b' : '#92C842'} stroke="#07101d" strokeWidth=".7" /><text x={point[0] + 2} y={point[1] - 2} fill="#b9c7d8" fontSize="3">{index === selectedCrew.points.length - 1 ? 'LIVE' : `STOP ${index + 1}`}</text></g>)}</svg><div className="absolute left-[7%] top-[15%] text-[10px] font-mono text-slate-500">NORTH CORRIDOR</div><div className="absolute bottom-[12%] right-[8%] text-[10px] font-mono text-slate-500">SOUTH CORRIDOR</div><div className="absolute bottom-4 left-4 rounded-lg border border-[#29405b] bg-[#0b1627]/90 px-3 py-2 text-xs text-slate-300"><div className="flex items-center gap-2"><CircleDot size={14} className="text-amber-400" />Van {selectedCrew.vanStatus.toLowerCase()} · GPS validated {selectedCrew.lastPing}</div></div><div className="absolute right-4 top-4 flex flex-col gap-1"><button onClick={() => document.getElementById('live-route-map')?.classList.toggle('ring-2')} className="rounded border border-[#2c4662] bg-[#0b1627]/90 px-2 py-1 text-xs text-slate-300">+</button><button onClick={() => document.getElementById('live-route-map')?.classList.toggle('ring-2')} className="rounded border border-[#2c4662] bg-[#0b1627]/90 px-2 py-1 text-xs text-slate-300">−</button></div></div><div className="relative z-10 grid grid-cols-3 border-t border-[#20314d] bg-[#0b1627]/95"><div className="p-3"><div className="text-[10px] uppercase tracking-wider text-slate-500">Stops validated</div><div className="mt-1 text-sm font-bold text-white">{selectedCrew.visits} / 22</div></div><div className="border-x border-[#20314d] p-3"><div className="text-[10px] uppercase tracking-wider text-slate-500">Territory</div><div className="mt-1 text-sm font-bold text-white">{selectedCrew.territory}</div></div><div className="p-3"><div className="text-[10px] uppercase tracking-wider text-slate-500">Route status</div><div className={`mt-1 text-sm font-bold ${selectedCrew.status === 'Delayed' ? 'text-amber-300' : 'text-[#b5e86d]'}`}>{selectedCrew.status}</div></div></div></article></section>
-
-        <section id="fleet-operations" className="scroll-mt-28 rounded-xl border border-[#20314d] bg-[#0b1627]"><div className="border-b border-[#20314d] p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">Fleet operations ledger</div><h2 className="mt-1 text-base font-bold text-white">VSR roster &amp; route activity</h2></div><button onClick={resetFilters} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white"><X size={14} /> Clear filters</button></div><div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">{(['region', 'state', 'lga', 'territory', 'route', 'crew'] as const).map((key) => { const options = Array.from(new Set(CREW.map((crew) => key === 'crew' ? crew.id : key === 'route' ? crew.routeCode : crew[key]))); return <label key={key} className="relative"><span className="mb-1 block text-[9px] font-mono uppercase tracking-wider text-slate-500">{key === 'crew' ? 'VSR name / ID' : key}</span><select className={selectClass} value={filters[key]} onChange={(event) => updateFilter(key, event.target.value)}><option>All</option>{options.map((option) => <option key={option} value={option}>{option}</option>)}</select><ChevronDown size={14} className="pointer-events-none absolute right-2 top-7 text-slate-500" /></label>; })}</div></div><div className="overflow-x-auto"><table className="w-full min-w-[900px] text-left"><thead className="bg-[#0d1729] text-[10px] uppercase tracking-wider text-slate-500"><tr><th className="px-4 py-3">Staff ID</th><th className="px-4 py-3">VSR name</th><th className="px-4 py-3">Assigned crew</th><th className="px-4 py-3">Current territory</th><th className="px-4 py-3">Active route code</th><th className="px-4 py-3">Visits completed</th><th className="px-4 py-3">Activity status</th></tr></thead><tbody className="divide-y divide-[#20314d]">{available.map((crew) => <tr key={crew.id} onClick={() => setSelectedId(crew.id)} className={`cursor-pointer text-xs transition ${selectedId === crew.id ? 'bg-[#14283a]' : 'hover:bg-[#101f32]'}`}><td className="px-4 py-3 font-mono text-slate-400">{crew.id}</td><td className="px-4 py-3 font-semibold text-white">{crew.name}</td><td className="px-4 py-3 text-slate-300">{crew.assistant}<div className="text-[10px] text-slate-500">{crew.assistantId}</div></td><td className="px-4 py-3 text-slate-300">{crew.territory}<div className="text-[10px] text-slate-500">{crew.lga}, {crew.state}</div></td><td className="px-4 py-3 font-mono text-slate-300">{crew.routeCode}</td><td className="px-4 py-3 font-semibold text-white">{crew.visits} <span className="font-normal text-slate-500">/ 22</span></td><td className="px-4 py-3"><span className={`rounded-full border px-2 py-1 text-[10px] font-bold ${statusStyles[crew.status]}`}>{crew.status}</span></td></tr>)}</tbody></table></div></section>
-
-        <section id="performance-trends" className="scroll-mt-28 rounded-xl border border-[#20314d] bg-[#0b1627] p-5"><div className="flex items-center justify-between"><div><div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">Performance trends</div><h2 className="mt-1 text-base font-bold text-white">Field network health</h2></div><span className="rounded-full border border-[#92C842]/30 bg-[#92C842]/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#b5e86d]">Live snapshot</span></div><div className="mt-5 grid gap-4 md:grid-cols-3">{trendBars.map((trend) => <div key={trend.label} className="rounded-lg border border-[#20314d] bg-[#0d1729] p-4"><div className="flex items-center justify-between text-xs text-slate-400"><span>{trend.label}</span><span className="font-mono text-white">{trend.value}%</span></div><div className="mt-3 h-2 rounded-full bg-[#1a2940]"><div className="h-2 rounded-full" style={{ width: `${trend.value}%`, backgroundColor: trend.color }} /></div></div>)}</div></section>
-        <WorkflowCenter user={user} />
-      </main>
-    </div>
+        <main className="mx-auto max-w-[1500px] space-y-6 px-5 py-6">{renderActiveSection()}</main>
+      </div>
     </VSRPlatformShell>
   );
 };

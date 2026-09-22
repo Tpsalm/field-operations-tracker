@@ -185,7 +185,23 @@ export default function App() {
   };
 
   // Navigation & Filter States
-  const [currentScreen, setCurrentScreen] = useState<NavigationScreen>('operations');
+  const [currentScreen, setCurrentScreen] = useState<NavigationScreen>(() => {
+    if (typeof window === 'undefined') return 'operations';
+    const hash = window.location.hash.replace('#', '') as NavigationScreen;
+    const validScreens: NavigationScreen[] = ['operations', 'merchandisers', 'trends', 'compliance', 'head_office', 'archive'];
+    return validScreens.includes(hash) ? hash : 'operations';
+  });
+
+  useEffect(() => {
+    const nextHash = `#${currentScreen}`;
+    const url = new URL(window.location.href);
+    url.hash = currentScreen;
+    window.history.replaceState({}, '', url);
+    if (window.location.hash !== nextHash) {
+      window.location.hash = currentScreen;
+    }
+  }, [currentScreen]);
+
   const [selectedRegion, setSelectedRegion] = useState<Region>('All');
   const [tenureFilter, setTenureFilter] = useState<TenureFilter>('All');
   const [currentTab, setCurrentTab] = useState<TabType>('active');
