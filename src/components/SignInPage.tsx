@@ -121,7 +121,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignIn, defaultEmail =
             KEA Operations Suite
           </h1>
           <p className="text-sm text-slate-400 mt-1 max-w-lg mx-auto">
-            Executive control portal for VSR allocations, field merchandiser telemetry, shift compliance, and head office staffing.
+            Executive control portal for VSR allocations, shift compliance, and head office staffing.
           </p>
         </div>
 
