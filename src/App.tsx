@@ -8,7 +8,8 @@ import {
   Requisition,
   FundingActionLog,
   FieldMerchandiserHub,
-  AuthUser
+  AuthUser,
+  SessionMeta
 } from './types';
 import {
   INITIAL_STAFF_RECORDS,
@@ -26,6 +27,7 @@ import { KPIStats } from './components/KPIStats';
 import { StaffCard } from './components/StaffCard';
 import { RightSidebarWidgets } from './components/RightSidebarWidgets';
 import { TelemetrySparkline } from './components/TelemetrySparkline';
+import { VSRDashboard } from './components/VSRDashboard';
 import { TelemetryPreferencesConfig } from './types';
 import { loadTelemetryPreferences } from './data/telemetryPreferencesData';
 
@@ -78,7 +80,6 @@ const STORE_OPENING_HOURS: RegionalStoreShiftSchedule[] = [
 ];
 
 export default function App() {
-  // Authentication State (Corporate Session in WAT)
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
     try {
       const stored = localStorage.getItem('kea_current_user');
@@ -86,13 +87,87 @@ export default function App() {
     } catch (e) {
       console.error(e);
     }
-    return PRESET_CREDENTIALS[0].user; // Default active executive: Tope Balogun (CEO)
+    return null;
   });
 
+  const captureSessionMeta = (user: AuthUser): AuthUser => {
+    const now = new Date();
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+
+    const fallbackLocation = {
+      label: 'Unknown location',
+      city: 'Unlocated',
+      country: 'Nigeria',
+      countryCode: 'NG',
+      source: 'fallback' as const
+    };
+
+    const sessionMeta: SessionMeta = {
+      signedInAt: now.toISOString(),
+      timezone: tz,
+      location: fallbackLocation
+    };
+
+    if (!navigator.geolocation) {
+      return {
+        ...user,
+        lastLogin: now.toLocaleString('en-NG', { timeZone: tz, dateStyle: 'medium', timeStyle: 'short' }),
+        sessionMeta
+      };
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude, accuracy } = position.coords;
+        const cityGuess = latitude > 6.4 && latitude < 7.1 ? 'Lagos' : latitude > 7.2 && latitude < 8.0 ? 'Ibadan' : 'Regional Hub';
+        const nextSessionMeta: SessionMeta = {
+          signedInAt: now.toISOString(),
+          timezone: tz,
+          location: {
+            latitude,
+            longitude,
+            label: `${cityGuess} • ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+            city: cityGuess,
+            country: 'Nigeria',
+            countryCode: 'NG',
+            accuracy,
+            source: 'browser'
+          }
+        };
+
+        const authenticatedUser = {
+          ...user,
+          lastLogin: now.toLocaleString('en-NG', { timeZone: tz, dateStyle: 'medium', timeStyle: 'short' }),
+          sessionMeta: nextSessionMeta
+        };
+
+        setCurrentUser(authenticatedUser);
+        localStorage.setItem('kea_current_user', JSON.stringify(authenticatedUser));
+      },
+      () => {
+        const authenticatedUser = {
+          ...user,
+          lastLogin: now.toLocaleString('en-NG', { timeZone: tz, dateStyle: 'medium', timeStyle: 'short' }),
+          sessionMeta
+        };
+        setCurrentUser(authenticatedUser);
+        localStorage.setItem('kea_current_user', JSON.stringify(authenticatedUser));
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+    );
+
+    return {
+      ...user,
+      lastLogin: now.toLocaleString('en-NG', { timeZone: tz, dateStyle: 'medium', timeStyle: 'short' }),
+      sessionMeta
+    };
+  };
+
   const handleSignIn = (user: AuthUser) => {
-    setCurrentUser(user);
+    const authenticatedUser = captureSessionMeta(user);
+    setCurrentUser(authenticatedUser);
     try {
-      localStorage.setItem('kea_current_user', JSON.stringify(user));
+      localStorage.setItem('kea_current_user', JSON.stringify(authenticatedUser));
     } catch (e) {
       console.error(e);
     }
@@ -684,7 +759,6 @@ export default function App() {
 
   const hasUnreadAlerts = notifications.some((n) => n.unread);
 
-  // If user is not logged in, render the corporate Sign In Gateway
   if (!currentUser) {
     return (
       <SignInPage
@@ -692,6 +766,10 @@ export default function App() {
         defaultEmail="tope.balogun@keahospitality.ng"
       />
     );
+  }
+
+  if (currentUser.platform === 'vsr') {
+    return <VSRDashboard user={currentUser} onSignOut={handleSignOut} />;
   }
 
   return (

@@ -4,11 +4,30 @@ export type TenureFilter = 'All' | '0–3 Mo (New)' | '3–6 Mo (Mid)' | '6+ Mo'
 
 export type TabType = 'active' | 'prospective' | 'archive';
 
+export type AppRole = 'SUPER_ADMIN' | 'CEO' | 'OPS_DIRECTOR' | 'REGIONAL_SUPERVISOR' | 'AUDIT_LEAD' | 'VSR' | 'VSR_SUPERVISOR';
+
+export interface LoginLocation {
+  latitude?: number;
+  longitude?: number;
+  label: string;
+  city?: string;
+  country?: string;
+  countryCode?: string;
+  accuracy?: number;
+  source: 'browser' | 'fallback';
+}
+
+export interface SessionMeta {
+  signedInAt: string;
+  timezone: string;
+  location: LoginLocation;
+}
+
 export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role: 'CEO' | 'OPS_DIRECTOR' | 'REGIONAL_SUPERVISOR' | 'AUDIT_LEAD';
+  role: AppRole;
   roleTitle: string;
   department: string;
   initials: string;
@@ -16,6 +35,8 @@ export interface AuthUser {
   assignedRegion: 'All' | 'Lagos' | 'Ibadan' | 'Ogun' | 'Benin';
   securityClearance: 'Level 5 (Unrestricted)' | 'Level 4 (Regional Ops)' | 'Level 3 (Audit & HR)';
   lastLogin?: string;
+  platform?: 'admin' | 'vsr';
+  sessionMeta?: SessionMeta;
 }
 
 export interface GeneratedCredential {

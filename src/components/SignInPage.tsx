@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { AuthUser, GeneratedCredential } from '../types';
-import { PRESET_CREDENTIALS, verifyCredentials, generateCustomAuditorCredential } from '../data/credentialsData';
+import {
+  PRESET_CREDENTIALS,
+  VSR_CREDENTIALS,
+  verifyCredentials,
+  generateCustomAuditorCredential
+} from '../data/credentialsData';
 
 interface SignInPageProps {
   onSignIn: (user: AuthUser) => void;
@@ -15,9 +20,11 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignIn, defaultEmail =
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  // Dynamic Generator State
+  const [portal, setPortal] = useState<'admin' | 'vsr'>('admin');
   const [generatedList, setGeneratedList] = useState<GeneratedCredential[]>([]);
   const [genHub, setGenHub] = useState<'All' | 'Lagos' | 'Ibadan' | 'Ogun' | 'Benin'>('Lagos');
+
+  const availableCredentials = portal === 'admin' ? PRESET_CREDENTIALS : VSR_CREDENTIALS;
 
   // Handle Form Submission
   const handleSubmit = (e?: React.FormEvent) => {
@@ -27,7 +34,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignIn, defaultEmail =
 
     setTimeout(() => {
       // Check preset credentials or dynamically generated credentials
-      let authenticatedUser = verifyCredentials(email, password);
+      let authenticatedUser = verifyCredentials(email, password, portal);
 
       if (!authenticatedUser) {
         const genMatch = generatedList.find(
@@ -132,8 +139,29 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignIn, defaultEmail =
                   AUTHENTICATED GATEWAY
                 </span>
               </div>
+              <div className="mt-3 flex gap-2 rounded-xl border border-[#1e2d4d] bg-[#090e1c] p-1">
+                {(['admin', 'vsr'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => {
+                      setPortal(mode);
+                      setEmail(mode === 'admin' ? PRESET_CREDENTIALS[0].user.email : VSR_CREDENTIALS[0].user.email);
+                      setPassword(mode === 'admin' ? PRESET_CREDENTIALS[0].passwordText : VSR_CREDENTIALS[0].passwordText);
+                      setErrorMessage('');
+                    }}
+                    className={`flex-1 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-[0.2em] transition ${
+                      portal === mode ? 'bg-[#92C842] text-[#090e1c]' : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    {mode === 'admin' ? 'Super Admin' : 'VSR'}
+                  </button>
+                ))}
+              </div>
               <p className="text-xs text-slate-400 mt-1">
-                Enter corporate credentials or select a generated role profile.
+                {portal === 'admin'
+                  ? 'Enter corporate credentials or select a generated role profile.'
+                  : 'Sign in as a field VSR to access route tracking and field operations.'}
               </p>
             </div>
 
@@ -282,13 +310,13 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignIn, defaultEmail =
                 </div>
 
                 <span className="text-[10px] font-mono text-slate-400 bg-[#151f38] px-2.5 py-1 rounded border border-[#1e2d4d]">
-                  READY FOR DEMO / AUDIT
+                  {portal === 'admin' ? 'READY FOR DEMO / AUDIT' : 'FIELD OPERATION ROUTE ACCESS'}
                 </span>
               </div>
 
               {/* Cards Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                {PRESET_CREDENTIALS.map((cred) => {
+                {availableCredentials.map((cred) => {
                   const isCurrent = email.toLowerCase() === cred.user.email.toLowerCase();
 
                   return (
