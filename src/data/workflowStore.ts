@@ -1,129 +1,52 @@
-export type WorkflowRole = 'admin' | 'vsr';
 export type WorkflowRequestType = 'funding' | 'leave';
 export type WorkflowStatus = 'pending' | 'accepted' | 'rejected';
 
-export interface WorkflowReport {
-  id: string;
-  senderId: string;
-  senderName: string;
-  period: 'weekly' | 'monthly';
-  fileName: string;
-  submittedAt: string;
-  status: WorkflowStatus;
-  reviewedAt?: string;
-  reviewedBy?: string;
-}
-
-export interface WorkflowRequest {
-  id: string;
-  senderId: string;
-  senderName: string;
-  type: WorkflowRequestType;
-  amount?: string;
-  dates?: string;
-  reason: string;
-  submittedAt: string;
-  status: WorkflowStatus;
-  reviewedAt?: string;
-  reviewedBy?: string;
-}
-
-export interface WorkflowMessage {
-  id: string;
-  senderId: string;
-  senderName: string;
-  audience: 'all' | string;
-  subject: string;
-  body: string;
-  attachmentName?: string;
-  createdAt: string;
-  readBy: string[];
-}
-
-export interface WorkflowState {
-  reports: WorkflowReport[];
-  requests: WorkflowRequest[];
-  messages: WorkflowMessage[];
-}
+export interface WorkflowReport { id: string; senderId: string; senderName: string; period: 'weekly' | 'monthly'; fileName: string; submittedAt: string; status: WorkflowStatus; reviewedAt?: string; reviewedBy?: string; }
+export interface WorkflowRequest { id: string; senderId: string; senderName: string; type: WorkflowRequestType; amount?: string; dates?: string; reason: string; submittedAt: string; status: WorkflowStatus; reviewedAt?: string; reviewedBy?: string; }
+export interface WorkflowMessage { id: string; senderId: string; senderName: string; audience: 'all' | string; subject: string; body: string; attachmentName?: string; createdAt: string; readBy: string[]; }
+export interface WorkflowState { reports: WorkflowReport[]; requests: WorkflowRequest[]; messages: WorkflowMessage[]; }
 
 const STORAGE_KEY = 'kea_workflow_state_v1';
-const CHANNEL_NAME = 'kea-workflow-events-v1';
 const emptyState: WorkflowState = { reports: [], requests: [], messages: [] };
+let cachedState = emptyState;
+let socket: WebSocket | undefined;
+let pollingTimer: number | undefined;
+const listeners = new Set<() => void>();
 
-const readState = (): WorkflowState => {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-    return parsed ? { ...emptyState, ...parsed } : emptyState;
-  } catch {
-    return emptyState;
-  }
+const readLocalState = (): WorkflowState => {
+  try { return { ...emptyState, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') }; } catch { return emptyState; }
 };
-
-const writeState = (state: WorkflowState) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  window.dispatchEvent(new CustomEvent('kea-workflow-change'));
-  try {
-    const channel = new BroadcastChannel(CHANNEL_NAME);
-    channel.postMessage({ type: 'workflow-change' });
-    channel.close();
-  } catch {
-    // BroadcastChannel is unavailable in older browsers; storage events still work across tabs.
-  }
+const notify = (state: WorkflowState) => { cachedState = state; localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); listeners.forEach((listener) => listener()); };
+const apiRequest = async (path: string, method = 'GET', body?: unknown) => {
+  const currentUser = JSON.parse(localStorage.getItem('kea_current_user') || 'null');
+  const response = await fetch(`/api/workflow${path}`, { method, headers: { 'Content-Type': 'application/json', 'x-user-id': currentUser?.id || 'anonymous', 'x-user-name': currentUser?.name || 'Anonymous' }, body: body ? JSON.stringify(body) : undefined });
+  if (!response.ok) throw new Error(`Workflow API request failed: ${response.status}`);
+  return response.json() as Promise<WorkflowState>;
 };
+const sync = async () => { try { notify(await apiRequest('/state')); } catch { notify(cachedState.reports.length || cachedState.requests.length || cachedState.messages.length ? cachedState : readLocalState()); } };
 
-export const getWorkflowState = () => readState();
+export const getWorkflowState = () => { cachedState = readLocalState(); void sync(); return cachedState; };
 export const subscribeToWorkflow = (listener: () => void) => {
-  const handleChange = () => listener();
-  window.addEventListener('kea-workflow-change', handleChange);
-  window.addEventListener('storage', handleChange);
-  let channel: BroadcastChannel | undefined;
-  try {
-    channel = new BroadcastChannel(CHANNEL_NAME);
-    channel.addEventListener('message', handleChange);
-  } catch {
-    channel = undefined;
+  listeners.add(listener);
+  void sync();
+  if (!pollingTimer) pollingTimer = window.setInterval(() => void sync(), 5000);
+  if (!socket && window.location.protocol !== 'file:') {
+    try {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      socket = new WebSocket(`${protocol}//${window.location.host}/api/workflow/stream`);
+      socket.onmessage = (event) => { const message = JSON.parse(event.data); if (message.type === 'workflow-state') notify(message.state); };
+      socket.onclose = () => { socket = undefined; };
+    } catch { socket = undefined; }
   }
-  return () => {
-    window.removeEventListener('kea-workflow-change', handleChange);
-    window.removeEventListener('storage', handleChange);
-    channel?.close();
-  };
+  return () => { listeners.delete(listener); };
 };
 
-export const updateWorkflowState = (updater: (state: WorkflowState) => WorkflowState) => {
-  const next = updater(readState());
-  writeState(next);
-  return next;
+const mutate = async (path: string, body: unknown, fallback: (state: WorkflowState) => WorkflowState) => {
+  try { notify(await apiRequest(path, 'POST', body)); } catch { notify(fallback(cachedState)); }
 };
 
-export const createId = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-
-export const addReport = (report: Omit<WorkflowReport, 'id' | 'submittedAt' | 'status'>) => updateWorkflowState((state) => ({
-  ...state,
-  reports: [{ ...report, id: createId('report'), submittedAt: new Date().toISOString(), status: 'pending' }, ...state.reports]
-}));
-
-export const addRequest = (request: Omit<WorkflowRequest, 'id' | 'submittedAt' | 'status'>) => updateWorkflowState((state) => ({
-  ...state,
-  requests: [{ ...request, id: createId('request'), submittedAt: new Date().toISOString(), status: 'pending' }, ...state.requests]
-}));
-
-export const addMessage = (message: Omit<WorkflowMessage, 'id' | 'createdAt' | 'readBy'>) => updateWorkflowState((state) => ({
-  ...state,
-  messages: [{ ...message, id: createId('message'), createdAt: new Date().toISOString(), readBy: [] }, ...state.messages]
-}));
-
-export const reviewReport = (id: string, status: Exclude<WorkflowStatus, 'pending'>, reviewer: string) => updateWorkflowState((state) => ({
-  ...state,
-  reports: state.reports.map((report) => report.id === id ? { ...report, status, reviewedAt: new Date().toISOString(), reviewedBy: reviewer } : report),
-  messages: [{ id: createId('message'), senderId: 'system', senderName: 'KEA Workflow', audience: state.reports.find((report) => report.id === id)?.senderId || 'all', subject: `Report ${status}`, body: `Your ${state.reports.find((report) => report.id === id)?.period || ''} report was ${status} by ${reviewer}.`, createdAt: new Date().toISOString(), readBy: [] }, ...state.messages]
-}));
-
-export const reviewRequest = (id: string, status: Exclude<WorkflowStatus, 'pending'>, reviewer: string) => updateWorkflowState((state) => {
-  const request = state.requests.find((item) => item.id === id);
-  return {
-    ...state,
-    requests: state.requests.map((item) => item.id === id ? { ...item, status, reviewedAt: new Date().toISOString(), reviewedBy: reviewer } : item),
-    messages: request ? [{ id: createId('message'), senderId: 'system', senderName: 'KEA Workflow', audience: request.senderId, subject: `${request.type === 'funding' ? 'Funding' : 'Leave'} request ${status}`, body: `Your ${request.type} request was ${status} by ${reviewer}.`, createdAt: new Date().toISOString(), readBy: [] }, ...state.messages] : state.messages
-  };
-});
+export const addReport = (report: Omit<WorkflowReport, 'id' | 'submittedAt' | 'status'>) => mutate('/reports', report, (state) => ({ ...state, reports: [{ ...report, id: `report-${Date.now()}`, submittedAt: new Date().toISOString(), status: 'pending' }, ...state.reports] }));
+export const addRequest = (request: Omit<WorkflowRequest, 'id' | 'submittedAt' | 'status'>) => mutate('/requests', request, (state) => ({ ...state, requests: [{ ...request, id: `request-${Date.now()}`, submittedAt: new Date().toISOString(), status: 'pending' }, ...state.requests] }));
+export const addMessage = (message: Omit<WorkflowMessage, 'id' | 'createdAt' | 'readBy'>) => mutate('/messages', message, (state) => ({ ...state, messages: [{ ...message, id: `message-${Date.now()}`, createdAt: new Date().toISOString(), readBy: [] }, ...state.messages] }));
+export const reviewReport = (id: string, status: Exclude<WorkflowStatus, 'pending'>) => void mutate(`/reports/${id}/review`, { status }, (state) => state);
+export const reviewRequest = (id: string, status: Exclude<WorkflowStatus, 'pending'>) => void mutate(`/requests/${id}/review`, { status }, (state) => state);

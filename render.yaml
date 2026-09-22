@@ -1,9 +1,15 @@
 services:
   - type: web
     name: kea-operations-suite
-    runtime: static
+    runtime: node
     buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
+    startCommand: npm start
+    disk:
+      name: kea-workflow-data
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
+      - key: WORKFLOW_DATA_DIR
+        value: /var/data
