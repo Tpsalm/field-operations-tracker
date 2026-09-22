@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ChevronDown, CircleDot, Search, Signpost, Truck, Users, X } from 'lucide-react';
 import { AuthUser } from '../types';
 import { WorkflowCenter } from './WorkflowCenter';
+import { VSRPlatformShell } from './VSRPlatformShell';
 
 interface VSRDashboardProps {
   user: AuthUser;
@@ -81,8 +82,9 @@ export const VSRDashboard: React.FC<VSRDashboardProps> = ({ user, onSignOut }) =
   ];
 
   return (
+    <VSRPlatformShell user={user} onSignOut={onSignOut}>
     <div className="min-h-screen bg-[#07101d] text-slate-100">
-      <header className="border-b border-[#20314d] bg-[#091625] px-5 py-4"><div className="mx-auto flex max-w-[1500px] items-center justify-between gap-4"><div className="flex items-center gap-4"><div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#92C842]/30 bg-[#92C842]/10 text-[#b5e86d]"><Signpost size={20} /></div><div><div className="text-[10px] font-mono uppercase tracking-[0.28em] text-[#92C842]">KEA Field Operations</div><h1 className="text-xl font-bold text-white">VSR Route Command</h1></div></div><div className="flex items-center gap-3"><div className="hidden rounded-lg border border-[#20314d] bg-[#0d1729] px-3 py-2 text-right sm:block"><div className="text-[9px] uppercase tracking-[0.2em] text-slate-500">Session</div><div className="text-xs font-mono text-slate-300">{formatSignedIn}</div></div><div className="flex items-center gap-2 rounded-lg border border-[#20314d] bg-[#0d1729] px-3 py-2"><span className="h-2 w-2 animate-pulse rounded-full bg-[#92C842]" /><span className="text-xs font-semibold text-slate-300">Live operations</span></div><button onClick={onSignOut} className="rounded-lg border border-[#2d405e] bg-[#15243a] px-3 py-2 text-xs font-bold text-slate-200 hover:border-[#92C842]/50">Sign out</button></div></div></header>
+      <header className="hidden border-b border-[#20314d] bg-[#091625] px-5 py-4"><div className="mx-auto flex max-w-[1500px] items-center justify-between gap-4"><div className="flex items-center gap-4"><div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#92C842]/30 bg-[#92C842]/10 text-[#b5e86d]"><Signpost size={20} /></div><div><div className="text-[10px] font-mono uppercase tracking-[0.28em] text-[#92C842]">KEA Field Operations</div><h1 className="text-xl font-bold text-white">VSR Route Command</h1></div></div><div className="flex items-center gap-3"><div className="hidden rounded-lg border border-[#20314d] bg-[#0d1729] px-3 py-2 text-right sm:block"><div className="text-[9px] uppercase tracking-[0.2em] text-slate-500">Session</div><div className="text-xs font-mono text-slate-300">{formatSignedIn}</div></div><div className="flex items-center gap-2 rounded-lg border border-[#20314d] bg-[#0d1729] px-3 py-2"><span className="h-2 w-2 animate-pulse rounded-full bg-[#92C842]" /><span className="text-xs font-semibold text-slate-300">Live operations</span></div><button onClick={onSignOut} className="rounded-lg border border-[#2d405e] bg-[#15243a] px-3 py-2 text-xs font-bold text-slate-200 hover:border-[#92C842]/50">Sign out</button></div></div></header>
 
       <main className="mx-auto max-w-[1500px] space-y-6 px-5 py-6">
         <section><div className="mb-3 flex items-end justify-between gap-3"><div><div className="text-[10px] font-mono uppercase tracking-[0.25em] text-slate-500">Fleet overview / today</div><h2 className="mt-1 text-lg font-bold text-white">Field coverage at a glance</h2></div><div className="text-xs text-slate-500">Last network sync {selectedCrew.lastPing}</div></div><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{kpis.map((kpi) => { const Icon = kpi.icon; const active = activeKpi === kpi.id; return <button key={kpi.id} onClick={() => setActiveKpi(active ? 'all' : kpi.id)} className={`group rounded-xl border p-4 text-left transition ${active ? 'border-[#92C842] bg-[#12231d] shadow-[0_0_0_1px_rgba(146,200,66,0.25)]' : 'border-[#20314d] bg-[#0d1729] hover:border-[#46627c]'}`}><div className="flex items-start justify-between"><div><div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400">{kpi.label}</div><div className="mt-2 text-2xl font-bold text-white">{kpi.value}</div><div className="mt-1 text-xs text-slate-500">{kpi.note}</div></div><span className="rounded-lg p-2" style={{ color: kpi.color, backgroundColor: `${kpi.color}18` }}><Icon size={18} /></span></div><div className="mt-3 text-[10px] font-semibold uppercase tracking-wider" style={{ color: active ? kpi.color : '#64748b' }}>{active ? 'Filtering view' : 'Click to filter'}</div></button>; })}</div></section>
@@ -95,5 +97,6 @@ export const VSRDashboard: React.FC<VSRDashboardProps> = ({ user, onSignOut }) =
         <WorkflowCenter user={user} />
       </main>
     </div>
+    </VSRPlatformShell>
   );
 };
