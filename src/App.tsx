@@ -28,6 +28,7 @@ import { StaffCard } from './components/StaffCard';
 import { RightSidebarWidgets } from './components/RightSidebarWidgets';
 import { TelemetrySparkline } from './components/TelemetrySparkline';
 import { VSRDashboard } from './components/VSRDashboard';
+import { CredentialAdministrationPanel } from './components/CredentialAdministrationPanel';
 import { TelemetryPreferencesConfig } from './types';
 import { loadTelemetryPreferences } from './data/telemetryPreferencesData';
 
@@ -821,6 +822,8 @@ export default function App() {
 
         {/* MAIN BODY AREA */}
         <main className="flex-1 p-4 lg:p-6 space-y-6">
+          {currentUser.role === 'SUPER_ADMIN' && <CredentialAdministrationPanel />}
+
           {/* CRITICAL TELEMETRY ALERT BANNER */}
           {telemetryAlertBanner && (
             <div

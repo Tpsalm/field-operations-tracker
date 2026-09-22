@@ -290,7 +290,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignIn, defaultEmail =
           </div>
 
           {/* RIGHT: PRE-GENERATED CREDENTIALS & ON-DEMAND GENERATOR (7 cols on LG) */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="hidden lg:col-span-7 space-y-6">
             
             {/* PRE-GENERATED CORPORATE ACCOUNTS LEDGER */}
             <div className="bg-[#0e1628] border border-[#1e2d4d] rounded-2xl p-6 shadow-2xl space-y-4">

@@ -129,7 +129,14 @@ export function verifyCredentials(emailInput: string, passwordInput: string, pla
       ? VSR_CREDENTIALS
       : [...PRESET_CREDENTIALS, ...VSR_CREDENTIALS];
 
-  const found = credentials.find(
+  let generatedCredentials: GeneratedCredential[] = [];
+  try {
+    generatedCredentials = JSON.parse(localStorage.getItem('kea_generated_credentials') || '[]');
+  } catch {
+    generatedCredentials = [];
+  }
+
+  const found = [...credentials, ...generatedCredentials].find(
     (c) => c.user.email.toLowerCase() === normalizedEmail && c.passwordText === trimmedPassword
   );
 
