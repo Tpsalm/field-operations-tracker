@@ -125,11 +125,11 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignIn, defaultEmail =
           </p>
         </div>
 
-        {/* 2-COLUMN SIGN IN & GENERATOR GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* CENTERED SIGN-IN PANEL */}
+        <div className="flex justify-center">
           
           {/* LEFT: AUTHENTICATION FORM (5 cols on LG) */}
-          <div className="lg:col-span-5 bg-[#0e1628] border border-[#1e2d4d] rounded-2xl p-6 sm:p-7 shadow-2xl space-y-5">
+          <div className="w-full max-w-xl bg-[#0e1628] border border-[#1e2d4d] rounded-2xl p-6 sm:p-7 shadow-2xl space-y-5">
             <div className="border-b border-[#1e2d4d] pb-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold text-white tracking-wide">
