@@ -11,6 +11,7 @@ const emptyState: WorkflowState = { reports: [], requests: [], messages: [] };
 let cachedState = emptyState;
 let socket: WebSocket | undefined;
 let pollingTimer: number | undefined;
+let remoteUnavailable = false;
 const listeners = new Set<() => void>();
 
 const readLocalState = (): WorkflowState => {
@@ -23,26 +24,39 @@ const apiRequest = async (path: string, method = 'GET', body?: unknown) => {
   if (!response.ok) throw new Error(`Workflow API request failed: ${response.status}`);
   return response.json() as Promise<WorkflowState>;
 };
-const sync = async () => { try { notify(await apiRequest('/state')); } catch { notify(cachedState.reports.length || cachedState.requests.length || cachedState.messages.length ? cachedState : readLocalState()); } };
+const sync = async () => {
+  if (remoteUnavailable) return false;
+  try {
+    notify(await apiRequest('/state'));
+    return true;
+  } catch {
+    remoteUnavailable = true;
+    notify(cachedState.reports.length || cachedState.requests.length || cachedState.messages.length ? cachedState : readLocalState());
+    return false;
+  }
+};
 
 export const getWorkflowState = () => { cachedState = readLocalState(); void sync(); return cachedState; };
 export const subscribeToWorkflow = (listener: () => void) => {
   listeners.add(listener);
-  void sync();
-  if (!pollingTimer) pollingTimer = window.setInterval(() => void sync(), 5000);
-  if (!socket && window.location.protocol !== 'file:') {
-    try {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      socket = new WebSocket(`${protocol}//${window.location.host}/api/workflow/stream`);
-      socket.onmessage = (event) => { const message = JSON.parse(event.data); if (message.type === 'workflow-state') notify(message.state); };
-      socket.onclose = () => { socket = undefined; };
-    } catch { socket = undefined; }
-  }
+  void sync().then((available) => {
+    if (!available || pollingTimer || remoteUnavailable) return;
+    pollingTimer = window.setInterval(() => void sync(), 5000);
+    if (!socket && window.location.protocol !== 'file:') {
+      try {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        socket = new WebSocket(`${protocol}//${window.location.host}/api/workflow/stream`);
+        socket.onmessage = (event) => { const message = JSON.parse(event.data); if (message.type === 'workflow-state') notify(message.state); };
+        socket.onclose = () => { socket = undefined; };
+      } catch { socket = undefined; }
+    }
+  });
   return () => { listeners.delete(listener); };
 };
 
 const mutate = async (path: string, body: unknown, fallback: (state: WorkflowState) => WorkflowState) => {
-  try { notify(await apiRequest(path, 'POST', body)); } catch { notify(fallback(cachedState)); }
+  if (remoteUnavailable) { notify(fallback(cachedState)); return; }
+  try { notify(await apiRequest(path, 'POST', body)); } catch { remoteUnavailable = true; notify(fallback(cachedState)); }
 };
 
 export const addReport = (report: Omit<WorkflowReport, 'id' | 'submittedAt' | 'status'>) => mutate('/reports', report, (state) => ({ ...state, reports: [{ ...report, id: `report-${Date.now()}`, submittedAt: new Date().toISOString(), status: 'pending' }, ...state.reports] }));
