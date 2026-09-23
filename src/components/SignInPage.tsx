@@ -6,7 +6,7 @@ import {
   verifyCredentials,
   generateCustomAuditorCredential
 } from '../data/credentialsData';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseReachable } from '../lib/supabase';
 
 interface SignInPageProps {
   onSignIn: (user: AuthUser) => void;
@@ -34,7 +34,9 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignIn, defaultEmail =
     setIsLoading(true);
 
     try {
-      if (supabase) {
+      const canUseSupabase = supabase && (await isSupabaseReachable());
+
+      if (canUseSupabase) {
         const { data, error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
           password: password.trim()

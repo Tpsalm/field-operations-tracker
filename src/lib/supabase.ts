@@ -39,13 +39,30 @@ export const testSupabaseConnection = async () => {
     };
   }
 
-  const { error } = await supabase.from('profiles').select('id', { count: 'exact', head: true }).limit(1);
+  try {
+    const { error } = await supabase.from('profiles').select('id', { count: 'exact', head: true }).limit(1);
 
-  if (error && error.code !== 'PGRST116') {
+    if (!error) {
+      return { connected: true, error: null };
+    }
+
+    const recoverableCodes = new Set(['PGRST116', '42P01', 'PGRST301', 'PGRST205', '42501']);
+    if (recoverableCodes.has(error.code ?? '')) {
+      return { connected: false, error: error.message };
+    }
+
     return { connected: false, error: error.message };
+  } catch (error) {
+    return {
+      connected: false,
+      error: error instanceof Error ? error.message : 'Supabase project is unreachable or not configured correctly.'
+    };
   }
+};
 
-  return { connected: true, error: null };
+export const isSupabaseReachable = async (): Promise<boolean> => {
+  const result = await testSupabaseConnection();
+  return result.connected;
 };
 
 export async function fetchFromTable<T>(

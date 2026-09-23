@@ -1,4 +1,4 @@
-import { supabase, requireSupabaseClient } from './supabase';
+import { supabase, requireSupabaseClient, isSupabaseReachable } from './supabase';
 import {
   StaffRecord,
   Requisition,
@@ -334,6 +334,22 @@ export async function loadDashboardData(): Promise<{
   }
 
   try {
+    const isReachable = await isSupabaseReachable();
+    if (!isReachable) {
+      return {
+        staff: [],
+        requisitions: [],
+        fundingLogs: [],
+        hubs: [],
+        telemetryPreferences: null,
+        status: {
+          isUsingSupabase: false,
+          error: 'Supabase project is unavailable or the schema is not yet created.',
+          source: 'local'
+        }
+      };
+    }
+
     const client = requireSupabaseClient();
 
     const [staffResult, requisitionsResult, fundingResult, hubsResult, prefsResult] = await Promise.all([

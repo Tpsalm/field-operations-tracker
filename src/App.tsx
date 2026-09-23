@@ -1111,7 +1111,7 @@ export default function App() {
         />
 
         {/* MAIN BODY AREA */}
-        <main className="flex-1 p-0 space-y-0">
+        <main className="flex-1 p-0 space-y-0 min-h-0 overflow-hidden">
           {dataLoadState.loading && <div className="p-3"><DashboardSkeleton title="Loading operations data" /></div>}
 
           {dataLoadState.error && (
@@ -1272,7 +1272,7 @@ export default function App() {
           {/* SCREEN 1: Operations & VSR */}
           {currentScreen === 'operations' && (
             <ScreenPage screen="operations">
-              <div className="space-y-6">
+              <div className="space-y-3">
                 {/* Executive KPI Stats (5 cards) */}
                 <KPIStats
                   fundedCount={128}
@@ -1292,7 +1292,7 @@ export default function App() {
                 />
 
               {/* Regional Filter & Pipeline Category Subheaders */}
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {/* Region and Tenure Filter Buttons */}
                 <div className="flex flex-wrap items-center justify-between gap-4 py-1">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -1485,8 +1485,36 @@ export default function App() {
                   ))}
 
                   {paginatedStaff.length === 0 && (
-                    <div className="text-center py-16 bg-[#0e1628] border border-[#1e2d4d] rounded-xl text-slate-400 text-xs">
-                      No staff records found matching your filters.
+                    <div className="rounded-xl border border-dashed border-[#1e2d4d] bg-[#0b1222] p-6 text-slate-300">
+                      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                        <div>
+                          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">No data available</p>
+                          <h3 className="mt-2 text-lg font-bold text-white">Operations feed is currently empty</h3>
+                          <p className="mt-1 text-sm text-slate-400">
+                            No staff records match the selected region, tenure, or status filters.
+                          </p>
+                        </div>
+                        <div className="inline-flex items-center gap-2 rounded-full border border-[#1e2d4d] bg-[#0e1628] px-3 py-1.5 text-[10px] font-mono uppercase tracking-[0.16em] text-slate-400">
+                          <span className="h-2 w-2 rounded-full bg-[#92C842]" />
+                          system standby
+                        </div>
+                      </div>
+
+                      <div className="mt-5 rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-4">
+                        <div className="mb-3 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-slate-400">
+                          <span>live signal status</span>
+                          <span className="text-[#92C842]">online</span>
+                        </div>
+                        <div className="flex h-16 items-end gap-2">
+                          {[18, 34, 22, 52, 41, 68, 47, 76, 58, 82, 70, 90].map((bar, index) => (
+                            <div
+                              key={index}
+                              className="flex-1 rounded-t-md bg-gradient-to-t from-[#92C842]/70 via-[#92C842]/45 to-[#92C842]/15"
+                              style={{ height: `${bar}%` }}
+                            />
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   )}
 
