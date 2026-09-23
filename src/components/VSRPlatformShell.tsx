@@ -14,7 +14,7 @@ interface VSRPlatformShellProps {
 const navigation = [
   { id: 'route-command', label: 'Route Command', icon: LayoutGrid },
   { id: 'crew-directory', label: 'Crew Directory', icon: Users },
-  { id: 'reports-requests-support', label: 'Reports, Requests & Support', icon: FileText },
+  { id: 'reports-requests-support', label: 'Message', icon: FileText },
   { id: 'fleet-operations', label: 'Fleet Operations', icon: Truck },
   { id: 'performance-trends', label: 'Performance Trends', icon: BarChart3 }
 ];

@@ -238,7 +238,7 @@ export const VSRDashboard: React.FC<VSRDashboardProps> = ({ user, onSignOut }) =
               <div className="flex items-center justify-between gap-3 border-b border-[#20314d] pb-4">
                 <div>
                   <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">VSR support desk</div>
-                  <h2 className="mt-1 text-base font-bold text-white">Reports, Requests &amp; Support</h2>
+                  <h2 className="mt-1 text-base font-bold text-white">Message</h2>
                 </div>
                 <span className="rounded-full border border-[#92C842]/30 bg-[#92C842]/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#b5e86d]">Live inbox</span>
               </div>

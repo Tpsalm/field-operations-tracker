@@ -65,7 +65,7 @@ export const WorkflowCenter: React.FC<WorkflowCenterProps> = ({ user }) => {
   return (
     <section className={`${panel} p-5`}>
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#20314d] pb-4">
-        <div><div className="text-[10px] font-mono uppercase tracking-[0.22em] text-[#92C842]">Live workflow center</div><h2 className="mt-1 text-lg font-bold text-white">{isAdmin ? 'Field communications & approvals' : 'Reports, requests & support'}</h2><p className="mt-1 text-xs text-slate-400">Cross-tab notifications are delivered instantly in this browser session.</p></div>
+        <div><div className="text-[10px] font-mono uppercase tracking-[0.22em] text-[#92C842]">Live workflow center</div><h2 className="mt-1 text-lg font-bold text-white">{isAdmin ? 'Field communications & approvals' : 'Message'}</h2><p className="mt-1 text-xs text-slate-400">Cross-tab notifications are delivered instantly in this browser session.</p></div>
         <div className="rounded-lg border border-[#92C842]/30 bg-[#92C842]/10 px-3 py-2 text-right"><div className="text-[10px] uppercase text-slate-400">Accepted reports</div><div className="text-lg font-bold text-[#b5e86d]">{acceptedReports}</div></div>
       </div>
       {notice && <div className="mt-4 rounded-lg border border-[#92C842]/30 bg-[#92C842]/10 px-3 py-2 text-xs text-[#b5e86d]">{notice}</div>}
