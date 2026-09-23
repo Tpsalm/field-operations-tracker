@@ -1272,7 +1272,7 @@ export default function App() {
           {/* SCREEN 1: Operations & VSR */}
           {currentScreen === 'operations' && (
             <ScreenPage screen="operations">
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {/* Executive KPI Stats (5 cards) */}
                 <KPIStats
                   fundedCount={128}
@@ -1292,9 +1292,9 @@ export default function App() {
                 />
 
               {/* Regional Filter & Pipeline Category Subheaders */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {/* Region and Tenure Filter Buttons */}
-                <div className="flex flex-wrap items-center justify-between gap-4 py-1">
+                <div className="flex flex-wrap items-center justify-between gap-3 py-0.5">
                   <div className="flex items-center gap-2 flex-wrap">
                     {(['All', 'Lagos', 'Ibadan', 'Ogun', 'Benin'] as Region[]).map((regionKey) => {
                       const isSelected = selectedRegion === regionKey;
@@ -1355,7 +1355,7 @@ export default function App() {
                 </div>
 
                 {/* Tab Bar & Live Search Field */}
-                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#1e2d4d] pb-3">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1e2d4d] pb-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     <button
                       onClick={() => {
@@ -1458,9 +1458,9 @@ export default function App() {
               </div>
 
               {/* Main Content Two-Column Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 {/* LEFT COLUMN: Staff Cards List (~70% / 8 Cols) */}
-                <div className="lg:col-span-8 space-y-4">
+                <div className="lg:col-span-8 space-y-2">
                   {kpiStatusFilter !== 'all' && (
                     <div className="flex items-center justify-between p-2.5 bg-[#151f38] border border-[#1e2d4d] rounded-lg text-xs">
                       <span className="text-slate-300">
@@ -1519,7 +1519,7 @@ export default function App() {
                   )}
 
                   {/* Pagination Controls */}
-                  <div className="flex flex-wrap items-center justify-between gap-4 pt-3 text-xs text-slate-400">
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-xs text-slate-400">
                     <div>
                       Showing <span className="text-white font-semibold">{paginatedStaff.length}</span> of{' '}
                       <span className="text-white font-semibold">{filteredStaffList.length}</span>{' '}
