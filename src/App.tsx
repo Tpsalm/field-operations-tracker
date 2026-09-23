@@ -859,7 +859,7 @@ export default function App() {
   };
 
   const ScreenPage = ({ screen, children }: { screen: NavigationScreen; children: React.ReactNode }) => (
-    <div key={screen} className={`page-shell ${screenTheme[screen].shell}`}>
+    <div key={screen} className={`page-shell screen-page ${screenTheme[screen].shell}`}>
       <div className={`page-shell__glow bg-gradient-to-br ${screenTheme[screen].glow}`} />
       {children}
     </div>
@@ -906,7 +906,7 @@ export default function App() {
         />
 
         {/* MAIN BODY AREA */}
-        <main className="flex-1 p-4 lg:p-6 space-y-6">
+        <main className="flex-1 p-2.5 lg:p-4 space-y-3">
           {currentUser.role === 'SUPER_ADMIN' && <CredentialAdministrationPanel />}
           {currentUser.role === 'SUPER_ADMIN' && <WorkflowCenter user={currentUser} />}
 
@@ -1387,7 +1387,7 @@ export default function App() {
         </main>
 
         {/* FOOTER BAR */}
-        <footer className="px-6 py-4 bg-[#0b1222] border-t border-[#1e2d4d] text-xs text-slate-500 flex flex-wrap items-center justify-between gap-4">
+        <footer className="px-4 py-3 bg-[#0b1222] border-t border-[#1e2d4d] text-xs text-slate-500 flex flex-wrap items-center justify-between gap-3">
           <div>© 2025 KEA Corporate Hospitality Services Ltd. All Operations &amp; Field Telemetry Protected.</div>
           <div className="flex items-center gap-4 text-[11px] font-mono">
             <span className="text-slate-400">Node: LOS-HQ-01</span>
