@@ -6,6 +6,7 @@ import {
   verifyCredentials,
   generateCustomAuditorCredential
 } from '../data/credentialsData';
+import { supabase } from '../lib/supabase';
 
 interface SignInPageProps {
   onSignIn: (user: AuthUser) => void;
@@ -27,32 +28,89 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignIn, defaultEmail =
   const availableCredentials = portal === 'admin' ? PRESET_CREDENTIALS : VSR_CREDENTIALS;
 
   // Handle Form Submission
-  const handleSubmit = (e?: React.FormEvent) => {
+  const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setErrorMessage('');
     setIsLoading(true);
 
-    setTimeout(() => {
-      // Check preset credentials or dynamically generated credentials
-      let authenticatedUser = verifyCredentials(email, password, portal);
+    try {
+      if (supabase) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password: password.trim()
+        });
 
-      if (!authenticatedUser) {
-        const genMatch = generatedList.find(
-          (c) => c.user.email.toLowerCase() === email.trim().toLowerCase() && c.passwordText === password.trim()
-        );
-        if (genMatch) {
-          authenticatedUser = genMatch.user;
+        if (!error && data.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', data.user.id)
+            .single();
+
+          if (profile) {
+            const nextUser: AuthUser = {
+              id: profile.id,
+              name: profile.name,
+              email: profile.email,
+              role: profile.role,
+              roleTitle: profile.role_title || profile.role,
+              department: profile.department || 'Operations',
+              initials: profile.initials || profile.name.slice(0, 2).toUpperCase(),
+              avatarColor: profile.avatar_color || '#92C842',
+              assignedRegion: profile.assigned_region || 'All',
+              securityClearance: profile.security_clearance || 'Level 5 (Unrestricted)',
+              lastLogin: new Date().toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short' }),
+              platform: profile.platform || 'admin',
+              sessionMeta: {
+                signedInAt: new Date().toISOString(),
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+                location: {
+                  label: 'Supabase authenticated session',
+                  city: 'Remote Login',
+                  country: 'Nigeria',
+                  countryCode: 'NG',
+                  source: 'fallback'
+                }
+              }
+            };
+
+            onSignIn(nextUser);
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        if (error) {
+          setErrorMessage(error.message);
+          setIsLoading(false);
+          return;
         }
       }
 
-      if (authenticatedUser) {
-        setIsLoading(false);
-        onSignIn(authenticatedUser);
-      } else {
-        setIsLoading(false);
-        setErrorMessage('Invalid corporate credentials. Please select one of the pre-generated accounts below or generate a fresh inspection key.');
-      }
-    }, 450);
+      setTimeout(() => {
+        let authenticatedUser = verifyCredentials(email, password, portal);
+
+        if (!authenticatedUser) {
+          const genMatch = generatedList.find(
+            (c) => c.user.email.toLowerCase() === email.trim().toLowerCase() && c.passwordText === password.trim()
+          );
+          if (genMatch) {
+            authenticatedUser = genMatch.user;
+          }
+        }
+
+        if (authenticatedUser) {
+          setIsLoading(false);
+          onSignIn(authenticatedUser);
+        } else {
+          setIsLoading(false);
+          setErrorMessage('Invalid corporate credentials. Please select one of the pre-generated accounts below or generate a fresh inspection key.');
+        }
+      }, 450);
+    } catch (error) {
+      setIsLoading(false);
+      setErrorMessage(error instanceof Error ? error.message : 'Authentication failed');
+    }
   };
 
   // Quick 1-click sign in as any preset

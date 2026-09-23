@@ -31,7 +31,18 @@ import { VSRDashboard } from './components/VSRDashboard';
 import { CredentialAdministrationPanel } from './components/CredentialAdministrationPanel';
 import { WorkflowCenter } from './components/WorkflowCenter';
 import { TelemetryPreferencesConfig } from './types';
-import { loadTelemetryPreferences } from './data/telemetryPreferencesData';
+import { loadTelemetryPreferences, saveTelemetryPreferences } from './data/telemetryPreferencesData';
+import { supabase } from './lib/supabase';
+import {
+  loadDashboardData,
+  signOutSupabase,
+  upsertStaffRecord,
+  insertRequisition,
+  insertFundingLog,
+  insertNotification,
+  upsertTelemetryPreferences
+} from './lib/supabaseData';
+import { DashboardSkeleton, ErrorBanner } from './components/DataStateUI';
 
 const FieldMerchandisersView = lazy(() =>
   import('./components/FieldMerchandisersView').then((module) => ({ default: module.FieldMerchandisersView }))
@@ -175,7 +186,15 @@ export default function App() {
     }
   };
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    try {
+      if (supabase) {
+        await signOutSupabase();
+      }
+    } catch (e) {
+      console.warn('Supabase sign out failed, continuing with local sign-out flow.', e);
+    }
+
     setCurrentUser(null);
     try {
       localStorage.removeItem('kea_current_user');
@@ -183,6 +202,64 @@ export default function App() {
       console.error(e);
     }
   };
+
+  useEffect(() => {
+    let active = true;
+
+    const hydrateSupabaseSession = async () => {
+      if (!supabase) return;
+
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error || !session?.user || !active) return;
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        if (!profile || !active) return;
+
+        const hydratedUser: AuthUser = {
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          role: profile.role,
+          roleTitle: profile.role_title || profile.role,
+          department: profile.department || 'Operations',
+          initials: profile.initials || profile.name.slice(0, 2).toUpperCase(),
+          avatarColor: profile.avatar_color || '#92C842',
+          assignedRegion: profile.assigned_region || 'All',
+          securityClearance: profile.security_clearance || 'Level 5 (Unrestricted)',
+          lastLogin: new Date().toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short' }),
+          platform: profile.platform || 'admin',
+          sessionMeta: {
+            signedInAt: new Date().toISOString(),
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+            location: {
+              label: 'Supabase session restored',
+              city: 'Remote Session',
+              country: 'Nigeria',
+              countryCode: 'NG',
+              source: 'fallback'
+            }
+          }
+        };
+
+        setCurrentUser(hydratedUser);
+        localStorage.setItem('kea_current_user', JSON.stringify(hydratedUser));
+      } catch (error) {
+        console.warn('Supabase session hydration failed; using local app session fallback.', error);
+      }
+    };
+
+    hydrateSupabaseSession();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Navigation & Filter States
   const [currentScreen, setCurrentScreen] = useState<NavigationScreen>(() => {
@@ -201,6 +278,11 @@ export default function App() {
       'shift_compliance'
     ];
     return validScreens.includes(hash) ? hash : 'operations';
+  });
+
+  const [dataLoadState, setDataLoadState] = useState<{ loading: boolean; error: string | null }>({
+    loading: true,
+    error: null
   });
 
   useEffect(() => {
@@ -270,7 +352,58 @@ export default function App() {
   const [archiveStaff, setArchiveStaff] = useState<StaffRecord[]>(ARCHIVE_STAFF_RECORDS);
   const [requisitions, setRequisitions] = useState<Requisition[]>(INITIAL_REQUISITIONS);
   const [fundingLogs, setFundingLogs] = useState<FundingActionLog[]>(INITIAL_FUNDING_LOGS);
-  const [merchandiserHubs] = useState<FieldMerchandiserHub[]>(MERCHANDISER_HUBS);
+  const [merchandiserHubs, setMerchandiserHubs] = useState<FieldMerchandiserHub[]>(MERCHANDISER_HUBS);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const hydrateFromSupabase = async () => {
+      setDataLoadState({ loading: true, error: null });
+
+      if (!supabase) {
+        setDataLoadState({ loading: false, error: null });
+        return;
+      }
+
+      try {
+        const result = await loadDashboardData();
+        if (cancelled) return;
+
+        if (result.status.isUsingSupabase && result.staff.length > 0) {
+          setActiveStaff(result.staff);
+          setRequisitions(result.requisitions);
+          setFundingLogs(result.fundingLogs);
+          setMerchandiserHubs(result.hubs);
+
+          if (result.telemetryPreferences) {
+            setTelemetryPreferences(result.telemetryPreferences);
+          }
+
+          setDataLoadState({ loading: false, error: null });
+          return;
+        }
+
+        if (result.status.error) {
+          setDataLoadState({ loading: false, error: result.status.error });
+        } else {
+          setDataLoadState({ loading: false, error: null });
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setDataLoadState({
+            loading: false,
+            error: error instanceof Error ? error.message : 'Unexpected dashboard data issue.'
+          });
+        }
+      }
+    };
+
+    hydrateFromSupabase();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleNavigateScreen = (screen: NavigationScreen) => {
     setCurrentScreen(screen);
@@ -562,7 +695,7 @@ export default function App() {
   };
 
   // Add Directive to Staff Thread
-  const handleSendDirective = (staffId: string, text: string) => {
+  const handleSendDirective = async (staffId: string, text: string) => {
     const now = new Date();
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -606,50 +739,104 @@ export default function App() {
           : null
       );
     }
+
+    try {
+      if (supabase) {
+        await upsertStaffRecord(
+          activeStaff.find((staff) => staff.id === staffId)
+            ? {
+                ...activeStaff.find((staff) => staff.id === staffId)!,
+                thread: [...(activeStaff.find((staff) => staff.id === staffId)?.thread ?? []), { id: `msg-${Date.now()}`, sender: 'CEO', role: 'CEO', text, time: timeStr }]
+              }
+            : undefined
+        );
+      }
+    } catch (error) {
+      console.warn('Supabase directive write-back failed.', error);
+    }
   };
 
   // Create New VSR
-  const handleAddVSR = (newRep: StaffRecord) => {
+  const handleAddVSR = async (newRep: StaffRecord) => {
     setActiveStaff((prev) => [newRep, ...prev]);
-    // Also record in notifications
-    setNotifications((prev) => [
-      {
-        id: `notif-${Date.now()}`,
-        title: `New VSR Enrolled: ${newRep.name}`,
-        detail: `${newRep.code} assigned to ${newRep.location} (${newRep.region}).`,
-        time: 'Just now',
-        type: 'info',
-        unread: true
-      },
-      ...prev
-    ]);
+
+    try {
+      if (supabase) {
+        await upsertStaffRecord(newRep);
+      }
+    } catch (error) {
+      console.warn('Supabase staff insert failed; local dashboard state was still updated.', error);
+    }
+
+    const notification = {
+      id: `notif-${Date.now()}`,
+      title: `New VSR Enrolled: ${newRep.name}`,
+      detail: `${newRep.code} assigned to ${newRep.location} (${newRep.region}).`,
+      time: 'Just now',
+      type: 'info' as const,
+      unread: true
+    };
+
+    setNotifications((prev) => [notification, ...prev]);
+    try {
+      if (supabase) {
+        await insertNotification({
+          title: notification.title,
+          detail: notification.detail,
+          time: notification.time,
+          type: notification.type,
+          unread: notification.unread
+        });
+      }
+    } catch (error) {
+      console.warn('Supabase notification insert failed.', error);
+    }
+  };
+
+  const handlePersistTelemetryPreferences = async (newPrefs: TelemetryPreferencesConfig) => {
+    setTelemetryPreferences(newPrefs);
+    saveTelemetryPreferences(newPrefs);
+
+    try {
+      if (supabase) {
+        await upsertTelemetryPreferences(newPrefs);
+      }
+    } catch (error) {
+      console.warn('Supabase telemetry preference write-back failed.', error);
+    }
   };
 
   // Toggle Staff Funding Status
-  const handleToggleStatus = (staffId: string) => {
-    setActiveStaff((prev) =>
-      prev.map((s) => {
-        if (s.id === staffId) {
-          const wasFunded = s.status === 'funded';
-          const newStatus = wasFunded ? 'unfunded' : 'funded';
-          const newLabel = wasFunded ? 'UNFUNDED / PENDING VERIFICATION' : 'FUNDED ON 29TH';
-          return {
-            ...s,
-            status: newStatus,
-            statusLabel: newLabel,
-            boxType: wasFunded ? 'blocker' : 'audit'
-          };
-        }
-        return s;
-      })
-    );
+  const handleToggleStatus = async (staffId: string) => {
+    const currentStaff = activeStaff.find((s) => s.id === staffId);
+    if (!currentStaff) return;
+
+    const wasFunded = currentStaff.status === 'funded';
+    const updatedStaff: StaffRecord = {
+      ...currentStaff,
+      status: wasFunded ? 'unfunded' : 'funded',
+      statusLabel: wasFunded ? 'UNFUNDED / PENDING VERIFICATION' : 'FUNDED ON 29TH',
+      boxType: wasFunded ? 'blocker' : 'audit'
+    };
+
+    setActiveStaff((prev) => prev.map((s) => (s.id === staffId ? updatedStaff : s)));
+
+    try {
+      if (supabase) {
+        await upsertStaffRecord(updatedStaff);
+      }
+    } catch (error) {
+      console.warn('Supabase staff update failed; local state remains in sync.', error);
+    }
+
     if (selectedStaff && selectedStaff.id === staffId) {
       setSelectedStaff((prev) =>
         prev
           ? {
               ...prev,
-              status: prev.status === 'funded' ? 'unfunded' : 'funded',
-              statusLabel: prev.status === 'funded' ? 'UNFUNDED / PENDING VERIFICATION' : 'FUNDED ON 29TH'
+              status: updatedStaff.status,
+              statusLabel: updatedStaff.statusLabel,
+              boxType: updatedStaff.boxType
             }
           : null
       );
@@ -657,11 +844,11 @@ export default function App() {
   };
 
   // Disburse Funding Action
-  const handleDisburseFunding = (staffId: string, amount: number) => {
+  const handleDisburseFunding = async (staffId: string, amount: number) => {
     const staff = activeStaff.find((s) => s.id === staffId);
     if (!staff) return;
 
-    handleToggleStatus(staffId);
+    await handleToggleStatus(staffId);
 
     const newLog: FundingActionLog = {
       id: `log-${Date.now()}`,
@@ -672,6 +859,14 @@ export default function App() {
     };
 
     setFundingLogs((prev) => [newLog, ...prev]);
+
+    try {
+      if (supabase) {
+        await insertFundingLog(newLog);
+      }
+    } catch (error) {
+      console.warn('Supabase funding log insert failed.', error);
+    }
   };
 
   // Restore staff from archive
@@ -888,7 +1083,7 @@ export default function App() {
         currentUser={currentUser}
         onSignOut={handleSignOut}
         preferences={telemetryPreferences}
-        onUpdatePreferences={setTelemetryPreferences}
+        onUpdatePreferences={handlePersistTelemetryPreferences}
         onOpenTelemetryPreferences={handleOpenTelemetryPreferences}
       />
 
@@ -917,6 +1112,17 @@ export default function App() {
 
         {/* MAIN BODY AREA */}
         <main className="flex-1 p-0 space-y-0">
+          {dataLoadState.loading && <div className="p-3"><DashboardSkeleton title="Loading operations data" /></div>}
+
+          {dataLoadState.error && (
+            <div className="px-3 pt-3">
+              <ErrorBanner
+                title="Dashboard data warning"
+                message={dataLoadState.error}
+              />
+            </div>
+          )}
+
           {/* CRITICAL TELEMETRY ALERT BANNER */}
           {telemetryAlertBanner && (
             <div
@@ -1390,7 +1596,16 @@ export default function App() {
               <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading head office hub...</div>}>
                 <HeadOfficeView
                   requisitions={requisitions}
-                  onAddRequisition={(newReq) => setRequisitions((prev) => [newReq, ...prev])}
+                  onAddRequisition={async (newReq) => {
+                    setRequisitions((prev) => [newReq, ...prev]);
+                    try {
+                      if (supabase) {
+                        await insertRequisition(newReq);
+                      }
+                    } catch (error) {
+                      console.warn('Supabase requisition insert failed.', error);
+                    }
+                  }}
                 />
               </Suspense>
             </ScreenPage>
@@ -1446,7 +1661,7 @@ export default function App() {
                 handleNavigateScreen('operations');
               }}
               preferences={telemetryPreferences}
-              onUpdatePreferences={setTelemetryPreferences}
+              onUpdatePreferences={handlePersistTelemetryPreferences}
               regionalTelemetry={regionalTelemetry}
             />
           </Suspense>

@@ -1,4 +1,5 @@
 import { TelemetryPreferencesConfig } from '../types';
+import { supabase, requireSupabaseClient } from '../lib/supabase';
 
 export const DEFAULT_TELEMETRY_PREFERENCES: TelemetryPreferencesConfig = {
   globalIdleThresholdMinutes: 30,
@@ -39,12 +40,40 @@ export const DEFAULT_TELEMETRY_PREFERENCES: TelemetryPreferencesConfig = {
 
 const STORAGE_KEY = 'kea_telemetry_preferences_v1';
 
+async function persistTelemetryPreferencesToSupabase(prefs: TelemetryPreferencesConfig): Promise<void> {
+  if (!supabase) return;
+
+  try {
+    const client = requireSupabaseClient();
+    const existing = await client.from('telemetry_preferences').select('id').limit(1);
+    if (existing.error) throw new Error(existing.error.message);
+
+    const payload = {
+      global_idle_threshold_minutes: prefs.globalIdleThresholdMinutes,
+      enable_sound_alerts: prefs.enableSoundAlerts ?? true,
+      alert_throttle_minutes: prefs.alertThrottleMinutes ?? 15,
+      hubs: prefs.hubs,
+      last_updated_wat: prefs.lastUpdatedWat ?? 'N/A'
+    };
+
+    if (existing.data && existing.data.length > 0) {
+      const { error } = await client.from('telemetry_preferences').update(payload).eq('id', existing.data[0].id);
+      if (error) throw new Error(error.message);
+      return;
+    }
+
+    const { error } = await client.from('telemetry_preferences').insert(payload);
+    if (error) throw new Error(error.message);
+  } catch (error) {
+    console.warn('Supabase telemetry write-back failed; localStorage copy remains intact.', error);
+  }
+}
+
 export function loadTelemetryPreferences(): TelemetryPreferencesConfig {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_TELEMETRY_PREFERENCES;
     const parsed = JSON.parse(raw) as TelemetryPreferencesConfig;
-    // Validate schema integrity
     if (!parsed.hubs || !parsed.hubs.Lagos || !parsed.hubs.Ibadan) {
       return DEFAULT_TELEMETRY_PREFERENCES;
     }
@@ -80,6 +109,7 @@ export function saveTelemetryPreferences(prefs: TelemetryPreferencesConfig): voi
       lastUpdatedWat: `${timeString} WAT`
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    void persistTelemetryPreferencesToSupabase(updated);
   } catch (err) {
     console.error('Failed to save telemetry preferences to localStorage:', err);
   }
