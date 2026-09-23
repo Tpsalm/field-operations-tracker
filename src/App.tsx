@@ -916,7 +916,7 @@ export default function App() {
         />
 
         {/* MAIN BODY AREA */}
-        <main className="flex-1 p-2.5 lg:p-4 space-y-3">
+        <main className="flex-1 p-0 space-y-0">
           {/* CRITICAL TELEMETRY ALERT BANNER */}
           {telemetryAlertBanner && (
             <div

@@ -19,12 +19,14 @@
   opacity: 1;
   transform: none;
   filter: none;
+  min-height: calc(100vh - 156px);
   transition: opacity 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .screen-page {
   margin: 0;
   padding: 0;
+  min-height: calc(100vh - 156px);
 }
 
 .screen-page > * {
