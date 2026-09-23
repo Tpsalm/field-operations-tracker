@@ -184,21 +184,55 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignIn, defaultEmail =
     try {
       if (portal === 'vsr') {
         const locationMeta = await requireVSRLocationConsent(email, portal);
-        const resolvedUser = verifyCredentials(email, password, portal);
+        const canUseSupabase = Boolean(supabase) && (await isSupabaseReachable());
 
-        if (!resolvedUser) {
+        if (canUseSupabase) {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: email.trim(),
+            password: password.trim()
+          });
+
+          if (!error && data.user) {
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', data.user.id)
+              .maybeSingle();
+
+            if (profile && !profileError) {
+              const nextUser: AuthUser = {
+                id: profile.id,
+                name: profile.name,
+                email: profile.email,
+                role: profile.role,
+                roleTitle: profile.role_title || profile.role,
+                department: profile.department || 'Operations',
+                initials: profile.initials || profile.name.slice(0, 2).toUpperCase(),
+                avatarColor: profile.avatar_color || '#38bdf8',
+                assignedRegion: profile.assigned_region || 'Lagos',
+                securityClearance: profile.security_clearance || 'Level 3 (Audit & HR)',
+                lastLogin: new Date().toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short' }),
+                platform: profile.platform || 'vsr',
+                sessionMeta: locationMeta
+              };
+
+              onSignIn(nextUser);
+              setIsLoading(false);
+              return;
+            }
+          }
+
+          if (error) {
+            console.warn('Supabase VSR auth failed; no local fallback will be used.', error.message);
+          }
+
           setIsLoading(false);
-          setErrorMessage('VSR location accepted, but the credentials are invalid. Please use a valid VSR login.');
+          setErrorMessage('VSR login failed. Please confirm the Supabase Auth user exists and that the geolocation consent was granted.');
           return;
         }
 
-        const authenticatedUser: AuthUser = {
-          ...resolvedUser,
-          sessionMeta: locationMeta
-        };
-
-        onSignIn(authenticatedUser);
         setIsLoading(false);
+        setErrorMessage('VSR login is unavailable because Supabase is not reachable. Please ensure the live backend is active.');
         return;
       }
 
@@ -295,7 +329,52 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignIn, defaultEmail =
     try {
       if (cred.user.platform === 'vsr') {
         const locationMeta = await requireVSRLocationConsent(cred.user.email, 'vsr');
-        onSignIn({ ...cred.user, sessionMeta: locationMeta });
+        const canUseSupabase = Boolean(supabase) && (await isSupabaseReachable());
+
+        if (!canUseSupabase) {
+          setIsLoading(false);
+          setErrorMessage('VSR login is unavailable because Supabase is not reachable.');
+          return;
+        }
+
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: cred.user.email.trim(),
+          password: cred.passwordText.trim()
+        });
+
+        if (error || !data.user) {
+          setIsLoading(false);
+          setErrorMessage('The Supabase VSR account could not be authenticated. Please create that user in Supabase Auth first.');
+          return;
+        }
+
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        if (!profile || profileError) {
+          setIsLoading(false);
+          setErrorMessage('The matching Supabase profile does not exist for this VSR account.');
+          return;
+        }
+
+        onSignIn({
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          role: profile.role,
+          roleTitle: profile.role_title || profile.role,
+          department: profile.department || 'Operations',
+          initials: profile.initials || profile.name.slice(0, 2).toUpperCase(),
+          avatarColor: profile.avatar_color || '#38bdf8',
+          assignedRegion: profile.assigned_region || 'Lagos',
+          securityClearance: profile.security_clearance || 'Level 3 (Audit & HR)',
+          lastLogin: new Date().toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short' }),
+          platform: profile.platform || 'vsr',
+          sessionMeta: locationMeta
+        });
       } else {
         onSignIn(cred.user);
       }
