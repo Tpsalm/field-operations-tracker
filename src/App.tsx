@@ -270,6 +270,30 @@ export default function App() {
   const [fundingLogs, setFundingLogs] = useState<FundingActionLog[]>(INITIAL_FUNDING_LOGS);
   const [merchandiserHubs] = useState<FieldMerchandiserHub[]>(MERCHANDISER_HUBS);
 
+  const handleNavigateScreen = (screen: NavigationScreen) => {
+    setCurrentScreen(screen);
+    setIsShiftComplianceOpen(false);
+    setIsTelemetryPreferencesOpen(false);
+
+    if (screen === 'archive') {
+      setCurrentTab('archive');
+    } else if (screen === 'operations') {
+      setCurrentTab('active');
+    }
+  };
+
+  const handleOpenTelemetryPreferences = () => {
+    setCurrentScreen('telemetry_preferences');
+    setIsTelemetryPreferencesOpen(true);
+    setIsShiftComplianceOpen(false);
+  };
+
+  const handleOpenShiftCompliance = () => {
+    setCurrentScreen('shift_compliance');
+    setIsShiftComplianceOpen(true);
+    setIsTelemetryPreferencesOpen(false);
+  };
+
   // Notifications State
   const [notifications, setNotifications] = useState([
     {
@@ -804,29 +828,16 @@ export default function App() {
       {/* LEFT SIDEBAR */}
       <Sidebar
         currentScreen={currentScreen}
-        onSelectScreen={(screen) => {
-          setCurrentScreen(screen);
-          if (screen === 'archive') {
-            setCurrentTab('archive');
-          } else if (screen === 'operations') {
-            setCurrentTab('active');
-          }
-        }}
+        onSelectScreen={handleNavigateScreen}
         syncTimeSeconds={syncSeconds}
         mobileOpen={mobileMenuOpen}
         onCloseMobile={() => setMobileMenuOpen(false)}
-        onOpenShiftCompliance={() => {
-          setIsShiftComplianceOpen(true);
-          setCurrentScreen('shift_compliance');
-        }}
+        onOpenShiftCompliance={handleOpenShiftCompliance}
         currentUser={currentUser}
         onSignOut={handleSignOut}
         preferences={telemetryPreferences}
         onUpdatePreferences={setTelemetryPreferences}
-        onOpenTelemetryPreferences={() => {
-          setIsTelemetryPreferencesOpen(true);
-          setCurrentScreen('telemetry_preferences');
-        }}
+        onOpenTelemetryPreferences={handleOpenTelemetryPreferences}
       />
 
       {/* MAIN CONTENT WRAPPER */}
@@ -847,7 +858,7 @@ export default function App() {
           onToggleMobileMenu={() => setMobileMenuOpen(true)}
           isOverrunSimulated={isOverrunSimulated}
           onToggleOverrunSimulation={() => setIsOverrunSimulated((prev) => !prev)}
-          onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
+          onOpenShiftCompliance={handleOpenShiftCompliance}
           currentUser={currentUser}
           onSignOut={handleSignOut}
         />
@@ -954,22 +965,16 @@ export default function App() {
                   )
                 )}
                 <button
-                  onClick={() => {
-                    setIsTelemetryPreferencesOpen(true);
-                    setCurrentScreen('telemetry_preferences');
-                  }}
+                  onClick={handleOpenTelemetryPreferences}
                   className="px-3 py-2 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] hover:border-[#92C842]/50 text-xs font-semibold transition-colors"
                   title="Configure custom alert thresholds or toggle alerts"
                 >
                   Preferences ({telemetryPreferences.globalIdleThresholdMinutes}m)
                 </button>
                 <button
-                  onClick={() => {
-                    setIsShiftComplianceOpen(true);
-                    setCurrentScreen('shift_compliance');
-                  }}
+                  onClick={handleOpenShiftCompliance}
                   className="px-3 py-2 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] hover:border-[#92C842]/50 text-xs font-semibold transition-colors"
-                  title="View PDF-ready Shift Compliance Audit Report"
+                  title="Open the shift compliance report (PDF ready)"
                 >
                   Audit Report (PDF)
                 </button>
@@ -1266,7 +1271,7 @@ export default function App() {
                     requisitions={requisitions}
                     fundingLogs={fundingLogs}
                     merchandiserHubs={enrichedMerchandiserHubs}
-                    onSelectScreen={(screen) => setCurrentScreen(screen)}
+                    onSelectScreen={handleNavigateScreen}
                   />
                 </div>
               </div>
@@ -1343,7 +1348,7 @@ export default function App() {
             isOpen={true}
             onClose={() => {
               setIsShiftComplianceOpen(false);
-              setCurrentScreen('operations');
+              handleNavigateScreen('operations');
             }}
             regionalTelemetry={regionalTelemetry}
             isOverrunSimulated={isOverrunSimulated}
@@ -1358,7 +1363,7 @@ export default function App() {
             isOpen={true}
             onClose={() => {
               setIsTelemetryPreferencesOpen(false);
-              setCurrentScreen('operations');
+              handleNavigateScreen('operations');
             }}
             preferences={telemetryPreferences}
             onUpdatePreferences={setTelemetryPreferences}
@@ -1397,30 +1402,6 @@ export default function App() {
           }
         />
       </Suspense>
-
-      {!currentScreen.includes('shift_compliance') && (
-        <Suspense fallback={null}>
-          <ShiftComplianceModal
-            isOpen={isShiftComplianceOpen}
-            onClose={() => setIsShiftComplianceOpen(false)}
-            regionalTelemetry={regionalTelemetry}
-            isOverrunSimulated={isOverrunSimulated}
-            hubs={enrichedMerchandiserHubs}
-          />
-        </Suspense>
-      )}
-
-      {!currentScreen.includes('telemetry_preferences') && (
-        <Suspense fallback={null}>
-          <TelemetryPreferencesPanel
-            isOpen={isTelemetryPreferencesOpen}
-            onClose={() => setIsTelemetryPreferencesOpen(false)}
-            preferences={telemetryPreferences}
-            onUpdatePreferences={setTelemetryPreferences}
-            regionalTelemetry={regionalTelemetry}
-          />
-        </Suspense>
-      )}
     </div>
   );
 }
