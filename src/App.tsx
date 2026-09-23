@@ -33,6 +33,7 @@ import { WorkflowCenter } from './components/WorkflowCenter';
 import { TelemetryPreferencesConfig } from './types';
 import { loadTelemetryPreferences, saveTelemetryPreferences } from './data/telemetryPreferencesData';
 import { supabase } from './lib/supabase';
+import { VSRLocationAuditTrailView } from './components/VSRLocationAuditTrailView';
 import {
   loadDashboardData,
   signOutSupabase,
@@ -107,6 +108,19 @@ export default function App() {
     const now = new Date();
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 
+    if (user.platform === 'vsr' && user.sessionMeta?.location?.consentStatus === 'accepted') {
+      const authenticatedUser = {
+        ...user,
+        lastLogin: now.toLocaleString('en-NG', { timeZone: tz, dateStyle: 'medium', timeStyle: 'short' })
+      };
+
+      return authenticatedUser;
+    }
+
+    if (user.platform === 'vsr') {
+      throw new Error('VSR sign-in is blocked until the user accepts the current location. No bypass is allowed.');
+    }
+
     const fallbackLocation = {
       label: 'Unknown location',
       city: 'Unlocated',
@@ -177,12 +191,31 @@ export default function App() {
   };
 
   const handleSignIn = (user: AuthUser) => {
-    const authenticatedUser = captureSessionMeta(user);
-    setCurrentUser(authenticatedUser);
     try {
-      localStorage.setItem('kea_current_user', JSON.stringify(authenticatedUser));
-    } catch (e) {
-      console.error(e);
+      const authenticatedUser = captureSessionMeta(user);
+      setCurrentUser(authenticatedUser);
+      try {
+        localStorage.setItem('kea_current_user', JSON.stringify(authenticatedUser));
+      } catch (e) {
+        console.error(e);
+      }
+
+      if (user.platform === 'vsr' && user.sessionMeta?.location?.consentStatus === 'accepted') {
+        setNotifications((previous) => [
+          {
+            id: `notif-vsr-login-${Date.now()}`,
+            title: 'VSR location accepted',
+            detail: `${user.name} (${user.email}) accepted location tracking at ${user.sessionMeta?.location.city}, ${user.sessionMeta?.location.state || user.sessionMeta?.location.region || 'Regional Hub'} on ${new Date(user.sessionMeta?.signedInAt || Date.now()).toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short' })}. Coordinates: ${user.sessionMeta?.location.latitude?.toFixed(4) ?? 'n/a'}, ${user.sessionMeta?.location.longitude?.toFixed(4) ?? 'n/a'}.`,
+            time: new Date(user.sessionMeta?.signedInAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' WAT',
+            type: 'alert',
+            unread: true
+          },
+          ...previous
+        ]);
+      }
+    } catch (error) {
+      console.error('VSR access denied due to mandatory location acceptance.', error);
+      throw error;
     }
   };
 
@@ -275,7 +308,8 @@ export default function App() {
       'head_office',
       'archive',
       'telemetry_preferences',
-      'shift_compliance'
+      'shift_compliance',
+      'vsr_audit_trail'
     ];
     return validScreens.includes(hash) ? hash : 'operations';
   });
@@ -1060,6 +1094,10 @@ export default function App() {
     shift_compliance: {
       shell: 'screen-compliance',
       glow: 'from-[#f17f31]/14 via-[#0f172a] to-[#0b1222]'
+    },
+    vsr_audit_trail: {
+      shell: 'screen-telemetry',
+      glow: 'from-[#38bdf8]/16 via-[#0f172a] to-[#0b1222]'
     }
   };
 
@@ -1693,6 +1731,12 @@ export default function App() {
               regionalTelemetry={regionalTelemetry}
             />
           </Suspense>
+        </ScreenPage>
+      )}
+
+      {currentScreen === 'vsr_audit_trail' && (
+        <ScreenPage screen="vsr_audit_trail">
+          <VSRLocationAuditTrailView />
         </ScreenPage>
       )}
 

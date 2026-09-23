@@ -126,6 +126,33 @@ create table if not exists public.directives (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.vsr_session_logs (
+  id uuid primary key default gen_random_uuid(),
+  email text not null,
+  name text,
+  role text,
+  city text,
+  state text,
+  region text,
+  country text default 'Nigeria',
+  country_code text default 'NG',
+  latitude double precision,
+  longitude double precision,
+  accuracy double precision,
+  location_label text,
+  timezone text,
+  signed_in_at timestamptz not null default now(),
+  consent_granted_at timestamptz,
+  source text not null default 'browser' check (source in ('browser', 'fallback')),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_vsr_session_logs_signed_in_at
+  on public.vsr_session_logs (signed_in_at desc);
+
+create index if not exists idx_vsr_session_logs_email
+  on public.vsr_session_logs (email);
+
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -178,6 +205,7 @@ alter table public.merchandiser_hubs enable row level security;
 alter table public.telemetry_preferences enable row level security;
 alter table public.notifications enable row level security;
 alter table public.directives enable row level security;
+alter table public.vsr_session_logs enable row level security;
 
 create policy "Profiles are viewable by owner"
   on public.profiles
@@ -221,6 +249,16 @@ create policy "Notifications are readable by authenticated users"
 
 create policy "Directives are readable by authenticated users"
   on public.directives
+  for select
+  using (auth.role() = 'authenticated');
+
+create policy "Allow VSR session logs to be inserted by public clients"
+  on public.vsr_session_logs
+  for insert
+  with check (true);
+
+create policy "VSR session logs are readable by authenticated users"
+  on public.vsr_session_logs
   for select
   using (auth.role() = 'authenticated');
 

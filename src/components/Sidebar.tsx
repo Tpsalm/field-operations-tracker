@@ -191,6 +191,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
           />
         </svg>
       )
+    },
+    {
+      id: 'vsr_audit_trail' as NavigationScreen,
+      label: 'VSR Location Audit Trail',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2a8 8 0 018 8c0 5.5-8 12-8 12S4 15.5 4 10a8 8 0 018-8zm0 4.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+        </svg>
+      )
     }
   ];
 

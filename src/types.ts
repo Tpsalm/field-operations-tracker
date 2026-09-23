@@ -11,10 +11,14 @@ export interface LoginLocation {
   longitude?: number;
   label: string;
   city?: string;
+  state?: string;
+  region?: string;
   country?: string;
   countryCode?: string;
   accuracy?: number;
   source: 'browser' | 'fallback';
+  consentGrantedAt?: string;
+  consentStatus?: 'accepted' | 'required' | 'denied';
 }
 
 export interface SessionMeta {
@@ -56,7 +60,8 @@ export type NavigationScreen =
   | 'head_office'
   | 'archive'
   | 'telemetry_preferences'
-  | 'shift_compliance';
+  | 'shift_compliance'
+  | 'vsr_audit_trail';
 
 export interface RegionalShiftDayData {
   expectedHours: number;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AuthUser, GeneratedCredential } from '../types';
+import { AuthUser, GeneratedCredential, SessionMeta } from '../types';
 import {
   PRESET_CREDENTIALS,
   VSR_CREDENTIALS,
@@ -7,6 +7,154 @@ import {
   generateCustomAuditorCredential
 } from '../data/credentialsData';
 import { supabase, isSupabaseReachable } from '../lib/supabase';
+import { insertVSRSessionLog } from '../lib/supabaseData';
+
+const getVSRLocationSummary = (latitude: number, longitude: number) => {
+  const regionByCoords =
+    latitude > 6.4 && latitude < 7.1 && longitude > 2.9 && longitude < 4.2
+      ? 'Lagos'
+      : latitude > 7.1 && latitude < 8.2 && longitude > 3.6 && longitude < 4.5
+        ? 'Ibadan'
+        : latitude > 7.0 && latitude < 8.0 && longitude > 3.0 && longitude < 4.2
+          ? 'Ogun'
+          : latitude > 5.8 && latitude < 7.0 && longitude > 5.0 && longitude < 6.5
+            ? 'Benin'
+            : 'Regional Hub';
+
+  const cityByCoords =
+    regionByCoords === 'Lagos'
+      ? 'Lagos'
+      : regionByCoords === 'Ibadan'
+        ? 'Ibadan'
+        : regionByCoords === 'Ogun'
+          ? 'Abeokuta'
+          : regionByCoords === 'Benin'
+            ? 'Benin City'
+            : 'Remote Hub';
+
+  const stateByCoords =
+    regionByCoords === 'Lagos'
+      ? 'Lagos State'
+      : regionByCoords === 'Ibadan'
+        ? 'Oyo State'
+        : regionByCoords === 'Ogun'
+          ? 'Ogun State'
+          : regionByCoords === 'Benin'
+            ? 'Edo State'
+            : 'Remote Area';
+
+  return {
+    region: regionByCoords,
+    city: cityByCoords,
+    state: stateByCoords,
+    label: `${cityByCoords} • ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
+  };
+};
+
+const requireVSRLocationConsent = async (email: string, portal: 'admin' | 'vsr'): Promise<SessionMeta> => {
+  if (portal !== 'vsr') {
+    return {
+      signedInAt: new Date().toISOString(),
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+      location: {
+        label: 'Admin portal access',
+        city: 'Head Office',
+        state: 'Corporate HQ',
+        region: 'Admin',
+        country: 'Nigeria',
+        countryCode: 'NG',
+        source: 'fallback',
+        consentStatus: 'required'
+      }
+    };
+  }
+
+  if (!navigator.geolocation) {
+    throw new Error('Location access is required for every VSR sign-in. This browser does not support geolocation access.');
+  }
+
+  return await new Promise((resolve, reject) => {
+    const completedAt = new Date();
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude, accuracy } = position.coords;
+        const locationSummary = getVSRLocationSummary(latitude, longitude);
+        const sessionMeta: SessionMeta = {
+          signedInAt: completedAt.toISOString(),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+          location: {
+            latitude,
+            longitude,
+            label: locationSummary.label,
+            city: locationSummary.city,
+            state: locationSummary.state,
+            region: locationSummary.region,
+            country: 'Nigeria',
+            countryCode: 'NG',
+            accuracy,
+            source: 'browser',
+            consentGrantedAt: completedAt.toISOString(),
+            consentStatus: 'accepted'
+          }
+        };
+
+        const logEntry = {
+          email,
+          acceptedAt: completedAt.toISOString(),
+          city: locationSummary.city,
+          state: locationSummary.state,
+          region: locationSummary.region,
+          latitude,
+          longitude,
+          accuracy,
+          locationLabel: locationSummary.label
+        };
+
+        const existing = (() => {
+          try {
+            return JSON.parse(localStorage.getItem('kea_vsr_tracking_log') || '[]');
+          } catch {
+            return [];
+          }
+        })();
+
+        localStorage.setItem('kea_vsr_tracking_log', JSON.stringify([logEntry, ...existing].slice(0, 200)));
+
+        void (async () => {
+          try {
+            await insertVSRSessionLog({
+              email,
+              name: email.split('@')[0].replace(/[.]/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()),
+              role: 'VSR',
+              city: locationSummary.city,
+              state: locationSummary.state,
+              region: locationSummary.region,
+              country: 'Nigeria',
+              countryCode: 'NG',
+              latitude,
+              longitude,
+              accuracy,
+              locationLabel: locationSummary.label,
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+              signedInAt: completedAt.toISOString(),
+              consentGrantedAt: completedAt.toISOString(),
+              source: 'browser'
+            });
+          } catch (dbError) {
+            console.warn('Supabase VSR session log insert failed; local tracking log remains in place.', dbError);
+          }
+        })();
+
+        resolve(sessionMeta);
+      },
+      (error) => {
+        reject(new Error('Location access is required before a VSR can enter the platform. Please accept location access to continue.'));
+      },
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+    );
+  });
+};
 
 interface SignInPageProps {
   onSignIn: (user: AuthUser) => void;
@@ -34,7 +182,28 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignIn, defaultEmail =
     setIsLoading(true);
 
     try {
-      const canUseSupabase = supabase && (await isSupabaseReachable());
+      if (portal === 'vsr') {
+        const locationMeta = await requireVSRLocationConsent(email, portal);
+        const resolvedUser = verifyCredentials(email, password, portal);
+
+        if (!resolvedUser) {
+          setIsLoading(false);
+          setErrorMessage('VSR location accepted, but the credentials are invalid. Please use a valid VSR login.');
+          return;
+        }
+
+        const authenticatedUser: AuthUser = {
+          ...resolvedUser,
+          sessionMeta: locationMeta
+        };
+
+        onSignIn(authenticatedUser);
+        setIsLoading(false);
+        return;
+      }
+
+      let authSucceeded = false;
+      const canUseSupabase = Boolean(supabase) && (await isSupabaseReachable());
 
       if (canUseSupabase) {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -78,16 +247,17 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignIn, defaultEmail =
 
             onSignIn(nextUser);
             setIsLoading(false);
+            authSucceeded = true;
             return;
           }
         }
 
         if (error) {
-          setErrorMessage(error.message);
-          setIsLoading(false);
-          return;
+          console.warn('Supabase auth failed; falling back to local credential validation.', error.message);
         }
       }
+
+      if (authSucceeded) return;
 
       setTimeout(() => {
         let authenticatedUser = verifyCredentials(email, password, portal);
@@ -116,16 +286,26 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignIn, defaultEmail =
   };
 
   // Quick 1-click sign in as any preset
-  const handleQuickSignIn = (cred: GeneratedCredential) => {
+  const handleQuickSignIn = async (cred: GeneratedCredential) => {
     setEmail(cred.user.email);
     setPassword(cred.passwordText);
     setErrorMessage('');
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      if (cred.user.platform === 'vsr') {
+        const locationMeta = await requireVSRLocationConsent(cred.user.email, 'vsr');
+        onSignIn({ ...cred.user, sessionMeta: locationMeta });
+      } else {
+        onSignIn(cred.user);
+      }
+    } catch (error) {
       setIsLoading(false);
-      onSignIn(cred.user);
-    }, 350);
+      setErrorMessage(error instanceof Error ? error.message : 'Location access is required to sign in as a VSR.');
+      return;
+    }
+
+    setIsLoading(false);
   };
 
   // Generate dynamic auditor account

@@ -14,6 +14,27 @@ export type LiveDataStatus = {
   source: 'local' | 'supabase';
 };
 
+export type VSRSessionLog = {
+  id: string;
+  email: string;
+  name?: string | null;
+  role?: string | null;
+  city?: string | null;
+  state?: string | null;
+  region?: string | null;
+  country?: string | null;
+  country_code?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  accuracy?: number | null;
+  location_label?: string | null;
+  timezone?: string | null;
+  signed_in_at?: string | null;
+  consent_granted_at?: string | null;
+  source?: 'browser' | 'fallback' | null;
+  created_at?: string | null;
+};
+
 export const DASHBOARD_PAGE_QUERY_MAP = {
   operations: {
     table: 'staff_records',
@@ -282,6 +303,73 @@ export async function insertNotification(notification: {
 
   const { data, error } = await client.from('notifications').insert(payload).select('*').single();
   if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function fetchVSRSessionLogs(limit = 50): Promise<VSRSessionLog[]> {
+  if (!supabase) return [];
+
+  const client = requireSupabaseClient();
+  const { data, error } = await client
+    .from('vsr_session_logs')
+    .select('*')
+    .order('signed_in_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.warn('Failed to load VSR session logs:', error.message);
+    return [];
+  }
+
+  return (data ?? []) as VSRSessionLog[];
+}
+
+export async function insertVSRSessionLog(log: {
+  email: string;
+  name?: string;
+  role?: string;
+  city?: string;
+  state?: string;
+  region?: string;
+  country?: string;
+  countryCode?: string;
+  latitude?: number;
+  longitude?: number;
+  accuracy?: number;
+  locationLabel?: string;
+  timezone?: string;
+  signedInAt?: string;
+  consentGrantedAt?: string;
+  source?: 'browser' | 'fallback';
+}) {
+  if (!supabase) return null;
+
+  const client = requireSupabaseClient();
+  const payload = {
+    email: log.email,
+    name: log.name ?? null,
+    role: log.role ?? 'VSR',
+    city: log.city ?? null,
+    state: log.state ?? null,
+    region: log.region ?? null,
+    country: log.country ?? 'Nigeria',
+    country_code: log.countryCode ?? 'NG',
+    latitude: log.latitude ?? null,
+    longitude: log.longitude ?? null,
+    accuracy: log.accuracy ?? null,
+    location_label: log.locationLabel ?? null,
+    timezone: log.timezone ?? (Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'),
+    signed_in_at: log.signedInAt ?? new Date().toISOString(),
+    consent_granted_at: log.consentGrantedAt ?? new Date().toISOString(),
+    source: log.source ?? 'browser'
+  };
+
+  const { data, error } = await client.from('vsr_session_logs').insert(payload).select('*').single();
+  if (error) {
+    console.warn('VSR session log insert failed:', error.message);
+    return null;
+  }
+
   return data;
 }
 
