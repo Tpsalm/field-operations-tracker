@@ -46,7 +46,15 @@ export interface GeneratedCredential {
   badge: string;
 }
 
-export type NavigationScreen = 'operations' | 'merchandisers' | 'trends' | 'compliance' | 'head_office' | 'archive';
+export type NavigationScreen =
+  | 'operations'
+  | 'merchandisers'
+  | 'trends'
+  | 'compliance'
+  | 'head_office'
+  | 'archive'
+  | 'telemetry_preferences'
+  | 'shift_compliance';
 
 export interface RegionalShiftDayData {
   expectedHours: number;
