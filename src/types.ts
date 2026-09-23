@@ -59,8 +59,6 @@ export type NavigationScreen =
   | 'compliance'
   | 'head_office'
   | 'archive'
-  | 'telemetry_preferences'
-  | 'shift_compliance'
   | 'vsr_audit_trail';
 
 export interface RegionalShiftDayData {

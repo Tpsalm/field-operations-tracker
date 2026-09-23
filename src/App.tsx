@@ -307,8 +307,6 @@ export default function App() {
       'compliance',
       'head_office',
       'archive',
-      'telemetry_preferences',
-      'shift_compliance',
       'vsr_audit_trail'
     ];
     return validScreens.includes(hash) ? hash : 'operations';

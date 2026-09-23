@@ -1,5 +1,5 @@
 import React, { ReactNode, useState } from 'react';
-import { BarChart3, ChevronDown, Clock3, FileText, LayoutGrid, Menu, Settings2, Truck, Users, X } from 'lucide-react';
+import { BarChart3, FileText, LayoutGrid, Menu, Truck, Users, X } from 'lucide-react';
 import { AuthUser } from '../types';
 
 interface VSRPlatformShellProps {
@@ -21,9 +21,7 @@ const navigation = [
 
 export const VSRPlatformShell: React.FC<VSRPlatformShellProps> = ({ user, onSignOut, activeSection, onNavigate, onHubChange, children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [preferencesOpen, setPreferencesOpen] = useState(false);
   const [selectedHub, setSelectedHub] = useState('All Hubs');
-  const [threshold, setThreshold] = useState(30);
   const [syncSeconds, setSyncSeconds] = useState(11);
 
   React.useEffect(() => {
@@ -41,11 +39,9 @@ export const VSRPlatformShell: React.FC<VSRPlatformShellProps> = ({ user, onSign
           </div>
           <button onClick={() => setMobileOpen(false)} className="rounded p-1 text-slate-400 hover:text-white md:hidden" title="Close menu"><X size={16} /></button>
         </div>
-        <div className="flex items-center justify-between border-b border-[#1e2d4d]/60 bg-[#090e1c]/40 px-5 py-3 text-xs"><div className="flex items-center gap-2"><span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#92C842] opacity-75" /><span className="relative inline-flex h-2 w-2 rounded-full bg-[#92C842]" /></span><span className="text-[11px] font-bold tracking-wider text-white">LIVE ROUTE TRACKING</span></div><span className="font-mono text-xs font-medium text-slate-400">98.6%</span></div>
+        <div className="flex items-center justify-between border-b border-[#1e2d4d]/60 bg-[#090e1c]/40 px-5 py-3 text-xs"><div className="flex items-center gap-2"><span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#92C842] opacity-75" /><span className="relative inline-flex h-2 w-2 rounded-full bg-[#92C842]" /></span><span className="text-[11px] font-bold tracking-wider text-white">LIVE OPERATIONS</span></div><span className="font-mono text-xs font-medium text-slate-400">98.6%</span></div>
         <nav className="space-y-1 p-3">
           {navigation.map(({ id, label, icon: Icon }) => <button key={label} onClick={() => { onNavigate(id); setMobileOpen(false); }} className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-sm font-medium transition ${activeSection === id ? 'border-[#92C842]/30 bg-[#92C842]/10 text-[#92C842] shadow-[0_0_12px_rgba(146,200,66,0.08)]' : 'border-transparent text-slate-400 hover:bg-[#151f38] hover:text-slate-100'}`}><Icon size={16} /><span>{label}</span></button>)}
-          <div className="mt-2 border-t border-[#1e2d4d]/60 pt-2"><button onClick={() => setPreferencesOpen((open) => !open)} className="flex w-full items-center justify-between rounded-lg border border-[#1e2d4d] bg-[#151f38] px-3 py-2 text-left text-xs font-semibold text-slate-300 hover:border-[#92C842]/40 hover:text-white"><span className="flex items-center gap-2.5"><Settings2 size={16} className="text-[#92C842]" />Telemetry Preferences</span><span className="flex items-center gap-1 font-mono text-[10px] text-[#92C842]"><span>{threshold}m</span><ChevronDown size={13} className={preferencesOpen ? 'rotate-180' : ''} /></span></button>{preferencesOpen && <div className="mt-2 rounded-xl border border-[#1e2d4d] bg-[#090e1c] p-3 text-[11px] text-slate-400"><div className="flex items-center gap-2"><Clock3 size={13} className="text-[#F17F31]" /><span>GPS freshness threshold</span><span className="ml-auto font-mono text-[#92C842]">{threshold} min</span></div><div className="mt-3 grid grid-cols-4 gap-1">{[15, 30, 45, 60].map((minutes) => <button key={minutes} onClick={() => setThreshold(minutes)} className={`rounded py-1 font-mono text-[10px] ${minutes === threshold ? 'bg-[#92C842] font-bold text-[#090e1c]' : 'border border-[#1e2d4d] bg-[#151f38] text-slate-400'}`}>{minutes}m</button>)}</div></div>}</div>
-          <div className="mt-2 border-t border-[#1e2d4d]/60 pt-2"><button onClick={() => window.print()} className="flex w-full items-center gap-3 rounded-lg border border-[#1e2d4d] bg-[#151f38] px-3 py-2 text-left text-xs font-semibold text-slate-300 hover:border-[#92C842]/40 hover:text-white"><FileText size={16} className="text-[#92C842]" /><span>Shift Compliance (PDF)</span></button></div>
         </nav>
       </div>
       <div><div className="mx-3 mb-2 flex items-center justify-between gap-2 rounded-xl border border-[#1e2d4d] bg-[#090e1c] p-3.5"><div className="flex min-w-0 items-center gap-2.5"><div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg font-mono text-xs font-bold text-[#090e1c]" style={{ backgroundColor: user.avatarColor }}>{user.initials}</div><div className="min-w-0"><div className="truncate text-xs font-bold text-white">{user.name}</div><div className="truncate font-mono text-[10px] text-[#92C842]">VSR PLATFORM</div></div></div><button onClick={onSignOut} className="shrink-0 rounded-lg border border-[#1e2d4d] bg-[#151f38] p-1.5 text-slate-400 hover:border-red-500/30 hover:bg-red-500/20 hover:text-red-300" title="Sign out"><span className="text-xs">↪</span></button></div><div className="border-t border-[#1e2d4d] bg-[#090e1c]/80 p-4 text-xs"><div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-slate-400"><span>SYNC ENGINE</span><span className="text-[#92C842]">ONLINE</span></div><div className="flex items-center gap-2 text-[11px] text-slate-400"><span className="text-[#92C842]">↻</span><span className="truncate">Synced {syncSeconds}s ago</span></div></div></div>

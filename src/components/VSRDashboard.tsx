@@ -227,7 +227,6 @@ export const VSRDashboard: React.FC<VSRDashboardProps> = ({ user, onSignOut }) =
                 </div>
               </article>
             </section>
-            <WorkflowCenter user={user} />
           </>
         );
 
@@ -243,7 +242,6 @@ export const VSRDashboard: React.FC<VSRDashboardProps> = ({ user, onSignOut }) =
                 <span className="rounded-full border border-[#92C842]/30 bg-[#92C842]/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#b5e86d]">Live inbox</span>
               </div>
             </section>
-            <WorkflowCenter user={user} />
           </>
         );
 
@@ -315,7 +313,6 @@ export const VSRDashboard: React.FC<VSRDashboardProps> = ({ user, onSignOut }) =
                 </table>
               </div>
             </section>
-            <WorkflowCenter user={user} />
           </>
         );
 
@@ -344,7 +341,6 @@ export const VSRDashboard: React.FC<VSRDashboardProps> = ({ user, onSignOut }) =
                 ))}
               </div>
             </section>
-            <WorkflowCenter user={user} />
           </>
         );
 
@@ -388,7 +384,6 @@ export const VSRDashboard: React.FC<VSRDashboardProps> = ({ user, onSignOut }) =
                 })}
               </div>
             </section>
-            <WorkflowCenter user={user} />
           </>
         );
     }
