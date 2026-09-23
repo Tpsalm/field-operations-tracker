@@ -51,7 +51,7 @@ const selectClass = 'w-full appearance-none rounded-lg border border-[#263653] b
 
 export const VSRDashboard: React.FC<VSRDashboardProps> = ({ user, onSignOut }) => {
   const loginMeta = user.sessionMeta;
-  const validSections = ['route-command', 'crew-directory', 'live-route-map', 'fleet-operations', 'performance-trends'] as const;
+  const validSections = ['route-command', 'crew-directory', 'reports-requests-support', 'fleet-operations', 'performance-trends'] as const;
 
   const getInitialSection = () => {
     if (typeof window === 'undefined') return 'route-command';
@@ -231,45 +231,16 @@ export const VSRDashboard: React.FC<VSRDashboardProps> = ({ user, onSignOut }) =
           </>
         );
 
-      case 'live-route-map':
+      case 'reports-requests-support':
         return (
           <>
-            <section className="scroll-mt-28 rounded-xl border border-[#20314d] bg-[#0b1627]">
-              <div className="flex items-start justify-between border-b border-[#20314d] bg-[#0b1627]/90 p-4">
+            <section className="scroll-mt-28 rounded-xl border border-[#20314d] bg-[#0b1627] p-4">
+              <div className="flex items-center justify-between gap-3 border-b border-[#20314d] pb-4">
                 <div>
-                  <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">Live route map / {selectedCrew.region}</div>
-                  <h2 className="mt-1 text-base font-bold text-white">{selectedCrew.name} <span className="font-normal text-slate-400">· {selectedCrew.routeCode}</span></h2>
+                  <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">VSR support desk</div>
+                  <h2 className="mt-1 text-base font-bold text-white">Reports, Requests &amp; Support</h2>
                 </div>
-                <div className="flex items-center gap-3 text-[10px] text-slate-400">
-                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#92C842]" />Completed</span>
-                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-amber-400" />Live van</span>
-                </div>
-              </div>
-              <div className="relative h-[500px] overflow-hidden">
-                <div className="absolute inset-0 opacity-90" style={{ backgroundImage: 'linear-gradient(rgba(39,67,94,.2) 1px, transparent 1px), linear-gradient(90deg, rgba(39,67,94,.2) 1px, transparent 1px)', backgroundSize: '42px 42px' }} />
-                <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
-                  <path d="M 8 86 L 22 76 L 33 78 L 46 64 L 57 68 L 72 50 L 86 40 L 94 22" fill="none" stroke="#31506d" strokeWidth="5" opacity=".45" />
-                  <polyline points={selectedCrew.points.map((point) => point.join(',')).join(' ')} fill="none" stroke="#92C842" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round" />
-                  <polyline points={selectedCrew.points.slice(0, -1).map((point) => point.join(',')).join(' ')} fill="none" stroke="#d8f59b" strokeWidth="0.35" strokeDasharray="1.3 1.2" />
-                  {selectedCrew.points.map((point, index) => (
-                    <g key={`${point[0]}-${point[1]}`}>
-                      <circle
-                        cx={point[0]}
-                        cy={point[1]}
-                        r={index === selectedCrew.points.length - 1 ? 2.3 : 1.5}
-                        fill={index === selectedCrew.points.length - 1 ? '#f59e0b' : '#92C842'}
-                        stroke="#07101d"
-                        strokeWidth=".7"
-                      />
-                      <text x={point[0] + 2} y={point[1] - 3} fontSize="3" fill="#e2e8f0" fontWeight="600">{index + 1}</text>
-                    </g>
-                  ))}
-                </svg>
-                <div className="absolute bottom-5 right-5 rounded-xl border border-[#20314d] bg-[#0d1729]/85 p-3 text-xs text-slate-300">
-                  <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">Route progress</div>
-                  <div className="mt-2 text-lg font-bold text-white">{selectedCrew.visits}/18 visits</div>
-                  <div className="mt-1 text-[11px] text-slate-400">{selectedCrew.route}</div>
-                </div>
+                <span className="rounded-full border border-[#92C842]/30 bg-[#92C842]/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#b5e86d]">Live inbox</span>
               </div>
             </section>
             <WorkflowCenter user={user} />

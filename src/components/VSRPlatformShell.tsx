@@ -1,5 +1,5 @@
 import React, { ReactNode, useState } from 'react';
-import { BarChart3, ChevronDown, Clock3, FileText, LayoutGrid, Map, Menu, Settings2, Truck, Users, X } from 'lucide-react';
+import { BarChart3, ChevronDown, Clock3, FileText, LayoutGrid, Menu, Settings2, Truck, Users, X } from 'lucide-react';
 import { AuthUser } from '../types';
 
 interface VSRPlatformShellProps {
@@ -14,7 +14,7 @@ interface VSRPlatformShellProps {
 const navigation = [
   { id: 'route-command', label: 'Route Command', icon: LayoutGrid },
   { id: 'crew-directory', label: 'Crew Directory', icon: Users },
-  { id: 'live-route-map', label: 'Live Route Map', icon: Map },
+  { id: 'reports-requests-support', label: 'Reports, Requests & Support', icon: FileText },
   { id: 'fleet-operations', label: 'Fleet Operations', icon: Truck },
   { id: 'performance-trends', label: 'Performance Trends', icon: BarChart3 }
 ];
