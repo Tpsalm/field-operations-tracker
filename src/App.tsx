@@ -1329,7 +1329,7 @@ export default function App() {
                 <FieldMerchandisersView
                   hubs={enrichedMerchandiserHubs}
                   onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
-                  onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
+                  onOpenShiftCompliance={handleOpenShiftCompliance}
                   onOpenTrends={() => setCurrentScreen('trends')}
                   onOpenCompliance={() => setCurrentScreen('compliance')}
                 />
@@ -1342,7 +1342,7 @@ export default function App() {
             <ScreenPage screen="trends">
               <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading trends dashboard...</div>}>
                 <PerformanceTrendsView
-                  onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
+                  onOpenShiftCompliance={handleOpenShiftCompliance}
                   onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
                 />
               </Suspense>
@@ -1354,7 +1354,7 @@ export default function App() {
             <ScreenPage screen="compliance">
               <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading compliance dashboard...</div>}>
                 <ComplianceDashboardView
-                  onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
+                  onOpenShiftCompliance={handleOpenShiftCompliance}
                   onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
                 />
               </Suspense>
@@ -1397,33 +1397,37 @@ export default function App() {
       </div>
 
       {currentScreen === 'shift_compliance' && (
-        <Suspense fallback={null}>
-          <ShiftComplianceModal
-            isOpen={true}
-            onClose={() => {
-              setIsShiftComplianceOpen(false);
-              handleNavigateScreen('operations');
-            }}
-            regionalTelemetry={regionalTelemetry}
-            isOverrunSimulated={isOverrunSimulated}
-            hubs={enrichedMerchandiserHubs}
-          />
-        </Suspense>
+        <ScreenPage screen="shift_compliance">
+          <Suspense fallback={null}>
+            <ShiftComplianceModal
+              isOpen={true}
+              onClose={() => {
+                setIsShiftComplianceOpen(false);
+                handleNavigateScreen('operations');
+              }}
+              regionalTelemetry={regionalTelemetry}
+              isOverrunSimulated={isOverrunSimulated}
+              hubs={enrichedMerchandiserHubs}
+            />
+          </Suspense>
+        </ScreenPage>
       )}
 
       {currentScreen === 'telemetry_preferences' && (
-        <Suspense fallback={null}>
-          <TelemetryPreferencesPanel
-            isOpen={true}
-            onClose={() => {
-              setIsTelemetryPreferencesOpen(false);
-              handleNavigateScreen('operations');
-            }}
-            preferences={telemetryPreferences}
-            onUpdatePreferences={setTelemetryPreferences}
-            regionalTelemetry={regionalTelemetry}
-          />
-        </Suspense>
+        <ScreenPage screen="telemetry_preferences">
+          <Suspense fallback={null}>
+            <TelemetryPreferencesPanel
+              isOpen={true}
+              onClose={() => {
+                setIsTelemetryPreferencesOpen(false);
+                handleNavigateScreen('operations');
+              }}
+              preferences={telemetryPreferences}
+              onUpdatePreferences={setTelemetryPreferences}
+              regionalTelemetry={regionalTelemetry}
+            />
+          </Suspense>
+        </ScreenPage>
       )}
 
       {/* MODALS */}

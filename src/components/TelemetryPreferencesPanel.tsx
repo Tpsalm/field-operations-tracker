@@ -189,16 +189,10 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
   const hubKeys: Array<'Lagos' | 'Ibadan' | 'Ogun' | 'Benin'> = ['Lagos', 'Ibadan', 'Ogun', 'Benin'];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5">
-      {/* Dark backdrop */}
+    <div className="w-full p-0 sm:p-2">
+      {/* Main Page Container */}
       <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
-      />
-
-      {/* Main Modal Container */}
-      <div
-        className="relative w-full max-w-4xl max-h-[90vh] bg-[#0c1427] border border-[#1e2d4d] rounded-2xl shadow-2xl flex flex-col overflow-hidden z-10"
+        className="relative w-full max-w-6xl mx-auto bg-[#0c1427] border border-[#1e2d4d] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header Bar */}
