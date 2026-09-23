@@ -105,6 +105,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )
     },
     {
+      id: 'credential_admin' as NavigationScreen,
+      label: 'Credential Administration',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M12 4v16m8-8h-16" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+        </svg>
+      )
+    },
+    {
+      id: 'workflow_center' as NavigationScreen,
+      label: 'Workflow Center',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M4 6h16v12H4zM8 10h8M8 14h5" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+        </svg>
+      )
+    },
+    {
       id: 'merchandisers' as NavigationScreen,
       label: 'Field Merchandisers',
       icon: (

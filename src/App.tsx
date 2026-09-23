@@ -190,6 +190,8 @@ export default function App() {
     const hash = window.location.hash.replace('#', '') as NavigationScreen;
     const validScreens: NavigationScreen[] = [
       'operations',
+      'credential_admin',
+      'workflow_center',
       'merchandisers',
       'trends',
       'compliance',
@@ -828,6 +830,14 @@ export default function App() {
       shell: 'screen-operations',
       glow: 'from-[#92C842]/15 via-[#0f172a] to-[#0b1222]'
     },
+    credential_admin: {
+      shell: 'screen-credential-admin',
+      glow: 'from-[#92C842]/16 via-[#0f172a] to-[#0b1222]'
+    },
+    workflow_center: {
+      shell: 'screen-workflow-center',
+      glow: 'from-[#38bdf8]/14 via-[#0f172a] to-[#0b1222]'
+    },
     merchandisers: {
       shell: 'screen-merchandisers',
       glow: 'from-[#22d3ee]/12 via-[#0f172a] to-[#0b1222]'
@@ -907,9 +917,6 @@ export default function App() {
 
         {/* MAIN BODY AREA */}
         <main className="flex-1 p-2.5 lg:p-4 space-y-3">
-          {currentUser.role === 'SUPER_ADMIN' && <CredentialAdministrationPanel />}
-          {currentUser.role === 'SUPER_ADMIN' && <WorkflowCenter user={currentUser} />}
-
           {/* CRITICAL TELEMETRY ALERT BANNER */}
           {telemetryAlertBanner && (
             <div
@@ -1038,6 +1045,22 @@ export default function App() {
                 </button>
               </div>
             </div>
+          )}
+
+          {currentScreen === 'credential_admin' && (
+            <ScreenPage screen="credential_admin">
+              <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading credential administration...</div>}>
+                <CredentialAdministrationPanel />
+              </Suspense>
+            </ScreenPage>
+          )}
+
+          {currentScreen === 'workflow_center' && (
+            <ScreenPage screen="workflow_center">
+              <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading workflow center...</div>}>
+                <WorkflowCenter user={currentUser} />
+              </Suspense>
+            </ScreenPage>
           )}
 
           {/* SCREEN 1: Operations & VSR */}

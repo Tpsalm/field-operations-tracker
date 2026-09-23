@@ -102,6 +102,14 @@
   background: linear-gradient(180deg, rgba(14, 22, 40, 0.96), rgba(9, 14, 28, 0.96));
 }
 
+.screen-credential-admin {
+  background: linear-gradient(180deg, rgba(11, 22, 38, 0.98), rgba(8, 13, 24, 0.98));
+}
+
+.screen-workflow-center {
+  background: linear-gradient(180deg, rgba(12, 24, 33, 0.98), rgba(8, 13, 24, 0.98));
+}
+
 .screen-merchandisers {
   background: linear-gradient(180deg, rgba(11, 21, 31, 0.96), rgba(9, 14, 28, 0.96));
 }

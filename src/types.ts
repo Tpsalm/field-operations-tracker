@@ -48,6 +48,8 @@ export interface GeneratedCredential {
 
 export type NavigationScreen =
   | 'operations'
+  | 'credential_admin'
+  | 'workflow_center'
   | 'merchandisers'
   | 'trends'
   | 'compliance'
