@@ -823,6 +823,48 @@ export default function App() {
     return <VSRDashboard user={currentUser} onSignOut={handleSignOut} />;
   }
 
+  const screenTheme: Record<NavigationScreen, { shell: string; glow: string }> = {
+    operations: {
+      shell: 'screen-operations',
+      glow: 'from-[#92C842]/15 via-[#0f172a] to-[#0b1222]'
+    },
+    merchandisers: {
+      shell: 'screen-merchandisers',
+      glow: 'from-[#22d3ee]/12 via-[#0f172a] to-[#0b1222]'
+    },
+    trends: {
+      shell: 'screen-trends',
+      glow: 'from-[#38bdf8]/14 via-[#0f172a] to-[#0b1222]'
+    },
+    compliance: {
+      shell: 'screen-compliance',
+      glow: 'from-[#c084fc]/15 via-[#0f172a] to-[#0b1222]'
+    },
+    head_office: {
+      shell: 'screen-head-office',
+      glow: 'from-[#f59e0b]/12 via-[#0f172a] to-[#0b1222]'
+    },
+    archive: {
+      shell: 'screen-archive',
+      glow: 'from-[#64748b]/12 via-[#0f172a] to-[#0b1222]'
+    },
+    telemetry_preferences: {
+      shell: 'screen-telemetry',
+      glow: 'from-[#92C842]/18 via-[#0f172a] to-[#0b1222]'
+    },
+    shift_compliance: {
+      shell: 'screen-compliance',
+      glow: 'from-[#f17f31]/14 via-[#0f172a] to-[#0b1222]'
+    }
+  };
+
+  const ScreenPage = ({ screen, children }: { screen: NavigationScreen; children: React.ReactNode }) => (
+    <div key={screen} className={`page-shell ${screenTheme[screen].shell}`}>
+      <div className={`page-shell__glow bg-gradient-to-br ${screenTheme[screen].glow}`} />
+      {children}
+    </div>
+  );
+
   return (
     <div className="flex min-h-screen w-full bg-[#090e1c] text-slate-200">
       {/* LEFT SIDEBAR */}
@@ -1000,24 +1042,25 @@ export default function App() {
 
           {/* SCREEN 1: Operations & VSR */}
           {currentScreen === 'operations' && (
-            <div className="space-y-6">
-              {/* Executive KPI Stats (5 cards) */}
-              <KPIStats
-                fundedCount={128}
-                unfundedCount={36}
-                prospectiveCount={16}
-                merchandiserCount={78}
-                hqPersonnelCount={34}
-                onFilterStatus={(status) => {
-                  setKpiStatusFilter(status);
-                  setCurrentPage(1);
-                }}
-                onSelectTab={(tab) => {
-                  setCurrentTab(tab);
-                  setCurrentPage(1);
-                }}
-                onSelectScreen={(screen) => setCurrentScreen(screen)}
-              />
+            <ScreenPage screen="operations">
+              <div className="space-y-6">
+                {/* Executive KPI Stats (5 cards) */}
+                <KPIStats
+                  fundedCount={128}
+                  unfundedCount={36}
+                  prospectiveCount={16}
+                  merchandiserCount={78}
+                  hqPersonnelCount={34}
+                  onFilterStatus={(status) => {
+                    setKpiStatusFilter(status);
+                    setCurrentPage(1);
+                  }}
+                  onSelectTab={(tab) => {
+                    setCurrentTab(tab);
+                    setCurrentPage(1);
+                  }}
+                  onSelectScreen={(screen) => setCurrentScreen(screen)}
+                />
 
               {/* Regional Filter & Pipeline Category Subheaders */}
               <div className="space-y-4">
@@ -1275,60 +1318,71 @@ export default function App() {
                   />
                 </div>
               </div>
-            </div>
+              </div>
+            </ScreenPage>
           )}
 
           {/* SCREEN 2: Field Merchandisers */}
           {currentScreen === 'merchandisers' && (
-            <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading merchandiser dashboard...</div>}>
-              <FieldMerchandisersView
-                hubs={enrichedMerchandiserHubs}
-                onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
-                onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
-                onOpenTrends={() => setCurrentScreen('trends')}
-                onOpenCompliance={() => setCurrentScreen('compliance')}
-              />
-            </Suspense>
+            <ScreenPage screen="merchandisers">
+              <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading merchandiser dashboard...</div>}>
+                <FieldMerchandisersView
+                  hubs={enrichedMerchandiserHubs}
+                  onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
+                  onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
+                  onOpenTrends={() => setCurrentScreen('trends')}
+                  onOpenCompliance={() => setCurrentScreen('compliance')}
+                />
+              </Suspense>
+            </ScreenPage>
           )}
 
           {/* SCREEN 3: Regional Performance Trends (D3 Line Chart) */}
           {currentScreen === 'trends' && (
-            <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading trends dashboard...</div>}>
-              <PerformanceTrendsView
-                onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
-                onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
-              />
-            </Suspense>
+            <ScreenPage screen="trends">
+              <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading trends dashboard...</div>}>
+                <PerformanceTrendsView
+                  onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
+                  onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
+                />
+              </Suspense>
+            </ScreenPage>
           )}
 
           {/* SCREEN 4: Centralized Shift Compliance Dashboard (30-Day D3 Adherence) */}
           {currentScreen === 'compliance' && (
-            <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading compliance dashboard...</div>}>
-              <ComplianceDashboardView
-                onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
-                onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
-              />
-            </Suspense>
+            <ScreenPage screen="compliance">
+              <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading compliance dashboard...</div>}>
+                <ComplianceDashboardView
+                  onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
+                  onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
+                />
+              </Suspense>
+            </ScreenPage>
           )}
 
           {/* SCREEN 5: Head Office & Hiring */}
           {currentScreen === 'head_office' && (
-            <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading head office hub...</div>}>
-              <HeadOfficeView
-                requisitions={requisitions}
-                onAddRequisition={(newReq) => setRequisitions((prev) => [newReq, ...prev])}
-              />
-            </Suspense>
+            <ScreenPage screen="head_office">
+              <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading head office hub...</div>}>
+                <HeadOfficeView
+                  requisitions={requisitions}
+                  onAddRequisition={(newReq) => setRequisitions((prev) => [newReq, ...prev])}
+                />
+              </Suspense>
+            </ScreenPage>
           )}
 
           {/* SCREEN 5: Archive & Disengaged */}
           {currentScreen === 'archive' && (
-            <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading archive...</div>}>
-              <ArchiveView
-                archivedStaff={archiveStaff}
-                onRestoreStaff={handleRestoreStaff}
-              />
-            </Suspense>
+            <ScreenPage screen="archive">
+              <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading archive...</div>}>
+                <ArchiveView
+                  archivedStaff={archiveStaff}
+                  onRestoreStaff={handleRestoreStaff}
+                />
+              </Suspense>
+            </ScreenPage>
           )}
         </main>
 
