@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import * as d3 from 'd3';
 import { SEVEN_DAY_TELEMETRY_TRENDS, HUB_TREND_CONFIGS, HubTrendConfig } from '../data/telemetryTrendsData';
 import { DailyHubTelemetryPoint } from '../types';
+import { TrendingUp, Download, FileText, UserPlus, BarChart3, Clock, CheckCircle2 } from 'lucide-react';
 
 interface PerformanceTrendsViewProps {
   onOpenShiftCompliance?: () => void;
@@ -30,7 +31,7 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
   const [displayMode, setDisplayMode] = useState<MetricDisplayMode>('absolute');
 
   // Selected or Hovered Day Index (0 to 6)
-  const [hoveredDayIndex, setHoveredDayIndex] = useState<number | null>(6); // Default to latest day (Sun 21 Sep)
+  const [hoveredDayIndex, setHoveredDayIndex] = useState<number | null>(6);
   const [hoveredSeries, setHoveredSeries] = useState<string | null>(null);
 
   // Summary Metrics Calculation
@@ -65,7 +66,6 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
   const toggleHub = (hubKey: string) => {
     setActiveHubs((prev) => {
       const next = { ...prev, [hubKey]: !prev[hubKey] };
-      // Ensure at least one hub remains active
       if (!Object.values(next).some(Boolean)) {
         return prev;
       }
@@ -91,8 +91,8 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `KEA_Telemetry_Trends_7Days_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.href = url;
+    link.setAttribute('download', `KEA_Performance_Trends_7Days_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -104,7 +104,7 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
     if (!svgRef.current) return;
 
     const svg = d3.select(svgRef.current);
-    svg.selectAll('*').remove(); // Clear previous render
+    svg.selectAll('*').remove();
 
     const width = 940;
     const height = 440;
@@ -114,36 +114,16 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
 
     const data = SEVEN_DAY_TELEMETRY_TRENDS;
 
-    // 1. Root group
     const g = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
-
-    // 2. Gradients & Defs
     const defs = svg.append('defs');
-
-    // Glow filter for interactive highlight
-    const glowFilter = defs.append('filter')
-      .attr('id', 'trends-glow')
-      .attr('x', '-30%')
-      .attr('y', '-30%')
-      .attr('width', '160%')
-      .attr('height', '160%');
-    glowFilter.append('feGaussianBlur')
-      .attr('stdDeviation', '4')
-      .attr('result', 'blur');
-    glowFilter.append('feMerge')
-      .selectAll('feMergeNode')
-      .data(['blur', 'SourceGraphic'])
-      .enter()
-      .append('feMergeNode')
-      .attr('in', (d) => d);
 
     // Linear gradients for area fills
     const hubColors: Record<string, string> = {
-      Lagos: '#92C842',
-      Ibadan: '#22d3ee',
-      Ogun: '#F17F31',
-      Benin: '#c084fc',
-      Total: '#38bdf8'
+      Lagos: '#10b981',
+      Ibadan: '#0284c7',
+      Ogun: '#f59e0b',
+      Benin: '#8b5cf6',
+      Total: '#64748b'
     };
 
     Object.entries(hubColors).forEach(([key, color]) => {
@@ -153,18 +133,16 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
         .attr('y1', '0%')
         .attr('x2', '0%')
         .attr('y2', '100%');
-      grad.append('stop').attr('offset', '0%').attr('stop-color', color).attr('stop-opacity', '0.22');
-      grad.append('stop').attr('offset', '80%').attr('stop-color', color).attr('stop-opacity', '0.03');
-      grad.append('stop').attr('offset', '100%').attr('stop-color', color).attr('stop-opacity', '0');
+      grad.append('stop').attr('offset', '0%').attr('stop-color', color).attr('stop-opacity', '0.20');
+      grad.append('stop').attr('offset', '100%').attr('stop-color', color).attr('stop-opacity', '0.01');
     });
 
-    // 3. SCALES
+    // SCALES
     const xScale = d3.scalePoint()
       .domain(data.map((d) => d.displayDate))
       .range([0, innerWidth])
       .padding(0.08);
 
-    // Y Scale domain calculation
     let minY = 0;
     let maxY = 750;
 
@@ -172,7 +150,6 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
       minY = 80;
       maxY = 105;
     } else {
-      // Determine max based on active series
       const values: number[] = [];
       data.forEach((d) => {
         if (activeHubs.Lagos) values.push(d.Lagos);
@@ -199,7 +176,7 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
       .range([innerHeight, 0])
       .nice();
 
-    // 4. GRIDLINES
+    // GRIDLINES
     const yGrid = d3.axisLeft(yScale)
       .ticks(6)
       .tickSize(-innerWidth)
@@ -209,60 +186,55 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
       .attr('class', 'grid-lines')
       .call(yGrid)
       .selectAll('line')
-      .attr('stroke', '#1e2d4d')
-      .attr('stroke-opacity', 0.6)
+      .attr('stroke', '#e2e8f0')
+      .attr('stroke-opacity', 0.8)
       .attr('stroke-dasharray', '3,4');
 
     g.selectAll('.grid-lines .domain').remove();
 
-    // 5. AXES
-    // X Axis
+    // AXES
     const xAxis = d3.axisBottom(xScale);
     const xAxisGroup = g.append('g')
       .attr('transform', `translate(0, ${innerHeight})`)
       .call(xAxis);
 
     xAxisGroup.select('.domain')
-      .attr('stroke', '#1e2d4d')
+      .attr('stroke', '#cbd5e1')
       .attr('stroke-width', 1.5);
 
     xAxisGroup.selectAll('text')
-      .attr('fill', '#94a3b8')
+      .attr('fill', '#64748b')
       .attr('font-size', '11px')
       .attr('font-family', 'monospace')
       .attr('dy', '14px');
 
-    xAxisGroup.selectAll('line').attr('stroke', '#1e2d4d');
+    xAxisGroup.selectAll('line').attr('stroke', '#cbd5e1');
 
-    // Y Axis
     const yAxis = d3.axisLeft(yScale)
       .ticks(6)
       .tickFormat((d) => (displayMode === 'capacity_pct' ? `${d}%` : `${d}`));
 
     const yAxisGroup = g.append('g').call(yAxis);
-
     yAxisGroup.select('.domain').remove();
     yAxisGroup.selectAll('text')
-      .attr('fill', '#94a3b8')
+      .attr('fill', '#64748b')
       .attr('font-size', '11px')
       .attr('font-family', 'monospace')
       .attr('dx', '-6px');
 
     yAxisGroup.selectAll('line').remove();
 
-    // Y Axis Label
     g.append('text')
       .attr('transform', 'rotate(-90)')
       .attr('y', -45)
       .attr('x', -innerHeight / 2)
       .attr('text-anchor', 'middle')
-      .attr('fill', '#64748b')
+      .attr('fill', '#94a3b8')
       .attr('font-size', '10px')
       .attr('font-family', 'monospace')
       .attr('letter-spacing', '0.08em')
-      .text(displayMode === 'capacity_pct' ? 'CAPACITY ADHERENCE (%)' : 'ACTIVE POS HEARTBEATS (COUNT)');
+      .text(displayMode === 'capacity_pct' ? 'CAPACITY ADHERENCE (%)' : 'ACTIVE MACHINES COUNT');
 
-    // 6. VALUE EXTRACTOR HELPER
     const getVal = (d: DailyHubTelemetryPoint, key: string): number => {
       if (displayMode === 'capacity_pct') {
         const caps: Record<string, number> = {
@@ -279,7 +251,6 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
       return key === 'Total' ? d.total : (d as any)[key];
     };
 
-    // 7. LINE & AREA GENERATORS
     const seriesKeys: Array<'Lagos' | 'Ibadan' | 'Ogun' | 'Benin' | 'Total'> = [
       'Lagos',
       'Ibadan',
@@ -305,31 +276,23 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
         .y1((d) => yScale(getVal(d, key)))
         .curve(d3.curveMonotoneX);
 
-      // Area fill
       g.append('path')
         .datum(data)
         .attr('fill', `url(#area-grad-${key})`)
         .attr('d', areaGenerator)
         .attr('opacity', isHovered ? 0.9 : 0.6);
 
-      // Line path
-      const path = g.append('path')
+      g.append('path')
         .datum(data)
         .attr('fill', 'none')
         .attr('stroke', color)
         .attr('stroke-width', key === 'Total' ? 3 : isHovered ? 3.5 : 2.5)
         .attr('stroke-dasharray', key === 'Total' ? '6,3' : 'none')
         .attr('d', lineGenerator)
-        .attr('class', `series-line-${key}`)
         .style('cursor', 'pointer')
         .on('mouseenter', () => setHoveredSeries(key))
         .on('mouseleave', () => setHoveredSeries(null));
 
-      if (isHovered) {
-        path.attr('filter', 'url(#trends-glow)');
-      }
-
-      // Interactive Data Points / Nodes
       const dotsGroup = g.append('g').attr('class', `dots-${key}`);
 
       data.forEach((d, idx) => {
@@ -348,30 +311,26 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
             setHoveredSeries(null);
           });
 
-        // Halo ring on selected or hovered
         if (isDaySelected || isHovered) {
           dotG.append('circle')
-            .attr('r', 9)
+            .attr('r', 8)
             .attr('fill', color)
             .attr('fill-opacity', 0.25)
             .attr('stroke', color)
-            .attr('stroke-width', 1)
-            .attr('filter', 'url(#trends-glow)');
+            .attr('stroke-width', 1);
         }
 
-        // Center dot
         dotG.append('circle')
           .attr('r', isDaySelected ? 5 : 3.5)
           .attr('fill', color)
-          .attr('stroke', '#090e1c')
-          .attr('stroke-width', 1.8);
+          .attr('stroke', '#ffffff')
+          .attr('stroke-width', 2);
 
-        // Point text label on selected
         if (isDaySelected) {
           dotG.append('text')
             .attr('y', -11)
             .attr('text-anchor', 'middle')
-            .attr('fill', '#ffffff')
+            .attr('fill', '#0f172a')
             .attr('font-size', '10px')
             .attr('font-weight', 'bold')
             .attr('font-family', 'monospace')
@@ -380,7 +339,6 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
       });
     });
 
-    // 8. VERTICAL CROSSHAIR TRACKING LINE
     if (hoveredDayIndex !== null && data[hoveredDayIndex]) {
       const activeX = xScale(data[hoveredDayIndex].displayDate) || 0;
 
@@ -391,21 +349,18 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
         .attr('y1', 0)
         .attr('x2', activeX)
         .attr('y2', innerHeight)
-        .attr('stroke', '#92C842')
+        .attr('stroke', '#10b981')
         .attr('stroke-width', 1.5)
-        .attr('stroke-opacity', 0.5)
+        .attr('stroke-opacity', 0.6)
         .attr('stroke-dasharray', '4,4');
 
-      // Top indicator pill
       crosshair.append('circle')
         .attr('cx', activeX)
         .attr('cy', 0)
         .attr('r', 3)
-        .attr('fill', '#92C842');
+        .attr('fill', '#10b981');
     }
 
-    // 9. OVERLAY EVENT CAPTURE FOR MOUSE TRACKING ACROSS BARS
-    const stepWidth = innerWidth / (data.length - 1);
     const overlay = g.append('rect')
       .attr('width', innerWidth)
       .attr('height', innerHeight)
@@ -414,7 +369,6 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
 
     overlay.on('mousemove', (event) => {
       const [mouseX] = d3.pointer(event);
-      // Find closest day index
       let closestIdx = 0;
       let minDistance = Infinity;
 
@@ -434,34 +388,26 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      
       {/* 1. TOP HEADER & TELEMETRY CONTROLS */}
-      <div className="bg-[#0e1628] border border-[#1e2d4d] rounded-xl p-5 shadow-xl flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white rounded-[12px] border border-slate-200/80 p-6 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="p-3 rounded-xl bg-[#92C842]/10 text-[#92C842] border border-[#92C842]/30">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-              />
-            </svg>
+          <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200">
+            <TrendingUp className="w-6 h-6" />
           </div>
           <div>
             <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-lg sm:text-xl font-bold text-white tracking-wide">
-                Regional Telemetry Performance Trends
+              <h1 className="text-xl font-black text-slate-900 tracking-tight">
+                Performance Trends &amp; Activity
               </h1>
-              <span className="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#92C842]/20 text-[#92C842] border border-[#92C842]/30">
+              <span className="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                 7-DAY AUDIT
               </span>
-              <span className="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#151f38] text-slate-300 border border-[#1e2d4d]">
-                WAT ZONE (07:00–21:00)
+              <span className="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                07:00–21:00 WAT
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-1">
-              Multi-series D3 operational trajectory monitoring daily active retail POS heartbeat density across Southwest &amp; Edo hubs.
+            <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
+              7-day activity chart tracking daily active card machines, sales volumes, and staff concurrency across all store branches.
             </p>
           </div>
         </div>
@@ -470,44 +416,30 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
         <div className="flex items-center gap-2.5 flex-wrap">
           <button
             onClick={handleExportCSV}
-            className="px-3 py-2 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] hover:border-[#92C842]/40 text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
+            className="px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-2 transition-all shadow-xs"
             title="Download CSV dataset"
           >
-            <svg className="w-4 h-4 text-[#92C842]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-              />
-            </svg>
+            <Download className="w-4 h-4 text-slate-600" />
             <span>Export CSV</span>
           </button>
 
           {onOpenShiftCompliance && (
             <button
               onClick={onOpenShiftCompliance}
-              className="px-3.5 py-2 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] hover:border-[#92C842]/50 text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
+              className="px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-2 transition-all shadow-xs"
               title="Generate comprehensive Shift Compliance PDF Report"
             >
-              <svg className="w-4 h-4 text-[#92C842]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                />
-              </svg>
-              <span>Shift Compliance (PDF)</span>
+              <FileText className="w-4 h-4 text-slate-600" />
+              <span>Daily Shift Report (PDF)</span>
             </button>
           )}
 
           {onOpenNewVSR && (
             <button
               onClick={onOpenNewVSR}
-              className="px-4 py-2 rounded-lg bg-[#92C842] hover:bg-[#7bb32e] text-[#090e1c] text-xs font-bold shadow-md shadow-[#92C842]/20 transition-all active:scale-95"
+              className="px-4 py-2 rounded-xl bg-[#10b981] hover:bg-emerald-600 text-white text-xs font-bold shadow-sm transition-all active:scale-95"
             >
-              + Allocate Merchandiser
+              + Allocate Staff
             </button>
           )}
         </div>
@@ -516,172 +448,169 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
       {/* 2. EXECUTIVE 7-DAY KPI CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Today's Active Telemetry */}
-        <div className="bg-[#0e1628] border border-[#1e2d4d] rounded-xl p-4 shadow-lg flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
-            <span>TODAY'S ACTIVE POS</span>
-            <span className="text-[#92C842] flex items-center gap-1">● LIVE STREAM</span>
+        <div className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-emerald-400 transition-colors">
+          <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
+            <span>TODAY'S ACTIVE MACHINES</span>
+            <span className="text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.2 rounded text-[10px]">● LIVE</span>
           </div>
           <div className="my-2">
-            <div className="text-2xl font-extrabold text-white font-mono">
+            <div className="text-2xl font-black text-slate-900 font-mono">
               {summaryStats.currentTotal.toLocaleString()}
             </div>
-            <div className="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5">
-              <span className="text-[#92C842] font-semibold">+{summaryStats.growthPercent}%</span>
+            <div className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5">
+              <span className="text-emerald-700 font-bold">+{summaryStats.growthPercent}%</span>
               <span>vs 7-Day Launch Base</span>
             </div>
           </div>
-          <div className="w-full bg-[#151f38] h-1.5 rounded-full overflow-hidden">
-            <div className="h-1.5 rounded-full bg-[#92C842]" style={{ width: '100%' }} />
+          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+            <div className="h-1.5 rounded-full bg-emerald-500" style={{ width: '100%' }} />
           </div>
         </div>
 
         {/* Card 2: 7-Day Peak */}
-        <div className="bg-[#0e1628] border border-[#1e2d4d] rounded-xl p-4 shadow-lg flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
-            <span>7-DAY PEAK CONCURRENCY</span>
+        <div className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-sky-400 transition-colors">
+          <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
+            <span>7-DAY PEAK ACTIVITY</span>
             <span className="text-slate-400">{summaryStats.peakDayDisplay}</span>
           </div>
           <div className="my-2">
-            <div className="text-2xl font-extrabold text-white font-mono">
+            <div className="text-2xl font-black text-slate-900 font-mono">
               {summaryStats.peakTotal.toLocaleString()}
             </div>
-            <div className="text-xs text-slate-400 mt-0.5">
-              Peak weekend stocking surge in Lagos
+            <div className="text-xs text-slate-500 mt-0.5">
+              Peak weekend sales surge
             </div>
           </div>
-          <div className="w-full bg-[#151f38] h-1.5 rounded-full overflow-hidden">
-            <div className="h-1.5 rounded-full bg-[#38bdf8]" style={{ width: '96%' }} />
+          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+            <div className="h-1.5 rounded-full bg-sky-500" style={{ width: '96%' }} />
           </div>
         </div>
 
         {/* Card 3: 7-Day Average Active Devices */}
-        <div className="bg-[#0e1628] border border-[#1e2d4d] rounded-xl p-4 shadow-lg flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
+        <div className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-amber-400 transition-colors">
+          <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
             <span>7-DAY DAILY AVERAGE</span>
-            <span className="text-slate-400">4 REGIONS</span>
+            <span className="text-slate-400">4 BRANCHES</span>
           </div>
           <div className="my-2">
-            <div className="text-2xl font-extrabold text-white font-mono">
+            <div className="text-2xl font-black text-slate-900 font-mono">
               {summaryStats.avgTotal.toLocaleString()}
             </div>
-            <div className="text-xs text-slate-400 mt-0.5">
-              Net growth: <strong className="text-emerald-400">+{summaryStats.growthCount} nodes</strong>
+            <div className="text-xs text-slate-500 mt-0.5">
+              Net growth: <strong className="text-emerald-700">+{summaryStats.growthCount} nodes</strong>
             </div>
           </div>
-          <div className="w-full bg-[#151f38] h-1.5 rounded-full overflow-hidden">
-            <div className="h-1.5 rounded-full bg-[#22d3ee]" style={{ width: '92%' }} />
+          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+            <div className="h-1.5 rounded-full bg-amber-500" style={{ width: '92%' }} />
           </div>
         </div>
 
         {/* Card 4: Telemetry Uptime & Reliability */}
-        <div className="bg-[#0e1628] border border-[#1e2d4d] rounded-xl p-4 shadow-lg flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
-            <span>TELEMETRY RELIABILITY</span>
-            <span className="text-[#92C842]">WAT WINDOW</span>
+        <div className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-purple-400 transition-colors">
+          <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
+            <span>SYSTEM UPTIME RATE</span>
+            <span className="text-emerald-700 font-semibold">WAT WINDOW</span>
           </div>
           <div className="my-2">
-            <div className="text-2xl font-extrabold text-white font-mono">
+            <div className="text-2xl font-black text-slate-900 font-mono">
               {summaryStats.uptimeRate}%
             </div>
-            <div className="text-xs text-slate-400 mt-0.5">
+            <div className="text-xs text-slate-500 mt-0.5">
               07:00–21:00 WAT standard adherence
             </div>
           </div>
-          <div className="w-full bg-[#151f38] h-1.5 rounded-full overflow-hidden">
-            <div className="h-1.5 rounded-full bg-[#c084fc]" style={{ width: '99%' }} />
+          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+            <div className="h-1.5 rounded-full bg-purple-500" style={{ width: '99%' }} />
           </div>
         </div>
       </div>
 
       {/* 3. D3 LINE CHART & INTERACTIVE INSPECTOR PANEL */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
-        
         {/* CHART CONTAINER (8 cols on XL) */}
-        <div className="xl:col-span-8 bg-[#090e1c] border border-[#1e2d4d] rounded-xl overflow-hidden shadow-2xl">
-          
+        <div className="xl:col-span-8 bg-white rounded-[12px] border border-slate-200/80 overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
           {/* Chart Controls Bar */}
-          <div className="px-5 py-3.5 bg-[#0e1628] border-b border-[#1e2d4d] flex flex-wrap items-center justify-between gap-3">
-            
+          <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
             {/* Hub Series Toggles */}
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] font-mono text-slate-400 uppercase mr-1">HUBS:</span>
+              <span className="text-[11px] font-mono text-slate-500 uppercase mr-1 font-bold">BRANCHES:</span>
               
               {/* Lagos Toggle */}
               <button
                 onClick={() => toggleHub('Lagos')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all border ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all border ${
                   activeHubs.Lagos
-                    ? 'bg-[#92C842]/15 text-[#92C842] border-[#92C842]/40 shadow-sm'
-                    : 'bg-[#151f38] text-slate-400 border-transparent hover:text-slate-200'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-xs'
+                    : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900'
                 }`}
               >
-                <span className="w-2 h-2 rounded-full bg-[#92C842]"></span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                 <span>Lagos</span>
               </button>
 
               {/* Ibadan Toggle */}
               <button
                 onClick={() => toggleHub('Ibadan')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all border ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all border ${
                   activeHubs.Ibadan
-                    ? 'bg-[#22d3ee]/15 text-[#22d3ee] border-[#22d3ee]/40 shadow-sm'
-                    : 'bg-[#151f38] text-slate-400 border-transparent hover:text-slate-200'
+                    ? 'bg-sky-50 text-sky-700 border-sky-300 shadow-xs'
+                    : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900'
                 }`}
               >
-                <span className="w-2 h-2 rounded-full bg-[#22d3ee]"></span>
+                <span className="w-2 h-2 rounded-full bg-sky-500"></span>
                 <span>Ibadan</span>
               </button>
 
               {/* Ogun Toggle */}
               <button
                 onClick={() => toggleHub('Ogun')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all border ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all border ${
                   activeHubs.Ogun
-                    ? 'bg-[#F17F31]/15 text-[#F17F31] border-[#F17F31]/40 shadow-sm'
-                    : 'bg-[#151f38] text-slate-400 border-transparent hover:text-slate-200'
+                    ? 'bg-amber-50 text-amber-700 border-amber-300 shadow-xs'
+                    : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900'
                 }`}
               >
-                <span className="w-2 h-2 rounded-full bg-[#F17F31]"></span>
+                <span className="w-2 h-2 rounded-full bg-amber-500"></span>
                 <span>Ogun</span>
               </button>
 
               {/* Benin Toggle */}
               <button
                 onClick={() => toggleHub('Benin')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all border ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all border ${
                   activeHubs.Benin
-                    ? 'bg-[#c084fc]/15 text-[#c084fc] border-[#c084fc]/40 shadow-sm'
-                    : 'bg-[#151f38] text-slate-400 border-transparent hover:text-slate-200'
+                    ? 'bg-purple-50 text-purple-700 border-purple-300 shadow-xs'
+                    : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900'
                 }`}
               >
-                <span className="w-2 h-2 rounded-full bg-[#c084fc]"></span>
+                <span className="w-2 h-2 rounded-full bg-purple-500"></span>
                 <span>Benin</span>
               </button>
 
               {/* Total Aggregate Line Toggle */}
               <button
                 onClick={() => toggleHub('Total')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all border ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all border ${
                   activeHubs.Total
-                    ? 'bg-[#38bdf8]/15 text-[#38bdf8] border-[#38bdf8]/40 shadow-sm'
-                    : 'bg-[#151f38] text-slate-400 border-transparent hover:text-slate-200'
+                    ? 'bg-slate-200 text-slate-900 border-slate-400 shadow-xs'
+                    : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900'
                 }`}
               >
-                <span className="w-2 h-2 rounded-full bg-[#38bdf8]"></span>
+                <span className="w-2 h-2 rounded-full bg-slate-600"></span>
                 <span>Combined Total</span>
               </button>
             </div>
 
             {/* Metric Mode Switcher */}
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-mono text-slate-400 uppercase mr-1">SCALE:</span>
-              <div className="inline-flex rounded-lg bg-[#151f38] p-0.5 border border-[#1e2d4d]">
+              <span className="text-[11px] font-mono text-slate-500 uppercase mr-1 font-bold">SCALE:</span>
+              <div className="inline-flex rounded-lg bg-slate-100 p-0.5 border border-slate-200">
                 <button
                   onClick={() => setDisplayMode('absolute')}
                   className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
                     displayMode === 'absolute'
-                      ? 'bg-[#1e2d4d] text-[#92C842] font-bold'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-white text-slate-900 font-bold shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Raw Counts
@@ -690,19 +619,18 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
                   onClick={() => setDisplayMode('capacity_pct')}
                   className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
                     displayMode === 'capacity_pct'
-                      ? 'bg-[#1e2d4d] text-[#92C842] font-bold'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-white text-slate-900 font-bold shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   % Capacity
                 </button>
               </div>
             </div>
-
           </div>
 
           {/* D3 SVG Line Chart Stage */}
-          <div ref={containerRef} className="relative w-full aspect-[16/8.5] min-h-[380px] p-2 bg-[#090e1c] select-none">
+          <div ref={containerRef} className="relative w-full aspect-[16/8.5] min-h-[380px] p-2 bg-white select-none">
             <svg
               ref={svgRef}
               viewBox="0 0 940 440"
@@ -712,133 +640,129 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
           </div>
 
           {/* Chart Bottom Context Strip */}
-          <div className="px-5 py-3 bg-[#0b1222] border-t border-[#1e2d4d] flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-slate-400">
+          <div className="px-5 py-3 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-slate-600">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-0.5 bg-[#92C842] inline-block"></span> Lagos Hub (680 POS)
+                <span className="w-2.5 h-1 bg-emerald-500 rounded inline-block"></span> Lagos (680 POS)
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-0.5 bg-[#22d3ee] inline-block"></span> Ibadan Cluster (340 POS)
+                <span className="w-2.5 h-1 bg-sky-500 rounded inline-block"></span> Ibadan (340 POS)
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-0.5 bg-[#F17F31] inline-block"></span> Ogun Corridor (220 POS)
+                <span className="w-2.5 h-1 bg-amber-500 rounded inline-block"></span> Ogun (220 POS)
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-0.5 bg-[#c084fc] inline-block"></span> Benin Sector (180 POS)
+                <span className="w-2.5 h-1 bg-purple-500 rounded inline-block"></span> Benin (180 POS)
               </span>
             </div>
-            <div className="text-[11px] text-slate-500">
-              Hover across data points to inspect regional crosshair readings
+            <div className="text-[11px] text-slate-400">
+              Hover across data points to inspect daily numbers
             </div>
           </div>
-
         </div>
 
         {/* DAILY TELEMETRY AUDIT INSPECTOR (4 cols on XL) */}
         <div className="xl:col-span-4 space-y-4">
-          
           {/* Active Day Detail Card */}
-          <div className="bg-[#0e1628] border border-[#1e2d4d] rounded-xl p-5 shadow-xl space-y-4">
-            <div className="flex items-center justify-between border-b border-[#1e2d4d] pb-3">
+          <div className="bg-white rounded-[12px] border border-slate-200/80 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.03)] space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div>
-                <span className="text-[10px] font-mono uppercase text-[#92C842] tracking-wider font-bold">
-                  DAILY TELEMETRY POINT AUDIT
+                <span className="text-[10px] font-mono uppercase text-emerald-700 tracking-wider font-bold">
+                  DAILY ACTIVITY POINT
                 </span>
-                <h3 className="text-base font-bold text-white mt-0.5">
+                <h3 className="text-base font-bold text-slate-900 mt-0.5">
                   {activeDayPoint.displayDate} ({activeDayPoint.dayLabel})
                 </h3>
               </div>
-              <span className="px-2.5 py-1 rounded text-xs font-mono font-bold bg-[#92C842]/20 text-[#92C842] border border-[#92C842]/30">
+              <span className="px-2.5 py-1 rounded text-xs font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                 {activeDayPoint.total.toLocaleString()} Active
               </span>
             </div>
 
             {/* Regional Hub Values on this Day */}
             <div className="space-y-2.5 text-xs font-mono">
-              
               {/* Lagos */}
-              <div className="p-2.5 rounded-lg bg-[#151f38]/70 border border-[#1e2d4d] flex items-center justify-between">
+              <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#92C842]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                   <div>
-                    <div className="font-bold text-white">Lagos Hub</div>
+                    <div className="font-bold text-slate-900">Lagos Hub</div>
                     <div className="text-[10px] text-slate-400">Cap: 680 • 07:00 WAT</div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-bold text-[#92C842]">{activeDayPoint.Lagos}</div>
-                  <div className="text-[10px] text-slate-400">
+                  <div className="text-sm font-bold text-emerald-700">{activeDayPoint.Lagos}</div>
+                  <div className="text-[10px] text-slate-500">
                     {Math.round((activeDayPoint.Lagos / 680) * 100)}% Capacity
                   </div>
                 </div>
               </div>
 
               {/* Ibadan */}
-              <div className="p-2.5 rounded-lg bg-[#151f38]/70 border border-[#1e2d4d] flex items-center justify-between">
+              <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#22d3ee]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-sky-500" />
                   <div>
-                    <div className="font-bold text-white">Ibadan Cluster</div>
+                    <div className="font-bold text-slate-900">Ibadan Cluster</div>
                     <div className="text-[10px] text-slate-400">Cap: 340 • 07:30 WAT</div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-bold text-[#22d3ee]">{activeDayPoint.Ibadan}</div>
-                  <div className="text-[10px] text-slate-400">
+                  <div className="text-sm font-bold text-sky-700">{activeDayPoint.Ibadan}</div>
+                  <div className="text-[10px] text-slate-500">
                     {Math.round((activeDayPoint.Ibadan / 340) * 100)}% Capacity
                   </div>
                 </div>
               </div>
 
               {/* Ogun */}
-              <div className="p-2.5 rounded-lg bg-[#151f38]/70 border border-[#1e2d4d] flex items-center justify-between">
+              <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#F17F31]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
                   <div>
-                    <div className="font-bold text-white">Ogun Hub</div>
+                    <div className="font-bold text-slate-900">Ogun Hub</div>
                     <div className="text-[10px] text-slate-400">Cap: 220 • 08:00 WAT</div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-bold text-[#F17F31]">{activeDayPoint.Ogun}</div>
-                  <div className="text-[10px] text-slate-400">
+                  <div className="text-sm font-bold text-amber-700">{activeDayPoint.Ogun}</div>
+                  <div className="text-[10px] text-slate-500">
                     {Math.round((activeDayPoint.Ogun / 220) * 100)}% Capacity
                   </div>
                 </div>
               </div>
 
               {/* Benin */}
-              <div className="p-2.5 rounded-lg bg-[#151f38]/70 border border-[#1e2d4d] flex items-center justify-between">
+              <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#c084fc]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
                   <div>
-                    <div className="font-bold text-white">Benin Sector</div>
+                    <div className="font-bold text-slate-900">Benin Sector</div>
                     <div className="text-[10px] text-slate-400">Cap: 180 • 08:00 WAT</div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-bold text-[#c084fc]">{activeDayPoint.Benin}</div>
-                  <div className="text-[10px] text-slate-400">
+                  <div className="text-sm font-bold text-purple-700">{activeDayPoint.Benin}</div>
+                  <div className="text-[10px] text-slate-500">
                     {Math.round((activeDayPoint.Benin / 180) * 100)}% Capacity
                   </div>
                 </div>
               </div>
-
             </div>
 
             {/* Operational Shift Log for this Day */}
-            <div className="bg-[#0b1222] border border-[#1e2d4d] rounded-lg p-3 text-xs">
-              <div className="font-mono text-[10px] text-slate-400 uppercase font-semibold mb-1">
-                OPERATIONAL OBSERVATIONS:
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs">
+              <div className="font-mono text-[10px] text-slate-500 uppercase font-semibold mb-1">
+                OBSERVATIONS:
               </div>
-              <p className="text-slate-300 leading-relaxed italic">
+              <p className="text-slate-700 leading-relaxed italic">
                 "{activeDayPoint.notes}"
               </p>
             </div>
 
             {/* Quick Day Selector Buttons */}
             <div className="pt-1">
-              <div className="text-[10px] font-mono text-slate-400 mb-1.5 uppercase">
+              <div className="text-[10px] font-mono text-slate-500 mb-1.5 uppercase font-bold">
                 JUMP TO SPECIFIC DAY:
               </div>
               <div className="grid grid-cols-7 gap-1">
@@ -846,10 +770,10 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
                   <button
                     key={pt.date}
                     onClick={() => setHoveredDayIndex(idx)}
-                    className={`py-1.5 px-1 rounded text-center font-mono text-[10px] transition-all ${
+                    className={`py-1.5 px-1 rounded-lg text-center font-mono text-[10px] transition-all ${
                       hoveredDayIndex === idx
-                        ? 'bg-[#92C842] text-[#090e1c] font-bold shadow-sm'
-                        : 'bg-[#151f38] text-slate-300 hover:text-white border border-[#1e2d4d]'
+                        ? 'bg-[#10b981] text-white font-bold shadow-xs'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
                     }`}
                   >
                     {pt.dayLabel.split(' ')[0]}
@@ -857,65 +781,62 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
                 ))}
               </div>
             </div>
-
           </div>
 
           {/* Regional Capacity Architecture Card */}
-          <div className="bg-[#0e1628] border border-[#1e2d4d] rounded-xl p-4 shadow-lg space-y-3">
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-              Regional Baseline Architecture
+          <div className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] space-y-3">
+            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
+              Branch Baseline Setup
             </h4>
             <div className="space-y-2 text-xs">
               {Object.values(HUB_TREND_CONFIGS).map((hub) => (
                 <div
                   key={hub.key}
-                  className="p-2 rounded-lg bg-[#0b1222] border border-[#1e2d4d]/60 flex items-center justify-between"
+                  className="p-2 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-between"
                 >
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: hub.color }} />
-                    <span className="font-semibold text-slate-200">{hub.name}</span>
+                    <span className="font-semibold text-slate-800">{hub.name}</span>
                   </div>
-                  <div className="font-mono text-[11px] text-slate-400">
-                    <strong className="text-white">{hub.nominalCapacity}</strong> POS ({hub.telemetryWindow})
+                  <div className="font-mono text-[11px] text-slate-500">
+                    <strong className="text-slate-900">{hub.nominalCapacity}</strong> POS ({hub.telemetryWindow})
                   </div>
                 </div>
               ))}
             </div>
           </div>
-
         </div>
-
       </div>
 
       {/* 4. 7-DAY TELEMETRY DATA AUDIT TABLE */}
-      <div className="bg-[#0e1628] border border-[#1e2d4d] rounded-xl overflow-hidden shadow-xl">
-        <div className="px-5 py-3.5 border-b border-[#1e2d4d] bg-[#090e1c]/70 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="bg-white rounded-[12px] border border-slate-200/80 overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+        <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 font-mono">
-            <span className="w-2 h-2 rounded-full bg-[#92C842]" />
-            <span className="font-bold text-slate-200 uppercase tracking-wider">
-              7-Day Shift Telemetry Audit Ledger &amp; Hub Concurrency
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span className="font-bold text-slate-900 uppercase tracking-wider">
+              7-Day Shift Attendance &amp; Machine Activity Table
             </span>
           </div>
-          <span className="text-[11px] font-mono text-[#92C842]">
-            VERIFIED AUDIT RECORD • KEA REGIONAL INFRASTRUCTURE
+          <span className="text-[11px] font-mono text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+            VERIFIED AUDIT LOG
           </span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-[#151f38] text-slate-400 font-mono text-[10px] uppercase tracking-wider border-b border-[#1e2d4d]">
+          <table className="w-full text-left text-xs text-slate-700">
+            <thead className="bg-slate-50 text-slate-600 font-mono text-[10px] uppercase tracking-wider border-b border-slate-200">
               <tr>
                 <th className="px-5 py-3">Audit Date</th>
                 <th className="px-5 py-3">Lagos (LOS)</th>
                 <th className="px-5 py-3">Ibadan (IBD)</th>
                 <th className="px-5 py-3">Ogun (OGN)</th>
                 <th className="px-5 py-3">Benin (BEN)</th>
-                <th className="px-5 py-3">Combined Active POS</th>
-                <th className="px-5 py-3">24h Delta</th>
-                <th className="px-5 py-3">Shift Compliance &amp; Operational Events</th>
+                <th className="px-5 py-3">Combined POS</th>
+                <th className="px-5 py-3">24h Change</th>
+                <th className="px-5 py-3">Shift Notes &amp; Events</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1e2d4d]/60 font-mono">
+            <tbody className="divide-y divide-slate-100 font-mono">
               {SEVEN_DAY_TELEMETRY_TRENDS.map((pt, idx) => {
                 const prevTotal = idx > 0 ? SEVEN_DAY_TELEMETRY_TRENDS[idx - 1].total : pt.total;
                 const delta = pt.total - prevTotal;
@@ -927,39 +848,39 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
                     onClick={() => setHoveredDayIndex(idx)}
                     className={`cursor-pointer transition-colors ${
                       isSelected
-                        ? 'bg-[#151f38]/90 text-white'
-                        : 'hover:bg-[#151f38]/40 text-slate-300'
+                        ? 'bg-slate-50 text-slate-900 font-bold'
+                        : 'hover:bg-slate-50/80 text-slate-700'
                     }`}
                   >
-                    <td className="px-5 py-3.5 font-bold flex items-center gap-2 text-white">
-                      <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-[#92C842]' : 'bg-slate-600'}`} />
+                    <td className="px-5 py-3.5 font-bold flex items-center gap-2 text-slate-900">
+                      <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-emerald-500' : 'bg-slate-300'}`} />
                       <span>{pt.displayDate}</span>
                     </td>
-                    <td className="px-5 py-3.5 text-[#92C842] font-semibold">
-                      {pt.Lagos} <span className="text-[10px] text-slate-500">({Math.round((pt.Lagos / 680) * 100)}%)</span>
+                    <td className="px-5 py-3.5 text-emerald-700 font-semibold">
+                      {pt.Lagos} <span className="text-[10px] text-slate-400">({Math.round((pt.Lagos / 680) * 100)}%)</span>
                     </td>
-                    <td className="px-5 py-3.5 text-[#22d3ee] font-semibold">
-                      {pt.Ibadan} <span className="text-[10px] text-slate-500">({Math.round((pt.Ibadan / 340) * 100)}%)</span>
+                    <td className="px-5 py-3.5 text-sky-700 font-semibold">
+                      {pt.Ibadan} <span className="text-[10px] text-slate-400">({Math.round((pt.Ibadan / 340) * 100)}%)</span>
                     </td>
-                    <td className="px-5 py-3.5 text-[#F17F31] font-semibold">
-                      {pt.Ogun} <span className="text-[10px] text-slate-500">({Math.round((pt.Ogun / 220) * 100)}%)</span>
+                    <td className="px-5 py-3.5 text-amber-700 font-semibold">
+                      {pt.Ogun} <span className="text-[10px] text-slate-400">({Math.round((pt.Ogun / 220) * 100)}%)</span>
                     </td>
-                    <td className="px-5 py-3.5 text-[#c084fc] font-semibold">
-                      {pt.Benin} <span className="text-[10px] text-slate-500">({Math.round((pt.Benin / 180) * 100)}%)</span>
+                    <td className="px-5 py-3.5 text-purple-700 font-semibold">
+                      {pt.Benin} <span className="text-[10px] text-slate-400">({Math.round((pt.Benin / 180) * 100)}%)</span>
                     </td>
-                    <td className="px-5 py-3.5 font-bold text-white text-sm">
+                    <td className="px-5 py-3.5 font-bold text-slate-900 text-sm">
                       {pt.total.toLocaleString()}
                     </td>
                     <td className="px-5 py-3.5">
                       {idx === 0 ? (
-                        <span className="text-slate-500 font-normal">Base</span>
+                        <span className="text-slate-400 font-normal">Base</span>
                       ) : (
-                        <span className={delta >= 0 ? 'text-[#92C842] font-bold' : 'text-[#F17F31] font-bold'}>
+                        <span className={delta >= 0 ? 'text-emerald-600 font-bold' : 'text-amber-600 font-bold'}>
                           {delta >= 0 ? `+${delta}` : delta}
                         </span>
                       )}
                     </td>
-                    <td className="px-5 py-3.5 text-slate-400 font-sans text-xs">
+                    <td className="px-5 py-3.5 text-slate-500 font-sans text-xs">
                       {pt.notes}
                     </td>
                   </tr>
@@ -969,7 +890,6 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
           </table>
         </div>
       </div>
-
     </div>
   );
 };

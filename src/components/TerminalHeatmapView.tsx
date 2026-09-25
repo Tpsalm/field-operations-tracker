@@ -124,7 +124,7 @@ export const SPATIAL_TERMINALS: SpatialPOSTerminal[] = [
     storeName: 'Alaba International Electronic Depot',
     hub: 'Lagos',
     zone: 'Ojo / Trade Fair',
-    assignedRep: 'Tope Balogun (Direct VSR)',
+    assignedRep: 'Tope Balogun',
     battery: 92,
     stockLevel: 94,
     lastPing: '6s ago',
@@ -300,101 +300,85 @@ export const SPATIAL_TERMINALS: SpatialPOSTerminal[] = [
   },
   {
     id: 'term-ib-5',
-    terminalCode: 'POS-IB-4440',
-    storeName: 'University of Ibadan Tech Junction',
+    terminalCode: 'POS-IB-4448',
+    storeName: 'UI Tech Hub Provision Kiosk',
     hub: 'Ibadan',
-    zone: 'UI / Agbowo',
+    zone: 'University of Ibadan Area',
     assignedRep: 'Adewale Adeleke',
     battery: 88,
-    stockLevel: 80,
-    lastPing: '35s ago',
-    status: 'online',
-    intensity: 78,
+    stockLevel: 82,
+    lastPing: '16s ago',
+    status: 'reconciled',
+    intensity: 91,
     x: 420,
     y: 175,
-    hourlyTransactions: 72
-  },
-  {
-    id: 'term-ib-6',
-    terminalCode: 'POS-IB-4452',
-    storeName: 'Mokola Roundabout Trade Post',
-    hub: 'Ibadan',
-    zone: 'Mokola',
-    assignedRep: 'Taofeek Alabi',
-    battery: 65,
-    stockLevel: 58,
-    lastPing: '1m ago',
-    status: 'online',
-    intensity: 72,
-    x: 405,
-    y: 210,
-    hourlyTransactions: 66
+    hourlyTransactions: 96
   },
 
-  // BENIN CLUSTER (Edo Sector - Ring Road, Uselu, GRA, New Benin)
+  // BENIN CLUSTER (Edo State - Ring Road, Uselu, Ikpoba Hill)
   {
     id: 'term-bn-1',
     terminalCode: 'POS-BN-1102',
-    storeName: 'Uselu Market Provision Depot',
+    storeName: 'King Square Ring Road Central',
     hub: 'Benin',
-    zone: 'Uselu',
-    assignedRep: 'Efeosa Erhabor',
-    battery: 76,
-    stockLevel: 64,
-    lastPing: '35s ago',
-    status: 'online',
-    intensity: 87,
-    x: 770,
-    y: 380,
-    hourlyTransactions: 85
+    zone: 'Ring Road CBD',
+    assignedRep: 'Osaro Osahon',
+    battery: 95,
+    stockLevel: 90,
+    lastPing: '5s ago',
+    status: 'reconciled',
+    intensity: 97,
+    x: 810,
+    y: 390,
+    hourlyTransactions: 114
   },
   {
     id: 'term-bn-2',
     terminalCode: 'POS-BN-1110',
-    storeName: 'Oba Market Ring Road Terminal',
+    storeName: 'Uselu Market Provision Depot',
     hub: 'Benin',
-    zone: 'Ring Road CBD',
-    assignedRep: 'Efeosa Erhabor',
-    battery: 93,
-    stockLevel: 91,
-    lastPing: '11s ago',
-    status: 'reconciled',
-    intensity: 92,
-    x: 800,
-    y: 400,
-    hourlyTransactions: 98
+    zone: 'Uselu Market Axis',
+    assignedRep: 'Osaro Osahon',
+    battery: 48,
+    stockLevel: 39,
+    lastPing: '3m ago',
+    status: 'warning',
+    intensity: 59,
+    x: 770,
+    y: 410,
+    hourlyTransactions: 48
   },
   {
     id: 'term-bn-3',
-    terminalCode: 'POS-BN-1120',
-    storeName: 'Benin GRA Plaza Commercial Kiosk',
+    terminalCode: 'POS-BN-1124',
+    storeName: 'Ikpoba Hill Wholesale Warehouse',
     hub: 'Benin',
-    zone: 'GRA',
-    assignedRep: 'Osaze Iyamu',
-    battery: 85,
-    stockLevel: 82,
-    lastPing: '20s ago',
+    zone: 'Ikpoba Hill Corridor',
+    assignedRep: 'Efeosa Erhabor',
+    battery: 82,
+    stockLevel: 88,
+    lastPing: '11s ago',
     status: 'reconciled',
-    intensity: 81,
-    x: 820,
-    y: 430,
-    hourlyTransactions: 76
+    intensity: 92,
+    x: 840,
+    y: 370,
+    hourlyTransactions: 90
   },
   {
     id: 'term-bn-4',
     terminalCode: 'POS-BN-1135',
-    storeName: 'Ikpoba Hill Wholesale Outpost',
+    storeName: 'Airport Road Express Supermarket',
     hub: 'Benin',
-    zone: 'Ikpoba Hill',
-    assignedRep: 'Osaze Iyamu',
-    battery: 79,
-    stockLevel: 77,
-    lastPing: '50s ago',
+    zone: 'Airport Road / GRA',
+    assignedRep: 'Osaro Osahon',
+    battery: 89,
+    stockLevel: 84,
+    lastPing: '14s ago',
     status: 'reconciled',
-    intensity: 77,
-    x: 840,
-    y: 370,
-    hourlyTransactions: 70
+    intensity: 88,
+    x: 830,
+    y: 430,
+    hourlyTransactions: 86
   },
   {
     id: 'term-bn-5',
@@ -416,10 +400,10 @@ export const SPATIAL_TERMINALS: SpatialPOSTerminal[] = [
 
 // Regional Hub Coordinates for Hub Macro Nodes & Telemetry Trunks
 const HUB_CENTERS: Record<string, { x: number; y: number; label: string; sub: string }> = {
-  Lagos: { x: 230, y: 440, label: 'Lagos Hub (LOS)', sub: '680 POS • 38 Merchandisers' },
-  Ogun: { x: 320, y: 320, label: 'Ogun Hub (OGN)', sub: '220 POS • 12 Merchandisers' },
-  Ibadan: { x: 415, y: 215, label: 'Ibadan Cluster (IBD)', sub: '340 POS • 18 Merchandisers' },
-  Benin: { x: 805, y: 390, label: 'Benin Sector (BEN)', sub: '180 POS • 10 Merchandisers' }
+  Lagos: { x: 230, y: 440, label: 'Lagos Hub', sub: '680 POS • 38 Staff' },
+  Ogun: { x: 320, y: 320, label: 'Ogun Hub', sub: '220 POS • 12 Staff' },
+  Ibadan: { x: 415, y: 215, label: 'Ibadan Hub', sub: '340 POS • 18 Staff' },
+  Benin: { x: 805, y: 390, label: 'Benin Hub', sub: '180 POS • 10 Staff' }
 };
 
 interface TerminalHeatmapViewProps {
@@ -511,47 +495,47 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
       .attr('stdDeviation', '4')
       .attr('result', 'glow');
 
-    // High Intensity Radial Heat Gradient (Crimson / Coral Peak)
+    // High Intensity Radial Heat Gradient (Mint / Coral Peak)
     const radHigh = defs.append('radialGradient')
       .attr('id', 'grad-high')
       .attr('cx', '50%')
       .attr('cy', '50%')
       .attr('r', '50%');
-    radHigh.append('stop').attr('offset', '0%').attr('stop-color', '#E05252').attr('stop-opacity', '0.75');
-    radHigh.append('stop').attr('offset', '45%').attr('stop-color', '#F17F31').attr('stop-opacity', '0.45');
-    radHigh.append('stop').attr('offset', '80%').attr('stop-color', '#92C842').attr('stop-opacity', '0.15');
-    radHigh.append('stop').attr('offset', '100%').attr('stop-color', '#92C842').attr('stop-opacity', '0');
+    radHigh.append('stop').attr('offset', '0%').attr('stop-color', '#10b981').attr('stop-opacity', '0.75');
+    radHigh.append('stop').attr('offset', '45%').attr('stop-color', '#34d399').attr('stop-opacity', '0.45');
+    radHigh.append('stop').attr('offset', '80%').attr('stop-color', '#6ee7b7').attr('stop-opacity', '0.15');
+    radHigh.append('stop').attr('offset', '100%').attr('stop-color', '#10b981').attr('stop-opacity', '0');
 
-    // Medium Intensity Radial Heat Gradient (Lime / Amber)
+    // Medium Intensity Radial Heat Gradient (Emerald / Amber)
     const radMed = defs.append('radialGradient')
       .attr('id', 'grad-med')
       .attr('cx', '50%')
       .attr('cy', '50%')
       .attr('r', '50%');
-    radMed.append('stop').attr('offset', '0%').attr('stop-color', '#92C842').attr('stop-opacity', '0.7');
-    radMed.append('stop').attr('offset', '50%').attr('stop-color', '#22d3ee').attr('stop-opacity', '0.35');
-    radMed.append('stop').attr('offset', '100%').attr('stop-color', '#22d3ee').attr('stop-opacity', '0');
+    radMed.append('stop').attr('offset', '0%').attr('stop-color', '#059669').attr('stop-opacity', '0.65');
+    radMed.append('stop').attr('offset', '50%').attr('stop-color', '#10b981').attr('stop-opacity', '0.35');
+    radMed.append('stop').attr('offset', '100%').attr('stop-color', '#10b981').attr('stop-opacity', '0');
 
-    // Normal / Cool Radial Heat Gradient (Teal / Emerald)
+    // Normal / Cool Radial Heat Gradient
     const radCool = defs.append('radialGradient')
       .attr('id', 'grad-cool')
       .attr('cx', '50%')
       .attr('cy', '50%')
       .attr('r', '50%');
-    radCool.append('stop').attr('offset', '0%').attr('stop-color', '#22d3ee').attr('stop-opacity', '0.6');
-    radCool.append('stop').attr('offset', '60%').attr('stop-color', '#151f38').attr('stop-opacity', '0.2');
-    radCool.append('stop').attr('offset', '100%').attr('stop-color', '#151f38').attr('stop-opacity', '0');
+    radCool.append('stop').attr('offset', '0%').attr('stop-color', '#0284c7').attr('stop-opacity', '0.5');
+    radCool.append('stop').attr('offset', '60%').attr('stop-color', '#e2e8f0').attr('stop-opacity', '0.2');
+    radCool.append('stop').attr('offset', '100%').attr('stop-color', '#e2e8f0').attr('stop-opacity', '0');
 
     // 2. BACKGROUND & REGIONAL GEOGRAPHIC ZONES
     // Clean coordinate grid lines
-    const gridGroup = g.append('g').attr('class', 'spatial-grid').attr('opacity', 0.15);
+    const gridGroup = g.append('g').attr('class', 'spatial-grid').attr('opacity', 0.6);
     for (let x = 50; x < width; x += 100) {
       gridGroup.append('line')
         .attr('x1', x)
         .attr('y1', 20)
         .attr('x2', x)
         .attr('y2', height - 20)
-        .attr('stroke', '#475569')
+        .attr('stroke', '#e2e8f0')
         .attr('stroke-width', 1)
         .attr('stroke-dasharray', '3,6');
     }
@@ -561,17 +545,17 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
         .attr('y1', y)
         .attr('x2', width - 20)
         .attr('y2', y)
-        .attr('stroke', '#475569')
+        .attr('stroke', '#e2e8f0')
         .attr('stroke-width', 1)
         .attr('stroke-dasharray', '3,6');
     }
 
     // Territorial boundaries for the 4 regional hubs
     const territories = [
-      { id: 'Lagos', x: 130, y: 350, w: 200, h: 170, label: 'LAGOS COMMERCIAL CORRIDOR', latLon: '6.5244° N, 3.3792° E' },
-      { id: 'Ogun', x: 200, y: 240, w: 220, h: 140, label: 'OGUN TRADE & INDUSTRIAL ZONE', latLon: '7.1604° N, 3.3483° E' },
-      { id: 'Ibadan', x: 360, y: 150, w: 140, h: 130, label: 'IBADAN METROPOLIS CLUSTER', latLon: '7.3775° N, 3.9470° E' },
-      { id: 'Benin', x: 740, y: 320, w: 140, h: 140, label: 'BENIN SECTOR COMMERCE HUB', latLon: '6.3350° N, 5.6037° E' }
+      { id: 'Lagos', x: 130, y: 350, w: 200, h: 170, label: 'LAGOS HUB AREA', latLon: '6.5244° N, 3.3792° E' },
+      { id: 'Ogun', x: 200, y: 240, w: 220, h: 140, label: 'OGUN HUB AREA', latLon: '7.1604° N, 3.3483° E' },
+      { id: 'Ibadan', x: 360, y: 150, w: 140, h: 130, label: 'IBADAN HUB AREA', latLon: '7.3775° N, 3.9470° E' },
+      { id: 'Benin', x: 740, y: 320, w: 140, h: 140, label: 'BENIN HUB AREA', latLon: '6.3350° N, 5.6037° E' }
     ];
 
     const territoryGroup = g.append('g').attr('class', 'territory-boundaries');
@@ -584,16 +568,16 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
         .attr('width', t.w)
         .attr('height', t.h)
         .attr('rx', 12)
-        .attr('fill', isFocused ? '#151f38' : '#0b1222')
-        .attr('fill-opacity', isFocused ? 0.35 : 0.1)
-        .attr('stroke', isFocused ? '#1e2d4d' : '#151f38')
+        .attr('fill', isFocused ? '#f1f5f9' : '#f8fafc')
+        .attr('fill-opacity', isFocused ? 0.7 : 0.3)
+        .attr('stroke', isFocused ? '#cbd5e1' : '#e2e8f0')
         .attr('stroke-width', 1.5)
         .attr('stroke-dasharray', isFocused ? '4,4' : '2,4');
 
       territoryGroup.append('text')
         .attr('x', t.x + 10)
         .attr('y', t.y + 16)
-        .attr('fill', isFocused ? '#94a3b8' : '#475569')
+        .attr('fill', isFocused ? '#475569' : '#94a3b8')
         .attr('font-size', '9px')
         .attr('font-family', 'monospace')
         .attr('font-weight', 'bold')
@@ -603,7 +587,7 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
       territoryGroup.append('text')
         .attr('x', t.x + 10)
         .attr('y', t.y + 27)
-        .attr('fill', isFocused ? '#64748b' : '#334155')
+        .attr('fill', isFocused ? '#64748b' : '#94a3b8')
         .attr('font-size', '8px')
         .attr('font-family', 'monospace')
         .text(t.latLon);
@@ -615,9 +599,9 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
 
       // Trunk links between major hubs
       const links = [
-        { from: HUB_CENTERS.Lagos, to: HUB_CENTERS.Ogun, name: 'LOS-OGN Express Corridor (E1)' },
-        { from: HUB_CENTERS.Ogun, to: HUB_CENTERS.Ibadan, name: 'OGN-IBD Highway Trunk (A1)' },
-        { from: HUB_CENTERS.Ogun, to: HUB_CENTERS.Benin, name: 'Sagamu-Ore-Benin Coastal Arterial (A121)' }
+        { from: HUB_CENTERS.Lagos, to: HUB_CENTERS.Ogun, name: 'Lagos - Ogun Route' },
+        { from: HUB_CENTERS.Ogun, to: HUB_CENTERS.Ibadan, name: 'Ogun - Ibadan Route' },
+        { from: HUB_CENTERS.Ogun, to: HUB_CENTERS.Benin, name: 'Ogun - Benin Route' }
       ];
 
       links.forEach((l) => {
@@ -627,7 +611,7 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
           .attr('y1', l.from.y)
           .attr('x2', l.to.x)
           .attr('y2', l.to.y)
-          .attr('stroke', '#1e2d4d')
+          .attr('stroke', '#cbd5e1')
           .attr('stroke-width', 2);
 
         // Animated telemetry pulse line
@@ -636,16 +620,15 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
           .attr('y1', l.from.y)
           .attr('x2', l.to.x)
           .attr('y2', l.to.y)
-          .attr('stroke', '#92C842')
+          .attr('stroke', '#10b981')
           .attr('stroke-width', 1.5)
-          .attr('stroke-opacity', 0.4)
+          .attr('stroke-opacity', 0.6)
           .attr('stroke-dasharray', '6,10')
           .attr('class', 'telemetry-stream-pulse');
       });
     }
 
     // 4. SPATIAL DENSITY HEATMAP LAYER
-    // Renders high-density energy halos centered around terminals
     if (showDensityHalos) {
       const heatHaloGroup = g.append('g').attr('class', 'spatial-heat-halos');
 
@@ -672,7 +655,6 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
           radius = 38;
         }
 
-        // Dissipated heat radius circle
         heatHaloGroup.append('circle')
           .attr('cx', term.x)
           .attr('cy', term.y)
@@ -683,7 +665,7 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
       });
     }
 
-    // 5. REGIONAL HUB MASTER NODES (Lagos, Ogun, Ibadan, Benin)
+    // 5. REGIONAL HUB MASTER NODES
     const hubNodeGroup = g.append('g').attr('class', 'regional-hub-nodes');
     Object.entries(HUB_CENTERS).forEach(([hubName, pos]) => {
       const isSelected = selectedHub === 'All' || selectedHub === hubName;
@@ -696,28 +678,28 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
       // Concentric beacon rings
       nodeG.append('circle')
         .attr('r', 20)
-        .attr('fill', isSelected ? '#92C842' : '#1e2d4d')
-        .attr('fill-opacity', 0.12)
-        .attr('stroke', isSelected ? '#92C842' : '#475569')
+        .attr('fill', isSelected ? '#10b981' : '#e2e8f0')
+        .attr('fill-opacity', 0.2)
+        .attr('stroke', isSelected ? '#10b981' : '#94a3b8')
         .attr('stroke-width', 1)
         .attr('stroke-dasharray', '2,2');
 
       nodeG.append('circle')
         .attr('r', 10)
-        .attr('fill', '#090e1c')
-        .attr('stroke', isSelected ? '#92C842' : '#64748b')
+        .attr('fill', '#ffffff')
+        .attr('stroke', isSelected ? '#10b981' : '#64748b')
         .attr('stroke-width', 2);
 
       nodeG.append('circle')
         .attr('r', 4)
-        .attr('fill', isSelected ? '#92C842' : '#94a3b8');
+        .attr('fill', isSelected ? '#10b981' : '#94a3b8');
 
       // Hub Label Badge
       nodeG.append('text')
         .attr('x', 0)
         .attr('y', -18)
         .attr('text-anchor', 'middle')
-        .attr('fill', isSelected ? '#ffffff' : '#94a3b8')
+        .attr('fill', isSelected ? '#0f172a' : '#475569')
         .attr('font-size', '11px')
         .attr('font-weight', 'bold')
         .attr('font-family', 'sans-serif')
@@ -753,17 +735,17 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
       // Ping radar pulse
       tGroup.append('circle')
         .attr('r', isSelected ? 14 : 9)
-        .attr('fill', isWarning ? '#F17F31' : '#92C842')
-        .attr('fill-opacity', isSelected ? 0.25 : 0.15)
-        .attr('stroke', isWarning ? '#F17F31' : '#92C842')
+        .attr('fill', isWarning ? '#f59e0b' : '#10b981')
+        .attr('fill-opacity', isSelected ? 0.35 : 0.2)
+        .attr('stroke', isWarning ? '#f59e0b' : '#10b981')
         .attr('stroke-width', 1)
         .attr('filter', 'url(#node-glow)');
 
       // Core POS device pip
       tGroup.append('circle')
         .attr('r', isSelected ? 5 : 3.5)
-        .attr('fill', isWarning ? '#F17F31' : term.intensity >= 90 ? '#92C842' : '#22d3ee')
-        .attr('stroke', '#090e1c')
+        .attr('fill', isWarning ? '#f59e0b' : term.intensity >= 90 ? '#10b981' : '#0284c7')
+        .attr('stroke', '#ffffff')
         .attr('stroke-width', 1.5);
 
       // Terminal ID Label (optional toggle)
@@ -771,7 +753,7 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
         tGroup.append('text')
           .attr('x', 9)
           .attr('y', 3)
-          .attr('fill', isSelected ? '#92C842' : '#cbd5e1')
+          .attr('fill', isSelected ? '#10b981' : '#334155')
           .attr('font-size', '9px')
           .attr('font-weight', isSelected ? 'bold' : 'normal')
           .attr('font-family', 'monospace')
@@ -793,9 +775,9 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
   return (
     <div className="space-y-4">
       {/* HEATMAP TOP ACTION & METRIC CONTROL BAR */}
-      <div className="bg-[#0e1628] border border-[#1e2d4d] rounded-xl p-4 shadow-lg flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white rounded-[12px] border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] p-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-[#92C842]/10 text-[#92C842] border border-[#92C842]/30">
+          <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 shadow-sm">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
@@ -807,18 +789,18 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-base sm:text-lg font-bold text-white tracking-wide">
-                Terminal Activity &amp; Spatial Density Map
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                Card Machine Activity &amp; Location Map
               </h2>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#92C842]/20 text-[#92C842] border border-[#92C842]/30">
-                D3 SPATIAL HEATMAP
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                LIVE ACTIVITY MAP
               </span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#151f38] text-slate-300 border border-[#1e2d4d]">
-                1,420 MONITORED POS NODES
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                1,420 MONITORED MACHINES
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Visualizing real-time retail heartbeat density, active POS intensity, and network trunks across 4 Nigerian regional hubs.
+            <p className="text-xs text-slate-500 mt-0.5">
+              Live map showing card machine transactions, signal strength, and network routes across all 4 branch hubs.
             </p>
           </div>
         </div>
@@ -828,10 +810,10 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
           {onOpenShiftCompliance && (
             <button
               onClick={onOpenShiftCompliance}
-              className="px-3 py-1.5 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] hover:border-[#92C842]/40 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
+              className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm"
               title="Generate PDF-ready Shift Compliance Audit"
             >
-              <svg className="w-4 h-4 text-[#92C842]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   strokeLinecap="round"
@@ -839,54 +821,54 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
                   strokeWidth="2"
                 />
               </svg>
-              <span>Shift Compliance (PDF)</span>
+              <span>Shift Attendance Report (PDF)</span>
             </button>
           )}
 
           <button
             onClick={onOpenNewVSR}
-            className="px-4 py-1.5 rounded-lg bg-[#92C842] hover:bg-[#7bb32e] text-[#090e1c] text-xs font-bold shadow-md shadow-[#92C842]/20 transition-all active:scale-95"
+            className="px-4 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold shadow-sm transition-all active:scale-95"
           >
-            + Allocate Merchandiser
+            + Assign Store Worker
           </button>
         </div>
       </div>
 
       {/* FILTER & METRIC SELECTOR TOOLBAR */}
-      <div className="bg-[#0b1222] border border-[#1e2d4d] rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="bg-white rounded-[12px] border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
         {/* Hub Filter Switcher */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-slate-400 font-mono text-[11px] mr-1">TERRITORY:</span>
+          <span className="text-slate-500 font-medium text-[11px] mr-1">BRANCH:</span>
           {['All', 'Lagos', 'Ibadan', 'Ogun', 'Benin'].map((hubName) => (
             <button
               key={hubName}
               onClick={() => onSelectHub(hubName)}
               className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                 selectedHub === hubName
-                  ? 'bg-[#92C842] text-[#090e1c] shadow-sm shadow-[#92C842]/20'
-                  : 'bg-[#151f38] text-slate-300 hover:text-white border border-[#1e2d4d]'
+                  ? 'bg-emerald-500 text-white shadow-sm'
+                  : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
               }`}
             >
-              {hubName === 'All' ? 'All 4 Regional Hubs' : `${hubName} Cluster`}
+              {hubName === 'All' ? 'All 4 Regional Hubs' : `${hubName} Branch`}
             </button>
           ))}
         </div>
 
         {/* Heatmap Dimension Metric */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-slate-400 font-mono text-[11px] mr-1">METRIC:</span>
+          <span className="text-slate-500 font-medium text-[11px] mr-1">SHOW BY:</span>
           {[
-            { id: 'intensity', label: 'Activity Intensity' },
-            { id: 'throughput', label: 'Hourly Throughput' },
-            { id: 'battery', label: 'Battery Capacity' }
+            { id: 'intensity', label: 'Activity Level' },
+            { id: 'throughput', label: 'Hourly Sales' },
+            { id: 'battery', label: 'Battery Health' }
           ].map((m) => (
             <button
               key={m.id}
               onClick={() => setMetricMode(m.id as any)}
               className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
                 metricMode === m.id
-                  ? 'bg-[#1e2d4d] text-[#92C842] border border-[#92C842]/40 font-bold'
-                  : 'bg-[#0e1628] text-slate-400 hover:text-slate-200 border border-[#1e2d4d]'
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-300 font-semibold'
+                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
               }`}
             >
               {m.label}
@@ -895,33 +877,33 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
         </div>
 
         {/* Layer Toggles */}
-        <div className="flex items-center gap-2 text-slate-400 text-[11px]">
-          <label className="flex items-center gap-1.5 cursor-pointer hover:text-slate-200 select-none">
+        <div className="flex items-center gap-2 text-slate-600 text-[11px]">
+          <label className="flex items-center gap-1.5 cursor-pointer hover:text-slate-900 select-none">
             <input
               type="checkbox"
               checked={showDensityHalos}
               onChange={(e) => setShowDensityHalos(e.target.checked)}
-              className="rounded bg-[#151f38] border-[#1e2d4d] text-[#92C842] focus:ring-0"
+              className="rounded border-slate-300 text-emerald-500 focus:ring-0"
             />
-            <span>Heat Halos</span>
+            <span>Heat Circles</span>
           </label>
-          <label className="flex items-center gap-1.5 cursor-pointer hover:text-slate-200 select-none">
+          <label className="flex items-center gap-1.5 cursor-pointer hover:text-slate-900 select-none">
             <input
               type="checkbox"
               checked={showNetworkTrunks}
               onChange={(e) => setShowNetworkTrunks(e.target.checked)}
-              className="rounded bg-[#151f38] border-[#1e2d4d] text-[#92C842] focus:ring-0"
+              className="rounded border-slate-300 text-emerald-500 focus:ring-0"
             />
-            <span>Trunks</span>
+            <span>Routes</span>
           </label>
-          <label className="flex items-center gap-1.5 cursor-pointer hover:text-slate-200 select-none">
+          <label className="flex items-center gap-1.5 cursor-pointer hover:text-slate-900 select-none">
             <input
               type="checkbox"
               checked={showTerminalLabels}
               onChange={(e) => setShowTerminalLabels(e.target.checked)}
-              className="rounded bg-[#151f38] border-[#1e2d4d] text-[#92C842] focus:ring-0"
+              className="rounded border-slate-300 text-emerald-500 focus:ring-0"
             />
-            <span>Labels</span>
+            <span>ID Labels</span>
           </label>
         </div>
       </div>
@@ -929,30 +911,30 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
       {/* MAIN SPATIAL CANVAS & INSPECTOR GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
         
-        {/* D3 SPATIAL DENSITY CANVAS CONTAINER (8 or 9 cols) */}
-        <div className="lg:col-span-8 xl:col-span-9 bg-[#090e1c] border border-[#1e2d4d] rounded-xl overflow-hidden shadow-2xl relative">
+        {/* D3 SPATIAL DENSITY CANVAS CONTAINER */}
+        <div className="lg:col-span-8 xl:col-span-9 bg-[#f8fafc] border border-slate-200/80 rounded-[12px] overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.03)] relative">
           
           {/* Canvas Sub-header with Live Indicator & Legends */}
-          <div className="px-4 py-2.5 bg-[#0e1628]/90 border-b border-[#1e2d4d] flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="px-4 py-2.5 bg-white/90 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2 font-mono">
-              <span className="w-2 h-2 rounded-full bg-[#92C842] animate-pulse"></span>
-              <span className="text-[#92C842] font-semibold text-[11px]">SPATIAL STREAM ACTIVE</span>
-              <span className="text-slate-500">•</span>
-              <span className="text-slate-300 text-[11px]">
-                Showing <strong className="text-white font-bold">{filteredTerminals.length}</strong> active retail points
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="text-emerald-700 font-semibold text-[11px]">LIVE MAP STREAM</span>
+              <span className="text-slate-300">•</span>
+              <span className="text-slate-600 text-[11px]">
+                Showing <strong className="text-slate-900 font-bold">{filteredTerminals.length}</strong> active store locations
               </span>
             </div>
 
             {/* Heatmap Color Scale Legend */}
-            <div className="flex items-center gap-2 text-[10px] font-mono text-slate-400">
-              <span>Low Density</span>
-              <div className="w-20 h-2 rounded-full bg-gradient-to-r from-[#22d3ee] via-[#92C842] to-[#E05252]"></div>
-              <span className="text-[#E05252] font-bold">Peak Intensity</span>
+            <div className="flex items-center gap-2 text-[10px] font-mono text-slate-500">
+              <span>Low Activity</span>
+              <div className="w-20 h-2 rounded-full bg-gradient-to-r from-sky-400 via-emerald-400 to-emerald-600"></div>
+              <span className="text-emerald-700 font-bold">Peak Sales</span>
             </div>
           </div>
 
           {/* SVG Canvas Element */}
-          <div ref={containerRef} className="relative w-full aspect-[16/10] min-h-[440px] max-h-[620px] bg-[#090e1c] select-none">
+          <div ref={containerRef} className="relative w-full aspect-[16/10] min-h-[440px] max-h-[620px] bg-[#f8fafc] select-none">
             <svg
               ref={svgRef}
               viewBox="0 0 1000 620"
@@ -961,8 +943,8 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
             />
 
             {/* Zoom / Navigation Overlay Controls */}
-            <div className="absolute bottom-3 right-3 flex items-center gap-1 bg-[#0e1628]/90 border border-[#1e2d4d] p-1 rounded-lg text-xs shadow-lg">
-              <span className="px-2 text-[10px] font-mono text-slate-400">Pan / Scroll to Zoom</span>
+            <div className="absolute bottom-3 right-3 flex items-center gap-1 bg-white/90 border border-slate-200 p-1 rounded-lg text-xs shadow-md">
+              <span className="px-2 text-[10px] text-slate-500">Scroll to Zoom</span>
               <button
                 onClick={() => {
                   if (svgRef.current) {
@@ -972,7 +954,7 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
                     );
                   }
                 }}
-                className="px-2 py-0.5 rounded bg-[#151f38] hover:bg-[#1a2745] text-slate-300 hover:text-white font-mono text-[10px]"
+                className="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-[10px]"
                 title="Reset zoom"
               >
                 Reset
@@ -982,39 +964,39 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
             {/* Hover Tooltip Overlay */}
             {hoveredTerminal && !selectedTerminal && (
               <div
-                className="absolute pointer-events-none z-20 bg-[#0e1628]/95 border border-[#92C842]/50 rounded-lg p-2.5 shadow-xl text-xs font-mono"
+                className="absolute pointer-events-none z-20 bg-white border border-slate-200 rounded-xl p-2.5 shadow-xl text-xs"
                 style={{
                   left: `${(hoveredTerminal.x / 1000) * 100}%`,
                   top: `${(hoveredTerminal.y / 620) * 100}%`,
                   transform: 'translate(-50%, -120%)'
                 }}
               >
-                <div className="font-bold text-white">{hoveredTerminal.terminalCode}</div>
-                <div className="text-[11px] text-[#92C842]">{hoveredTerminal.storeName}</div>
-                <div className="text-[10px] text-slate-400 mt-0.5">
-                  Intensity: <strong className="text-white">{hoveredTerminal.intensity}%</strong> • Battery: {hoveredTerminal.battery}%
+                <div className="font-bold text-slate-900">{hoveredTerminal.terminalCode}</div>
+                <div className="text-[11px] text-emerald-700">{hoveredTerminal.storeName}</div>
+                <div className="text-[10px] text-slate-500 mt-0.5">
+                  Activity: <strong className="text-slate-800">{hoveredTerminal.intensity}%</strong> • Battery: {hoveredTerminal.battery}%
                 </div>
               </div>
             )}
           </div>
 
           {/* Quick Hub Metric Footer Summary */}
-          <div className="p-3 bg-[#0e1628] border-t border-[#1e2d4d] grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
-            <div className="border-r border-[#1e2d4d]/60 pr-2">
-              <span className="text-slate-400 text-[10px]">AVG INTENSITY:</span>
-              <div className="text-[#92C842] font-bold text-sm">{stats.avgIntensity}% Adherence</div>
+          <div className="p-3 bg-white border-t border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div className="border-r border-slate-100 pr-2">
+              <span className="text-slate-500 text-[10px] uppercase font-semibold">AVERAGE ACTIVITY:</span>
+              <div className="text-emerald-700 font-bold text-sm">{stats.avgIntensity}%</div>
             </div>
-            <div className="border-r border-[#1e2d4d]/60 pr-2">
-              <span className="text-slate-400 text-[10px]">AVG BATTERY:</span>
-              <div className="text-white font-bold text-sm">{stats.avgBattery}% Charged</div>
+            <div className="border-r border-slate-100 pr-2">
+              <span className="text-slate-500 text-[10px] uppercase font-semibold">AVERAGE BATTERY:</span>
+              <div className="text-slate-900 font-bold text-sm">{stats.avgBattery}% Charged</div>
             </div>
-            <div className="border-r border-[#1e2d4d]/60 pr-2">
-              <span className="text-slate-400 text-[10px]">HOURLY TX:</span>
-              <div className="text-white font-bold text-sm">{stats.totalTransactions} / hr</div>
+            <div className="border-r border-slate-100 pr-2">
+              <span className="text-slate-500 text-[10px] uppercase font-semibold">HOURLY TRANSACTIONS:</span>
+              <div className="text-slate-900 font-bold text-sm">{stats.totalTransactions} / hr</div>
             </div>
             <div>
-              <span className="text-slate-400 text-[10px]">FLAGGED NODES:</span>
-              <div className={`font-bold text-sm ${stats.warningCount > 0 ? 'text-[#F17F31]' : 'text-[#92C842]'}`}>
+              <span className="text-slate-500 text-[10px] uppercase font-semibold">ATTENTION REQUIRED:</span>
+              <div className={`font-bold text-sm ${stats.warningCount > 0 ? 'text-amber-600' : 'text-emerald-700'}`}>
                 {stats.warningCount} Device{stats.warningCount !== 1 ? 's' : ''}
               </div>
             </div>
@@ -1022,31 +1004,31 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
 
         </div>
 
-        {/* TERMINAL INSPECTOR & TELEMETRY NODE DETAILS (4 or 3 cols) */}
+        {/* TERMINAL INSPECTOR & TELEMETRY NODE DETAILS */}
         <div className="lg:col-span-4 xl:col-span-3 space-y-4">
           
           {selectedTerminal ? (
-            <div className="bg-[#0e1628] border border-[#1e2d4d] rounded-xl p-4 shadow-xl space-y-4 animate-in fade-in">
-              <div className="flex items-start justify-between gap-2 border-b border-[#1e2d4d] pb-3">
+            <div className="bg-white border border-slate-200/80 rounded-[12px] p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] space-y-4 animate-in fade-in">
+              <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
                 <div>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#92C842]/20 text-[#92C842] border border-[#92C842]/30">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                     {selectedTerminal.terminalCode}
                   </span>
-                  <h3 className="text-sm font-bold text-white mt-1.5 leading-snug">
+                  <h3 className="text-sm font-bold text-slate-900 mt-1.5 leading-snug">
                     {selectedTerminal.storeName}
                   </h3>
-                  <div className="text-xs text-slate-400">
-                    {selectedTerminal.zone} • <strong className="text-slate-300">{selectedTerminal.hub} Hub</strong>
+                  <div className="text-xs text-slate-500">
+                    {selectedTerminal.zone} • <strong className="text-slate-700">{selectedTerminal.hub} Hub</strong>
                   </div>
                 </div>
 
                 <span
                   className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider border ${
                     selectedTerminal.status === 'reconciled'
-                      ? 'bg-[#92C842]/20 text-[#92C842] border-[#92C842]/30'
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                       : selectedTerminal.status === 'warning'
-                      ? 'bg-[#F17F31]/20 text-[#F17F31] border-[#F17F31]/30'
-                      : 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                      ? 'bg-amber-50 text-amber-700 border-amber-200'
+                      : 'bg-blue-50 text-blue-700 border-blue-200'
                   }`}
                 >
                   {selectedTerminal.status}
@@ -1056,29 +1038,29 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
               {/* Intensity Gauges */}
               <div className="space-y-2.5">
                 <div>
-                  <div className="flex justify-between text-xs font-mono mb-1">
-                    <span className="text-slate-400">Telemetry Activity Intensity:</span>
-                    <span className="font-bold text-[#92C842]">{selectedTerminal.intensity}%</span>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-slate-500">Activity Level:</span>
+                    <span className="font-bold text-emerald-700">{selectedTerminal.intensity}%</span>
                   </div>
-                  <div className="w-full bg-[#151f38] h-2 rounded-full overflow-hidden">
+                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                     <div
-                      className="h-2 rounded-full bg-gradient-to-r from-[#22d3ee] to-[#92C842]"
+                      className="h-2 rounded-full bg-emerald-500"
                       style={{ width: `${selectedTerminal.intensity}%` }}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <div className="flex justify-between text-xs font-mono mb-1">
-                    <span className="text-slate-400">Battery Level:</span>
-                    <span className={selectedTerminal.battery < 50 ? 'text-[#F17F31] font-bold' : 'text-slate-200'}>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-slate-500">Battery Level:</span>
+                    <span className={selectedTerminal.battery < 50 ? 'text-amber-600 font-bold' : 'text-slate-800'}>
                       {selectedTerminal.battery}%
                     </span>
                   </div>
-                  <div className="w-full bg-[#151f38] h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                     <div
                       className={`h-1.5 rounded-full ${
-                        selectedTerminal.battery < 50 ? 'bg-[#F17F31]' : 'bg-[#92C842]'
+                        selectedTerminal.battery < 50 ? 'bg-amber-500' : 'bg-emerald-500'
                       }`}
                       style={{ width: `${selectedTerminal.battery}%` }}
                     />
@@ -1086,11 +1068,11 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
                 </div>
 
                 <div>
-                  <div className="flex justify-between text-xs font-mono mb-1">
-                    <span className="text-slate-400">Inventory Stock Level:</span>
-                    <span className="text-slate-200">{selectedTerminal.stockLevel}%</span>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-slate-500">Stock Available:</span>
+                    <span className="text-slate-800">{selectedTerminal.stockLevel}%</span>
                   </div>
-                  <div className="w-full bg-[#151f38] h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                     <div
                       className="h-1.5 rounded-full bg-blue-500"
                       style={{ width: `${selectedTerminal.stockLevel}%` }}
@@ -1100,22 +1082,22 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
               </div>
 
               {/* Node Metadata Table */}
-              <div className="bg-[#151f38]/60 border border-[#1e2d4d] rounded-lg p-3 text-xs font-mono space-y-1.5">
+              <div className="bg-slate-50 border border-slate-200/70 rounded-xl p-3 text-xs space-y-1.5">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Assigned VSR:</span>
-                  <span className="font-semibold text-slate-200">{selectedTerminal.assignedRep}</span>
+                  <span className="text-slate-500">Assigned Staff:</span>
+                  <span className="font-semibold text-slate-900">{selectedTerminal.assignedRep}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Last Heartbeat:</span>
-                  <span className="text-[#92C842]">{selectedTerminal.lastPing}</span>
+                  <span className="text-slate-500">Last Active:</span>
+                  <span className="text-emerald-700 font-medium">{selectedTerminal.lastPing}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Throughput:</span>
-                  <span className="text-white font-bold">{selectedTerminal.hourlyTransactions} tx/hr</span>
+                  <span className="text-slate-500">Hourly Sales:</span>
+                  <span className="text-slate-900 font-bold">{selectedTerminal.hourlyTransactions} orders/hr</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Spatial Node:</span>
-                  <span className="text-slate-400">X:{selectedTerminal.x} Y:{selectedTerminal.y}</span>
+                  <span className="text-slate-500">Map Coordinates:</span>
+                  <span className="text-slate-600 font-mono">X:{selectedTerminal.x} Y:{selectedTerminal.y}</span>
                 </div>
               </div>
 
@@ -1123,9 +1105,9 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
               <div className="space-y-2 pt-1">
                 <button
                   onClick={() => handlePingTerminal(selectedTerminal.id)}
-                  className="w-full py-2 px-3 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] hover:border-[#92C842]/40 text-xs font-semibold flex items-center justify-center gap-2 transition-all"
+                  className="w-full py-2 px-3 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200 text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-sm"
                 >
-                  <svg className="w-3.5 h-3.5 text-[#92C842]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       d="M13 10V3L4 14h7v7l9-11h-7z"
                       strokeLinecap="round"
@@ -1134,14 +1116,14 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
                     />
                   </svg>
                   <span>
-                    {pingSuccessId === selectedTerminal.id ? '✓ Ping Ack (0.04s)' : 'Dispatch Heartbeat Ping'}
+                    {pingSuccessId === selectedTerminal.id ? '✓ Signal Received' : 'Test Machine Signal'}
                   </span>
                 </button>
               </div>
             </div>
           ) : (
-            <div className="bg-[#0e1628] border border-[#1e2d4d] rounded-xl p-6 text-center text-xs text-slate-400 space-y-2">
-              <svg className="w-8 h-8 text-slate-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white border border-slate-200/80 rounded-[12px] p-6 text-center text-xs text-slate-500 space-y-2 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+              <svg className="w-8 h-8 text-slate-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"
                   strokeLinecap="round"
@@ -1149,15 +1131,15 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
                   strokeWidth="2"
                 />
               </svg>
-              <div className="font-semibold text-slate-200">No Terminal Selected</div>
-              <p>Click any node on the D3 spatial heatmap to inspect real-time device telemetry.</p>
+              <div className="font-semibold text-slate-900">No Machine Selected</div>
+              <p>Click any card machine dot on the map to view its live details.</p>
             </div>
           )}
 
           {/* Hub Summary Card */}
-          <div className="bg-[#0e1628] border border-[#1e2d4d] rounded-xl p-4 shadow-lg space-y-3">
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-              Regional POS Density Tally
+          <div className="bg-white border border-slate-200/80 rounded-[12px] p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] space-y-3">
+            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+              Branch Machine Count
             </h4>
             <div className="space-y-2">
               {hubs.map((h) => (
@@ -1166,16 +1148,16 @@ export const TerminalHeatmapView: React.FC<TerminalHeatmapViewProps> = ({
                   onClick={() => onSelectHub(h.hub)}
                   className={`p-2 rounded-lg border transition-all cursor-pointer flex items-center justify-between text-xs ${
                     selectedHub === h.hub
-                      ? 'bg-[#151f38] border-[#92C842]'
-                      : 'bg-[#0b1222] border-[#1e2d4d]/60 hover:border-[#1e2d4d]'
+                      ? 'bg-emerald-50 border-emerald-300'
+                      : 'bg-white border-slate-200 hover:border-slate-300'
                   }`}
                 >
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: h.colorHex }} />
-                    <span className="font-semibold text-slate-200">{h.hub}</span>
+                    <span className="font-semibold text-slate-800">{h.hub}</span>
                   </div>
-                  <div className="font-mono text-[11px] text-slate-400">
-                    <strong className="text-white">{h.activePOS}</strong> POS ({h.percentage}%)
+                  <div className="font-mono text-[11px] text-slate-500">
+                    <strong className="text-slate-900">{h.activePOS}</strong> POS ({h.percentage}%)
                   </div>
                 </div>
               ))}

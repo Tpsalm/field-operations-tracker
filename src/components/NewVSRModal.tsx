@@ -98,24 +98,24 @@ export const NewVSRModal: React.FC<NewVSRModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
-      <div className="bg-[#0e1628] border border-[#1e2d4d] rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl p-6 text-slate-200 space-y-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+      <div className="bg-white border border-slate-200/90 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl p-6 text-slate-800 space-y-5">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#1e2d4d] pb-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-[#92C842]/10 text-[#92C842] border border-[#92C842]/30">
+            <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
               </svg>
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">New VSR Field Allocation</h3>
-              <p className="text-xs text-slate-400">Enroll new representative into the telemetry tracking registry</p>
+              <h3 className="text-base font-bold text-slate-900">Add New Field Staff</h3>
+              <p className="text-xs text-slate-500">Register a new representative into field operations</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-[#151f38] transition-colors"
+            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
           >
             ✕
           </button>
@@ -125,67 +125,67 @@ export const NewVSRModal: React.FC<NewVSRModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-slate-400 font-medium mb-1">Representative Full Name *</label>
+              <label className="block text-slate-700 font-medium mb-1">Full Name *</label>
               <input
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Babatunde Fashola"
-                className="w-full bg-[#151f38] border border-[#1e2d4d] focus:border-[#92C842] rounded-lg px-3 py-2 text-white placeholder-slate-500"
+                className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-500 rounded-lg px-3 py-2 text-slate-900 placeholder-slate-400 outline-none"
               />
             </div>
             <div>
-              <label className="block text-slate-400 font-medium mb-1">Operational Hub *</label>
+              <label className="block text-slate-700 font-medium mb-1">Branch / Hub *</label>
               <select
                 value={region}
                 onChange={(e) => setRegion(e.target.value as any)}
-                className="w-full bg-[#151f38] border border-[#1e2d4d] focus:border-[#92C842] rounded-lg px-3 py-2 text-white"
+                className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-500 rounded-lg px-3 py-2 text-slate-800 outline-none"
               >
-                <option value="Lagos">Lagos (Southwest Hub)</option>
-                <option value="Ibadan">Ibadan (Oyo Cluster)</option>
-                <option value="Ogun">Ogun (Abeokuta / Sagamu)</option>
-                <option value="Benin">Benin (Edo Sector)</option>
+                <option value="Lagos">Lagos Hub</option>
+                <option value="Ibadan">Ibadan Hub</option>
+                <option value="Ogun">Ogun Hub</option>
+                <option value="Benin">Benin Hub</option>
               </select>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-slate-400 font-medium mb-1">Route / Market Cluster</label>
+              <label className="block text-slate-700 font-medium mb-1">Assigned Route / Market Area</label>
               <input
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g. Victoria Island (Adetokunbo Ademola)"
-                className="w-full bg-[#151f38] border border-[#1e2d4d] focus:border-[#92C842] rounded-lg px-3 py-2 text-white placeholder-slate-500"
+                placeholder="e.g. Victoria Island Market"
+                className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-500 rounded-lg px-3 py-2 text-slate-900 placeholder-slate-400 outline-none"
               />
             </div>
             <div>
-              <label className="block text-slate-400 font-medium mb-1">Phone Number</label>
+              <label className="block text-slate-700 font-medium mb-1">Phone Number</label>
               <input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+234 800 000 0000"
-                className="w-full bg-[#151f38] border border-[#1e2d4d] focus:border-[#92C842] rounded-lg px-3 py-2 text-white placeholder-slate-500 font-mono"
+                className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-500 rounded-lg px-3 py-2 text-slate-900 placeholder-slate-400 font-mono outline-none"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-slate-400 font-medium mb-1">Monthly Capital Allocation (₦)</label>
+              <label className="block text-slate-700 font-medium mb-1">Monthly Capital Allocation (₦)</label>
               <input
                 value={allocation}
                 onChange={(e) => setAllocation(e.target.value)}
                 placeholder="180,000"
-                className="w-full bg-[#151f38] border border-[#1e2d4d] focus:border-[#92C842] rounded-lg px-3 py-2 text-white font-mono"
+                className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-500 rounded-lg px-3 py-2 text-slate-900 font-mono outline-none"
               />
             </div>
             <div>
-              <label className="block text-slate-400 font-medium mb-1">Bank Name</label>
+              <label className="block text-slate-700 font-medium mb-1">Bank Name</label>
               <select
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
-                className="w-full bg-[#151f38] border border-[#1e2d4d] focus:border-[#92C842] rounded-lg px-3 py-2 text-white"
+                className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-500 rounded-lg px-3 py-2 text-slate-800 outline-none"
               >
                 <option value="Access Bank">Access Bank</option>
                 <option value="Zenith Bank">Zenith Bank</option>
@@ -200,52 +200,52 @@ export const NewVSRModal: React.FC<NewVSRModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-slate-400 font-medium mb-1">Account Number</label>
+              <label className="block text-slate-700 font-medium mb-1">Account Number</label>
               <input
                 value={accountNumber}
                 onChange={(e) => setAccountNumber(e.target.value)}
                 placeholder="10-digit NUBAN"
                 maxLength={10}
-                className="w-full bg-[#151f38] border border-[#1e2d4d] focus:border-[#92C842] rounded-lg px-3 py-2 text-white placeholder-slate-500 font-mono"
+                className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-500 rounded-lg px-3 py-2 text-slate-900 placeholder-slate-400 font-mono outline-none"
               />
             </div>
             <div>
-              <label className="block text-slate-400 font-medium mb-1">Guarantor Name &amp; Affiliation</label>
+              <label className="block text-slate-700 font-medium mb-1">Guarantor Name</label>
               <input
                 value={guarantorName}
                 onChange={(e) => setGuarantorName(e.target.value)}
-                placeholder="e.g. Chief O. Adebisi (Market Leader)"
-                className="w-full bg-[#151f38] border border-[#1e2d4d] focus:border-[#92C842] rounded-lg px-3 py-2 text-white placeholder-slate-500"
+                placeholder="e.g. Chief O. Adebisi"
+                className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-500 rounded-lg px-3 py-2 text-slate-900 placeholder-slate-400 outline-none"
               />
             </div>
           </div>
 
           {/* Loan Option */}
-          <div className="p-3 bg-[#151f38]/60 border border-[#1e2d4d] rounded-lg space-y-2">
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={hasLoan}
                   onChange={(e) => setHasLoan(e.target.checked)}
-                  className="rounded border-[#1e2d4d] text-[#F17F31] focus:ring-0"
+                  className="rounded border-slate-300 text-amber-600 focus:ring-0"
                 />
-                <span className="font-semibold text-slate-200">Active Working Capital Loan Facility</span>
+                <span className="font-semibold text-slate-800">Active Working Capital Loan</span>
               </label>
               {hasLoan && (
-                <span className="text-[10px] font-bold text-[#F17F31] bg-[#F17F31]/10 px-2 py-0.5 rounded">
-                  Facility Enabled
+                <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                  Loan Enabled
                 </span>
               )}
             </div>
             {hasLoan && (
               <div className="pt-2">
-                <label className="block text-slate-400 text-[11px] mb-1">Loan Principal Amount (₦)</label>
+                <label className="block text-slate-600 text-[11px] mb-1">Loan Principal Amount (₦)</label>
                 <input
                   value={loanAmount}
                   onChange={(e) => setLoanAmount(e.target.value)}
                   placeholder="50,000"
-                  className="w-full bg-[#0e1628] border border-[#1e2d4d] focus:border-[#F17F31] rounded-lg px-3 py-1.5 text-white font-mono text-xs"
+                  className="w-full bg-white border border-slate-300 focus:border-amber-500 rounded-lg px-3 py-1.5 text-slate-900 font-mono text-xs outline-none"
                 />
               </div>
             )}
@@ -253,30 +253,30 @@ export const NewVSRModal: React.FC<NewVSRModalProps> = ({
 
           {/* Initial Directive */}
           <div>
-            <label className="block text-slate-400 font-medium mb-1">Initial CEO Directive / Instruction (Optional)</label>
+            <label className="block text-slate-700 font-medium mb-1">Initial Admin Instruction (Optional)</label>
             <textarea
               rows={2}
               value={directive}
               onChange={(e) => setDirective(e.target.value)}
-              placeholder="e.g. Fast-track Bodija retail POS terminals before Friday morning dispatch..."
-              className="w-full bg-[#151f38] border border-[#1e2d4d] focus:border-[#92C842] rounded-lg p-3 text-white placeholder-slate-500"
+              placeholder="e.g. Provide card machines before Friday morning dispatch..."
+              className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-500 rounded-lg p-3 text-slate-900 placeholder-slate-400 outline-none"
             />
           </div>
 
           {/* Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#1e2d4d]">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-300 font-semibold"
+              className="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-lg bg-[#92C842] hover:bg-[#7bb32e] text-[#090e1c] font-bold shadow-md shadow-[#92C842]/20 transition-transform active:scale-95"
+              className="px-5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-sm transition-transform active:scale-95"
             >
-              Confirm &amp; Allocate VSR
+              Confirm &amp; Register Staff
             </button>
           </div>
         </form>

@@ -163,7 +163,7 @@ export const KPIStats: React.FC<KPIStatsProps> = ({
       {/* Card 5: HQ Personnel */}
       <div
         onClick={() => {
-          if (onSelectScreen) onSelectScreen('head_office');
+          if (onSelectScreen) onSelectScreen('vsr_recruitment');
         }}
         className="bg-white border border-slate-200/80 hover:border-amber-500 rounded-[12px] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all group cursor-pointer"
       >

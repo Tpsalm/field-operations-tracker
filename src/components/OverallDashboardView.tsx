@@ -1484,18 +1484,6 @@ export const OverallDashboardView: React.FC<OverallDashboardViewProps> = ({
                 <button
                   onClick={() => {
                     if (onNavigate) {
-                      onNavigate('employee_compliance_register');
-                    } else {
-                      setSelectedDrillDown('Action Items / Compliance Register');
-                    }
-                  }}
-                  className="px-3 py-1.5 rounded-lg font-semibold transition-all bg-white text-slate-600 hover:text-slate-900 border border-slate-200 shadow-xs"
-                >
-                  Internal Staffs (59)
-                </button>
-                <button
-                  onClick={() => {
-                    if (onNavigate) {
                       onNavigate('vsr_recruitment');
                     }
                   }}

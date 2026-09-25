@@ -1,5 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Region, AuthUser } from '../types';
+import { 
+  Bell, 
+  Clock, 
+  RotateCw, 
+  Plus, 
+  MapPin, 
+  FileText, 
+  BarChart3, 
+  LogOut, 
+  ChevronDown 
+} from 'lucide-react';
 
 interface TopHeaderProps {
   selectedRegion: Region;
@@ -38,7 +49,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   currentUser,
   onSignOut
 }) => {
-  const [watTime, setWatTime] = useState<string>('06:54:05 WAT');
+  const [watTime, setWatTime] = useState<string>('07:00:00 WAT');
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
@@ -51,7 +62,6 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 
     const updateTime = () => {
       const now = new Date();
-      // Format to WAT (UTC+1)
       const options: Intl.DateTimeFormatOptions = {
         timeZone: 'Africa/Lagos',
         hour: '2-digit',
@@ -81,21 +91,22 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 
   const hubs: { id: Region; label: string }[] = [
     { id: 'All', label: 'All Locations' },
-    { id: 'Lagos', label: 'Lagos' },
-    { id: 'Ibadan', label: 'Ibadan' },
-    { id: 'Ogun', label: 'Ogun' },
-    { id: 'Benin', label: 'Benin' }
+    { id: 'Lagos', label: 'Lagos Hub' },
+    { id: 'Ibadan', label: 'Ibadan Hub' },
+    { id: 'Ogun', label: 'Ogun Hub' },
+    { id: 'Benin', label: 'Benin Hub' }
   ];
 
   return (
-    <header className="bg-[#0e1628] border-b border-[#1e2d4d] sticky top-0 z-20">
+    <header className="bg-white border-b border-slate-200/80 sticky top-0 z-20 shadow-xs">
       {/* Main Top Bar */}
-      <div className="px-4 lg:px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
-        {/* Mobile menu trigger + Hub Switchers */}
-        <div className="flex items-center gap-2 overflow-x-auto text-xs py-1">
+      <div className="px-4 lg:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+        
+        {/* Mobile menu trigger & Location Filter Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto text-xs py-0.5">
           <button
             onClick={onToggleMobileMenu}
-            className="md:hidden p-2 rounded-lg bg-[#151f38] text-slate-300 border border-[#1e2d4d] hover:text-white"
+            className="md:hidden p-2 rounded-lg bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100"
             title="Toggle Menu"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,16 +114,18 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             </svg>
           </button>
 
+          <span className="text-[11px] font-semibold text-slate-400 mr-1 hidden sm:inline">Filter Area:</span>
+
           {hubs.map((hub) => {
             const isActive = selectedRegion === hub.id;
             return (
               <button
                 key={hub.id}
                 onClick={() => onSelectRegion(hub.id)}
-                className={`px-3.5 py-1.5 rounded-md font-semibold transition-colors whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                   isActive
-                    ? 'bg-[#151f38] text-white border border-[#1e2d4d] hover:border-[#92C842]/50'
-                    : 'bg-transparent text-slate-400 hover:text-slate-200 hover:bg-[#151f38]/60 font-medium'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-xs'
+                    : 'bg-slate-50 text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/60'
                 }`}
               >
                 {hub.label}
@@ -121,69 +134,51 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           })}
         </div>
 
-        {/* Top Right Controls */}
-        <div className="flex items-center gap-4">
-          {/* Sync Indicator */}
-          <div className="flex items-center gap-2 text-xs font-mono text-slate-400 hidden sm:flex">
-            <svg
-              className={`w-3.5 h-3.5 text-[#92C842] ${isRefreshing ? 'animate-spin' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-              />
-            </svg>
-            <span>
-              Updated: <span className="text-slate-200">{syncTimeSeconds}s ago</span>
-            </span>
-          </div>
+        {/* Top Right User & Utility Controls */}
+        <div className="flex items-center gap-3">
+          {/* Refresh Action */}
+          <button
+            onClick={onForceRefresh}
+            disabled={isRefreshing}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-semibold transition-all shadow-xs"
+            title="Refresh live data now"
+          >
+            <RotateCw className={`w-3.5 h-3.5 text-emerald-600 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">{isRefreshing ? 'Updating...' : 'Refresh'}</span>
+          </button>
 
-          {/* Bell Notification */}
-          <div
+          {/* Bell Notification Drawer Trigger */}
+          <button
             onClick={onOpenNotifications}
-            className="relative cursor-pointer p-1.5 text-slate-400 hover:text-slate-200 rounded-lg hover:bg-[#151f38] transition-colors"
+            className="relative p-2 text-slate-500 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors border border-slate-200/80 bg-slate-50 shadow-xs"
             title="Alerts and Notifications"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-              />
-            </svg>
+            <Bell className="w-4 h-4" />
             {hasUnreadNotifications && (
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#F17F31] ring-2 ring-[#0e1628]"></span>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500 ring-2 ring-white"></span>
             )}
-          </div>
+          </button>
 
           {/* User Profile & Menu */}
-          <div className="relative pl-3 border-l border-[#1e2d4d]" ref={profileMenuRef}>
+          <div className="relative pl-2 border-l border-slate-200" ref={profileMenuRef}>
             <button
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-              className="flex items-center gap-2.5 p-1 rounded-lg hover:bg-[#151f38] transition-all text-left group"
+              className="flex items-center gap-2.5 p-1 rounded-xl hover:bg-slate-50 transition-all text-left group"
               title="Click to manage account or switch user"
             >
               <div className="text-right hidden sm:block">
-                <div className="text-xs font-bold text-slate-100 group-hover:text-white flex items-center justify-end gap-1">
+                <div className="text-xs font-bold text-slate-900 flex items-center justify-end gap-1">
                   <span>{currentUser ? currentUser.name : 'Tope Balogun'}</span>
-                  <svg className="w-3 h-3 text-slate-400 group-hover:text-white transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                  </svg>
+                  <ChevronDown className="w-3 h-3 text-slate-400 group-hover:text-slate-700 transition-transform" />
                 </div>
-                <div className="text-[10px] font-medium tracking-wider text-[#92C842] uppercase truncate max-w-[140px]">
+                <div className="text-[10px] font-semibold text-emerald-700 uppercase tracking-tight truncate max-w-[140px]">
                   {currentUser ? currentUser.roleTitle : 'Super Admin'}
                 </div>
               </div>
 
               <div
-                className="w-8 h-8 rounded-full border border-[#92C842]/40 flex items-center justify-center text-xs font-bold text-[#090e1c] shadow-inner font-mono shrink-0"
-                style={{ backgroundColor: currentUser ? currentUser.avatarColor : '#92C842' }}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white shadow-xs font-mono shrink-0"
+                style={{ backgroundColor: currentUser ? currentUser.avatarColor : '#059669' }}
               >
                 {currentUser ? currentUser.initials : 'TB'}
               </div>
@@ -191,34 +186,31 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 
             {/* Profile Dropdown Menu */}
             {isProfileMenuOpen && (
-              <div className="absolute right-0 top-full mt-2 w-72 bg-[#0e1628] border border-[#1e2d4d] rounded-xl shadow-2xl z-50 p-3 space-y-3">
-                <div className="border-b border-[#1e2d4d] pb-2.5">
-                  <div className="text-xs font-bold text-white">
+              <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-slate-200 rounded-[12px] shadow-2xl z-50 p-4 space-y-3 animate-fade-in">
+                <div className="border-b border-slate-100 pb-3">
+                  <div className="text-xs font-bold text-slate-900">
                     {currentUser ? currentUser.name : 'Tope Balogun'}
                   </div>
-                  <div className="text-[11px] text-slate-400 font-mono truncate">
+                  <div className="text-[11px] text-slate-500 font-mono truncate mt-0.5">
                     {currentUser ? currentUser.email : 'tope.balogun@keahospitality.ng'}
                   </div>
-                  <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-[#92C842]/10 text-[#92C842] border border-[#92C842]/30 font-semibold">
-                      {currentUser ? currentUser.securityClearance : 'Super Admin'}
-                    </span>
-                    <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-[#151f38] text-slate-300 border border-[#1e2d4d]">
-                      {currentUser ? currentUser.department : 'Executive Leadership'}
+                  <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      {currentUser ? currentUser.securityClearance : 'Level 5 (Unrestricted)'}
                     </span>
                   </div>
                 </div>
 
-                <div className="text-[11px] text-slate-400 space-y-1">
+                <div className="text-xs text-slate-600 space-y-1.5">
                   <div className="flex justify-between">
-                    <span>Locations:</span>
-                    <span className="font-mono text-slate-200">
-                      {currentUser ? currentUser.assignedRegion : 'All 4 Locations'}
+                    <span className="text-slate-400">Assigned Area:</span>
+                    <span className="font-semibold text-slate-800">
+                      {currentUser ? currentUser.assignedRegion : 'All Locations'}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Status:</span>
-                    <span className="font-mono text-[#92C842]">Online & Secure</span>
+                    <span className="text-slate-400">System Status:</span>
+                    <span className="font-semibold text-emerald-700">Online &amp; Active</span>
                   </div>
                 </div>
 
@@ -228,11 +220,9 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                       setIsProfileMenuOpen(false);
                       onSignOut();
                     }}
-                    className="w-full py-2 px-3 rounded-lg bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 text-xs font-semibold flex items-center justify-center gap-2 transition-all"
+                    className="w-full py-2 px-3 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-xs font-bold flex items-center justify-center gap-2 transition-all"
                   >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                    </svg>
+                    <LogOut className="w-3.5 h-3.5" />
                     <span>Sign Out / Switch User</span>
                   </button>
                 )}
@@ -242,141 +232,72 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         </div>
       </div>
 
-      {/* Sub Top Control Bar */}
-      <div className="px-4 lg:px-6 py-2.5 bg-[#090e1c]/80 border-t border-[#1e2d4d] flex flex-wrap items-center justify-between gap-3 text-xs">
+      {/* Sub Top Control Bar (Clean Light Styling) */}
+      <div className="px-4 lg:px-6 py-2 bg-slate-50/70 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-3 flex-wrap">
-          <span className="flex items-center gap-1.5 text-[#92C842] font-semibold tracking-wide">
-            <span className="w-2 h-2 rounded-full bg-[#92C842] animate-pulse"></span>
-            LIVE MACHINES CONNECTED
+          <span className="flex items-center gap-1.5 text-emerald-700 font-bold text-[11px] uppercase tracking-wide">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Live Systems Online
           </span>
-          <span className="text-slate-500">•</span>
-          <span className="text-slate-300">Live data connected</span>
-          <span className="bg-[#151f38] px-2 py-0.5 rounded border border-[#1e2d4d] text-[11px] font-mono text-slate-300">
+          <span className="text-slate-300">•</span>
+          <span className="bg-white px-2 py-0.5 rounded border border-slate-200 text-[11px] font-mono font-bold text-slate-700 shadow-xs">
             {watTime}
           </span>
           {onToggleOverrunSimulation && (
             <button
               onClick={onToggleOverrunSimulation}
-              className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold border transition-all ${
+              className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border transition-all ${
                 isOverrunSimulated
-                  ? 'bg-[#F17F31]/20 text-[#F17F31] border-[#F17F31]/50 shadow-sm'
-                  : 'bg-[#151f38] text-slate-400 border-[#1e2d4d] hover:text-slate-200'
+                  ? 'bg-amber-100 text-amber-900 border-amber-300 shadow-xs'
+                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
               }`}
               title="Click to test the alert for staff working past 9:00 PM closing time"
             >
-              {isOverrunSimulated ? '9:15 PM (Testing Late Work)' : 'Test Late Shift Alert'}
+              {isOverrunSimulated ? 'Testing 9:15 PM Late Alert' : 'Test Late Shift Alert'}
             </button>
           )}
-          <span className="text-slate-500 hidden lg:inline">•</span>
-          <div className="hidden lg:flex items-center gap-1.5 text-slate-400">
-            <svg className="w-3.5 h-3.5 text-[#92C842]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-              />
-            </svg>
-            <span>
-              Signed in as: <strong className="text-slate-200 font-medium">Tope Balogun (Super Admin)</strong>
-            </span>
-          </div>
         </div>
 
-        {/* Actions: Shift Compliance, Refresh and New VSR */}
+        {/* Quick Shortcut Buttons */}
         <div className="flex items-center gap-2">
           {onOpenOverallDashboard && (
             <button
               onClick={onOpenOverallDashboard}
-              className="px-3 py-1.5 rounded-lg bg-[#82c332] hover:bg-[#71ab2a] text-[#090e1c] font-black flex items-center gap-1.5 transition-all text-xs shadow-md shadow-[#82c332]/25"
-              title="Open Official KEA Client Master Dashboard"
+              className="px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold flex items-center gap-1.5 transition-all text-xs shadow-xs"
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                />
-              </svg>
-              <span className="hidden sm:inline">KEA Master Dashboard</span>
-              <span className="sm:hidden">KEA</span>
+              <BarChart3 className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Dashboard Overview</span>
             </button>
           )}
 
           {onOpenGpsTracker && (
             <button
               onClick={onOpenGpsTracker}
-              className="px-3 py-1.5 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] hover:border-[#92C842]/50 flex items-center gap-1.5 font-medium transition-all text-xs shadow-sm"
+              className="px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-medium flex items-center gap-1.5 transition-all text-xs shadow-xs"
               title="Track where store workers sign in from using GPS"
             >
-              <svg className="w-3.5 h-3.5 text-[#92C842]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                />
-                <path
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                />
-              </svg>
-              <span className="hidden sm:inline">Worker GPS Tracker</span>
-              <span className="sm:hidden">GPS</span>
+              <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="hidden sm:inline">GPS Map Tracker</span>
             </button>
           )}
 
           {onOpenShiftCompliance && (
             <button
               onClick={onOpenShiftCompliance}
-              className="px-3 py-1.5 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] hover:border-[#92C842]/50 flex items-center gap-1.5 font-medium transition-all text-xs shadow-sm"
+              className="px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-medium flex items-center gap-1.5 transition-all text-xs shadow-xs"
               title="Daily work hours and attendance summary (Print or Save as PDF)"
             >
-              <svg className="w-3.5 h-3.5 text-[#92C842]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                />
-              </svg>
-              <span className="hidden md:inline">Daily Shift Report (PDF)</span>
-              <span className="md:hidden">Shift Report</span>
+              <FileText className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="hidden md:inline">Daily Shift Report</span>
             </button>
           )}
 
           <button
-            onClick={onForceRefresh}
-            disabled={isRefreshing}
-            className="px-3 py-1.5 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] flex items-center gap-2 font-medium transition-colors disabled:opacity-50"
-            title="Refresh all data now"
-          >
-            <svg
-              className={`w-3.5 h-3.5 text-slate-400 ${isRefreshing ? 'animate-spin' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-              />
-            </svg>
-            <span>{isRefreshing ? 'Updating...' : 'Refresh Now'}</span>
-          </button>
-          <button
             onClick={onOpenNewVSR}
-            className="px-4 py-1.5 rounded-lg bg-[#92C842] hover:bg-[#7bb32e] text-[#090e1c] font-bold flex items-center gap-2 shadow-md shadow-[#92C842]/20 transition-all active:scale-95"
+            className="px-3.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5 shadow-xs transition-all active:scale-95 text-xs"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <span>+ Add Store Worker</span>
+            <Plus className="w-3.5 h-3.5" />
+            <span>+ Add New Staff</span>
           </button>
         </div>
       </div>

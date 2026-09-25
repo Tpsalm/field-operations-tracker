@@ -32,28 +32,28 @@ const HUB_METADATA: Record<
   Lagos: {
     opening: '07:00 WAT',
     closing: '21:00 WAT',
-    color: '#92C842',
+    color: '#10b981',
     sector: 'Ikeja, Marina & Victoria Island',
     terminals: 38
   },
   Ibadan: {
     opening: '07:30 WAT',
     closing: '21:00 WAT',
-    color: '#F17F31',
+    color: '#f59e0b',
     sector: 'Dugbe, Bodija & Iwo Road',
     terminals: 18
   },
   Ogun: {
     opening: '08:00 WAT',
     closing: '21:00 WAT',
-    color: '#3B82F6',
+    color: '#3b82f6',
     sector: 'Abeokuta, Sagamu & Ota',
     terminals: 12
   },
   Benin: {
     opening: '08:00 WAT',
     closing: '21:00 WAT',
-    color: '#A855F7',
+    color: '#8b5cf6',
     sector: 'Ring Road, Uselu & Ikpoba',
     terminals: 10
   }
@@ -190,33 +190,33 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5">
-      {/* Dark backdrop */}
+      {/* Light backdrop */}
       <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
 
       {/* Main Modal Container */}
       <div
-        className="relative w-full max-w-4xl max-h-[90vh] bg-[#0c1427] border border-[#1e2d4d] rounded-2xl shadow-2xl flex flex-col overflow-hidden z-10"
+        className="relative w-full max-w-4xl max-h-[90vh] bg-white border border-slate-200/90 rounded-[16px] shadow-2xl flex flex-col overflow-hidden z-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header Bar */}
-        <div className="px-6 py-4 border-b border-[#1e2d4d] bg-[#090e1c] flex items-center justify-between shrink-0">
+        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-[#92C842]/10 text-[#92C842] border border-[#92C842]/30 shadow-inner">
+            <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 shadow-sm">
               <SlidersHorizontal className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-white tracking-wide">
-                  Alert Settings &amp; Notification Rules
+                <h2 className="text-base font-bold text-slate-900 tracking-tight">
+                  Alert Settings & Notification Rules
                 </h2>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#92C842]/15 text-[#92C842] border border-[#92C842]/30">
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                   SUPER ADMIN
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Turn alerts on or off for each store and choose how many minutes of inactivity trigger a warning (default 30 mins).
               </p>
             </div>
@@ -224,7 +224,7 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
 
           <div className="flex items-center gap-2">
             {showSavedFeedback && (
-              <span className="hidden sm:flex items-center gap-1.5 text-xs font-mono text-[#92C842] bg-[#92C842]/10 border border-[#92C842]/30 px-2.5 py-1 rounded-lg animate-pulse">
+              <span className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg animate-pulse">
                 <Check className="w-3.5 h-3.5" />
                 <span>Settings Saved</span>
               </span>
@@ -232,7 +232,7 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
 
             <button
               onClick={handleResetToDefaults}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-300 hover:text-white border border-[#1e2d4d] text-xs font-medium transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-medium transition-all shadow-sm"
               title="Reset limits to 30 mins and turn on all alert types"
             >
               <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
@@ -241,7 +241,7 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
 
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#151f38] transition-colors"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -249,13 +249,13 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
         </div>
 
         {/* Scrollable Body Content */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 text-sm">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 text-sm bg-white">
           {/* 1. Global Baseline & Master Controls */}
-          <div className="p-4 rounded-xl bg-[#0e172c] border border-[#1e2d4d] space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#1e2d4d]/60">
+          <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/70">
               <div className="flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 text-[#92C842]" />
-                <span className="font-bold text-xs uppercase tracking-wider text-slate-300">
+                <ShieldAlert className="w-4 h-4 text-emerald-600" />
+                <span className="font-bold text-xs uppercase tracking-wider text-slate-700">
                   Default Inactivity Limit
                 </span>
                 <span className="text-[10px] text-slate-400 font-mono">
@@ -269,7 +269,7 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                     handleToggleAllOverrun(true);
                     handleToggleAllIdle(true);
                   }}
-                  className="px-2.5 py-1 rounded bg-[#92C842]/10 hover:bg-[#92C842]/20 text-[#92C842] border border-[#92C842]/30 text-xs font-mono font-medium"
+                  className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-medium transition-colors"
                 >
                   Turn On All Alerts
                 </button>
@@ -278,7 +278,7 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                     handleToggleAllOverrun(false);
                     handleToggleAllIdle(false);
                   }}
-                  className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700 text-xs font-mono font-medium"
+                  className="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-medium transition-colors"
                 >
                   Silence All Alerts
                 </button>
@@ -288,17 +288,17 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
             {/* Global Threshold Selector with Quick Chips */}
             <div className="space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <label className="text-xs text-slate-300 font-medium flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-[#F17F31]" />
+                <label className="text-xs text-slate-700 font-medium flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-amber-500" />
                   <span>Set Inactivity Limit for All Stores:</span>
                 </label>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold font-mono text-[#92C842]">
+                  <span className="text-sm font-bold font-mono text-emerald-600">
                     {tempGlobalThreshold} min
                   </span>
                   <button
                     onClick={() => handleApplyThresholdToAll(tempGlobalThreshold)}
-                    className="px-3 py-1 rounded-lg bg-[#92C842] hover:bg-[#7bb32e] text-[#090e1c] font-bold text-xs transition-all shadow-sm active:scale-95 flex items-center gap-1.5"
+                    className="px-3 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-xs transition-all shadow-sm active:scale-95 flex items-center gap-1.5"
                   >
                     <Check className="w-3.5 h-3.5" />
                     <span>Apply to All 4 Stores</span>
@@ -316,7 +316,7 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                   step="5"
                   value={tempGlobalThreshold}
                   onChange={(e) => setTempGlobalThreshold(Number(e.target.value))}
-                  className="w-full h-2 bg-[#151f38] rounded-lg appearance-none cursor-pointer accent-[#92C842]"
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                 />
                 <span className="text-[11px] font-mono text-slate-400">120m</span>
               </div>
@@ -333,8 +333,8 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                     }}
                     className={`px-2.5 py-0.5 rounded text-xs font-mono transition-all ${
                       tempGlobalThreshold === val
-                        ? 'bg-[#92C842] text-[#090e1c] font-bold shadow-sm'
-                        : 'bg-[#151f38] text-slate-300 hover:text-white border border-[#1e2d4d]'
+                        ? 'bg-emerald-500 text-white font-bold shadow-sm'
+                        : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                     }`}
                   >
                     {val}m {val === 30 ? '(Standard)' : ''}
@@ -345,13 +345,13 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
           </div>
 
           {/* 2. Hub Filter Tabs */}
-          <div className="flex items-center gap-2 border-b border-[#1e2d4d] pb-2 overflow-x-auto">
+          <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto">
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === 'all'
-                  ? 'bg-[#92C842]/15 text-[#92C842] border border-[#92C842]/40 font-bold'
-                  : 'text-slate-400 hover:text-white hover:bg-[#151f38]'
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm'
+                  : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
               All Hubs Matrix (4)
@@ -365,8 +365,8 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                   onClick={() => setActiveTab(hub)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 transition-all ${
                     activeTab === hub
-                      ? 'bg-[#151f38] text-white border border-[#92C842]/50 font-bold'
-                      : 'text-slate-400 hover:text-white hover:bg-[#151f38]/60'
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-300 font-semibold'
+                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                   }`}
                 >
                   <span
@@ -374,7 +374,7 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                     style={{ backgroundColor: meta.color }}
                   />
                   <span>{hub} Hub</span>
-                  <span className="text-[10px] font-mono text-slate-400 bg-[#090e1c] px-1.5 py-0.2 rounded border border-[#1e2d4d]">
+                  <span className="text-[10px] font-mono text-slate-500 bg-white px-1.5 py-0.5 rounded border border-slate-200">
                     {pref.idleThresholdMinutes}m
                   </span>
                 </button>
@@ -399,7 +399,7 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                 return (
                   <div
                     key={hubKey}
-                    className="p-4 rounded-xl bg-[#0e172c] border border-[#1e2d4d] flex flex-col justify-between space-y-4 hover:border-slate-600/60 transition-all"
+                    className="p-4 rounded-[12px] bg-white border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between space-y-4 hover:border-slate-300 transition-all"
                   >
                     {/* Hub Card Top Row */}
                     <div>
@@ -409,41 +409,41 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                             className="w-3 h-3 rounded-full"
                             style={{ backgroundColor: meta.color }}
                           />
-                          <h3 className="font-bold text-sm text-white">{pref.hubDisplayName}</h3>
+                          <h3 className="font-bold text-sm text-slate-900">{pref.hubDisplayName}</h3>
                         </div>
-                        <span className="text-[11px] font-mono text-slate-400">
+                        <span className="text-[11px] font-mono text-slate-500">
                           {meta.terminals} Terminals
                         </span>
                       </div>
 
-                      <div className="mt-1 flex items-center justify-between text-[11px] text-slate-400">
-                        <span>Area: <strong className="text-slate-300">{meta.sector}</strong></span>
-                        <span>Shift: <strong className="text-slate-300 font-mono">{meta.opening} - {meta.closing}</strong></span>
+                      <div className="mt-1 flex items-center justify-between text-[11px] text-slate-500">
+                        <span>Area: <strong className="text-slate-700">{meta.sector}</strong></span>
+                        <span>Shift: <strong className="text-slate-700 font-mono">{meta.opening} - {meta.closing}</strong></span>
                       </div>
 
                       {/* Live Ping Status */}
-                      <div className="mt-2 p-2 rounded-lg bg-[#090e1c] border border-[#1e2d4d]/80 flex items-center justify-between text-xs">
+                      <div className="mt-2 p-2 rounded-lg bg-slate-50 border border-slate-200/70 flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2">
                           <Activity className="w-3.5 h-3.5 text-slate-400" />
-                          <span className="text-slate-400 text-[11px]">Last Signal:</span>
-                          <span className="font-mono font-bold text-white">
+                          <span className="text-slate-500 text-[11px]">Last Signal:</span>
+                          <span className="font-mono font-bold text-slate-800">
                             {currentIdleMinutes}m ago
                           </span>
                         </div>
 
                         <div>
                           {isCurrentlyIdleBreached ? (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F17F31]/20 text-[#F17F31] border border-[#F17F31]/40 flex items-center gap-1">
-                              <AlertTriangle className="w-3 h-3" />
+                            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
+                              <AlertTriangle className="w-3 h-3 text-amber-600" />
                               <span>INACTIVE (&gt;{pref.idleThresholdMinutes}m)</span>
                             </span>
                           ) : !pref.idleBreachAlert ? (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-mono text-slate-400 bg-slate-800 border border-slate-700">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-mono text-slate-500 bg-slate-100 border border-slate-200">
                               ALERT MUTED
                             </span>
                           ) : (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#92C842]/15 text-[#92C842] border border-[#92C842]/30 flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3" />
+                            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                               <span>ACTIVE (&lt;{pref.idleThresholdMinutes}m)</span>
                             </span>
                           )}
@@ -452,23 +452,23 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                     </div>
 
                     {/* Alert Types Toggles */}
-                    <div className="space-y-3 pt-2 border-t border-[#1e2d4d]/60">
-                      <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    <div className="space-y-3 pt-2 border-t border-slate-100">
+                      <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                         Alert Settings for this Location
                       </div>
 
                       {/* 1. Shift Overrun Toggle */}
-                      <div className="flex items-start justify-between gap-3 p-2.5 rounded-lg bg-[#090e1c] border border-[#1e2d4d]">
+                      <div className="flex items-start justify-between gap-3 p-2.5 rounded-lg bg-slate-50/70 border border-slate-200/60">
                         <div className="space-y-0.5">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold text-white">
+                            <span className="text-xs font-semibold text-slate-800">
                               Late Shift Alert
                             </span>
-                            <span className="text-[10px] font-mono text-[#E05252] bg-[#E05252]/10 px-1.5 py-0.2 rounded border border-[#E05252]/20">
+                            <span className="text-[10px] font-mono text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
                               Past 9:00 PM
                             </span>
                           </div>
-                          <p className="text-[11px] text-slate-400 leading-tight">
+                          <p className="text-[11px] text-slate-500 leading-tight">
                             Notify me if card machines are still active past the 9:00 PM closing time.
                           </p>
                         </div>
@@ -476,13 +476,13 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                         <button
                           onClick={() => handleToggleOverrun(hubKey)}
                           className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                            pref.shiftOverrunAlert ? 'bg-[#92C842]' : 'bg-slate-700'
+                            pref.shiftOverrunAlert ? 'bg-emerald-500' : 'bg-slate-300'
                           }`}
                           role="switch"
                           aria-checked={pref.shiftOverrunAlert}
                         >
                           <span
-                            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
                               pref.shiftOverrunAlert ? 'translate-x-4' : 'translate-x-0'
                             }`}
                           />
@@ -490,17 +490,17 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                       </div>
 
                       {/* 2. Idle Breach Toggle */}
-                      <div className="flex items-start justify-between gap-3 p-2.5 rounded-lg bg-[#090e1c] border border-[#1e2d4d]">
+                      <div className="flex items-start justify-between gap-3 p-2.5 rounded-lg bg-slate-50/70 border border-slate-200/60">
                         <div className="space-y-0.5">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold text-white">
+                            <span className="text-xs font-semibold text-slate-800">
                               Machine Inactive Alert
                             </span>
-                            <span className="text-[10px] font-mono text-[#F17F31] bg-[#F17F31]/10 px-1.5 py-0.2 rounded border border-[#F17F31]/20">
+                            <span className="text-[10px] font-mono text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
                               No Signal
                             </span>
                           </div>
-                          <p className="text-[11px] text-slate-400 leading-tight">
+                          <p className="text-[11px] text-slate-500 leading-tight">
                             Notify me if card machines have not sent any signal for longer than the allowed time limit.
                           </p>
                         </div>
@@ -508,13 +508,13 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                         <button
                           onClick={() => handleToggleIdle(hubKey)}
                           className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                            pref.idleBreachAlert ? 'bg-[#F17F31]' : 'bg-slate-700'
+                            pref.idleBreachAlert ? 'bg-amber-500' : 'bg-slate-300'
                           }`}
                           role="switch"
                           aria-checked={pref.idleBreachAlert}
                         >
                           <span
-                            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
                               pref.idleBreachAlert ? 'translate-x-4' : 'translate-x-0'
                             }`}
                           />
@@ -522,10 +522,10 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                       </div>
 
                       {/* 3. Custom Alert Threshold for Idle Time */}
-                      <div className="p-3 rounded-lg bg-[#090e1c] border border-[#1e2d4d] space-y-2.5">
+                      <div className="p-3 rounded-lg bg-slate-50/70 border border-slate-200/60 space-y-2.5">
                         <div className="flex items-center justify-between">
-                          <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-[#92C842]" />
+                          <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 text-emerald-600" />
                             <span>Max Allowed Inactive Time:</span>
                           </label>
                           <div className="flex items-center gap-1.5">
@@ -537,9 +537,9 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                               onChange={(e) =>
                                 handleUpdateThreshold(hubKey, parseInt(e.target.value, 10) || 5)
                               }
-                              className="w-14 bg-[#151f38] text-white font-mono font-bold text-xs text-center py-1 rounded border border-[#1e2d4d] focus:border-[#92C842] outline-none"
+                              className="w-14 bg-white text-slate-900 font-mono font-bold text-xs text-center py-1 rounded border border-slate-300 focus:border-emerald-500 outline-none"
                             />
-                            <span className="text-xs font-mono text-slate-400">mins</span>
+                            <span className="text-xs font-mono text-slate-500">mins</span>
                           </div>
                         </div>
 
@@ -551,7 +551,7 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                           step="5"
                           value={pref.idleThresholdMinutes}
                           onChange={(e) => handleUpdateThreshold(hubKey, Number(e.target.value))}
-                          className="w-full h-1.5 bg-[#151f38] rounded-lg appearance-none cursor-pointer accent-[#92C842]"
+                          className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                         />
 
                         {/* Preset Buttons */}
@@ -562,8 +562,8 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                               onClick={() => handleUpdateThreshold(hubKey, preset)}
                               className={`px-2 py-0.5 rounded text-[10px] font-mono transition-all ${
                                 pref.idleThresholdMinutes === preset
-                                  ? 'bg-[#92C842] text-[#090e1c] font-bold'
-                                  : 'bg-[#151f38] text-slate-400 hover:text-white border border-[#1e2d4d]'
+                                  ? 'bg-emerald-500 text-white font-bold'
+                                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                               }`}
                             >
                               {preset}m
@@ -578,31 +578,31 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
           </div>
 
           {/* 4. Information Box */}
-          <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-300 flex items-start gap-2.5">
-            <Info className="w-4 h-4 shrink-0 mt-0.5 text-blue-400" />
+          <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 flex items-start gap-2.5">
+            <Info className="w-4 h-4 shrink-0 mt-0.5 text-blue-600" />
             <div className="space-y-1">
-              <span className="font-semibold text-white">Live Execution Architecture:</span>
-              <p className="text-slate-300 leading-relaxed">
-                Telemetry thresholds are evaluated every 10 seconds against store shift schedules. Modifying idle thresholds will dynamically re-evaluate current hub telemetry heartbeats, immediately clearing false alarms or highlighting actual prolonged silence.
+              <span className="font-semibold text-blue-950">Live Monitor Rule:</span>
+              <p className="text-blue-800 leading-relaxed">
+                Store check-ins are verified automatically against business schedules. Changing these minutes will immediately update the live alert triggers across the dashboard.
               </p>
             </div>
           </div>
         </div>
 
         {/* Footer Bar */}
-        <div className="px-6 py-3.5 border-t border-[#1e2d4d] bg-[#090e1c] flex items-center justify-between shrink-0">
-          <div className="text-xs text-slate-400 font-mono">
+        <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50/70 flex items-center justify-between shrink-0">
+          <div className="text-xs text-slate-500 font-mono">
             {preferences.lastUpdatedWat ? (
-              <span>Last saved: <strong className="text-slate-300">{preferences.lastUpdatedWat}</strong></span>
+              <span>Last saved: <strong className="text-slate-700">{preferences.lastUpdatedWat}</strong></span>
             ) : (
-              <span>Standard WAT Corporate Configuration</span>
+              <span>Standard Settings Active</span>
             )}
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-lg bg-[#92C842] hover:bg-[#7bb32e] text-[#090e1c] font-bold text-xs shadow-md shadow-[#92C842]/20 transition-all active:scale-95"
+              className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-xs shadow-sm transition-all active:scale-95"
             >
               Done &amp; Close
             </button>

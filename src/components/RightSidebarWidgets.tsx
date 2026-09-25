@@ -40,25 +40,25 @@ export const RightSidebarWidgets: React.FC<RightSidebarWidgetsProps> = ({
         {/* Dept Counts Grid */}
         <div className="grid grid-cols-3 gap-2 text-center pt-1">
           <div
-            onClick={() => onSelectScreen && onSelectScreen('head_office')}
-            className="bg-slate-50 p-2.5 rounded-lg border border-slate-200/80 hover:border-[#82c332] cursor-pointer transition-colors"
+            onClick={() => onSelectScreen && onSelectScreen('vsr_recruitment')}
+            className="bg-slate-50 p-2.5 rounded-lg border border-slate-200/80 hover:border-emerald-400 cursor-pointer transition-colors"
           >
             <div className="text-base font-extrabold text-slate-900 font-mono">4</div>
             <div className="text-[10px] uppercase tracking-wider text-slate-500 mt-0.5">Executive</div>
           </div>
           <div
-            onClick={() => onSelectScreen && onSelectScreen('head_office')}
-            className="bg-slate-50 p-2.5 rounded-lg border border-slate-200/80 hover:border-[#82c332] cursor-pointer transition-colors"
+            onClick={() => onSelectScreen && onSelectScreen('vsr_recruitment')}
+            className="bg-slate-50 p-2.5 rounded-lg border border-slate-200/80 hover:border-emerald-400 cursor-pointer transition-colors"
           >
             <div className="text-base font-extrabold text-slate-900 font-mono">12</div>
             <div className="text-[10px] uppercase tracking-wider text-slate-500 mt-0.5">Finance &amp; Ops</div>
           </div>
           <div
-            onClick={() => onSelectScreen && onSelectScreen('head_office')}
-            className="bg-slate-50 p-2.5 rounded-lg border border-slate-200/80 hover:border-[#82c332] cursor-pointer transition-colors"
+            onClick={() => onSelectScreen && onSelectScreen('vsr_recruitment')}
+            className="bg-slate-50 p-2.5 rounded-lg border border-slate-200/80 hover:border-emerald-400 cursor-pointer transition-colors"
           >
             <div className="text-base font-extrabold text-slate-900 font-mono">18</div>
-            <div className="text-[10px] uppercase tracking-wider text-slate-500 mt-0.5">Tech &amp; Log.</div>
+            <div className="text-[10px] uppercase tracking-wider text-slate-500 mt-0.5">Field &amp; Log.</div>
           </div>
         </div>
 

@@ -31,7 +31,6 @@ export const TelemetrySparkline: React.FC<TelemetrySparklineProps> = ({
   const [hoveredPoint, setHoveredPoint] = useState<PingDataPoint | null>(null);
 
   // Generate 60-minute historical telemetry ping frequency data
-  // Sampled every 3 minutes from -60 minutes to 0 (Now)
   const data: PingDataPoint[] = useMemo(() => {
     const points: PingDataPoint[] = [];
     const basePings = Math.max(8, Math.round(terminalCount * 0.8));
@@ -40,24 +39,18 @@ export const TelemetrySparkline: React.FC<TelemetrySparklineProps> = ({
       let pings = 0;
 
       if (alertType === 'overrun') {
-        // Sustained high telemetry frequency past closing cutoff
         const variance = Math.sin(m * 0.45) * 3 + Math.cos(m * 0.2) * 2;
         pings = Math.max(6, Math.round(basePings + variance));
       } else {
-        // Idle breach scenario:
-        // Before idle duration began (m > idleMinutes), terminals actively transmitted heartbeats
         if (m > idleMinutes) {
           const variance = Math.sin((m - idleMinutes) * 0.5) * 3 + Math.cos(m * 0.25) * 2;
           pings = Math.max(8, Math.round(basePings + variance));
         } else if (m === idleMinutes) {
-          // Transition minute where heartbeat dropped off
           pings = Math.round(basePings * 0.2);
         } else {
-          // Telemetry heartbeat completely silent during idle period
           pings = 0;
         }
 
-        // If telemetry was recently restored (idleMinutes === 0), latest point spikes
         if (m === 0 && idleMinutes === 0) {
           pings = basePings;
         }
@@ -77,7 +70,7 @@ export const TelemetrySparkline: React.FC<TelemetrySparklineProps> = ({
   const isBreached = alertType === 'overrun' || (alertType === 'idle' && currentPingRate === 0);
 
   // Accent colors based on alert classification
-  const themeColor = alertType === 'overrun' ? '#E05252' : '#F17F31';
+  const themeColor = alertType === 'overrun' ? '#ef4444' : '#f59e0b';
   const gradientId = `sparkline-grad-${hub}-${alertType}`;
 
   // D3 Rendering
@@ -91,20 +84,17 @@ export const TelemetrySparkline: React.FC<TelemetrySparklineProps> = ({
     const innerWidth = width - padding.left - padding.right;
     const innerHeight = height - padding.top - padding.bottom;
 
-    // X Scale: minuteAgo (60 -> 0) scaled left to right
     const xScale = d3
       .scaleLinear()
       .domain([60, 0])
       .range([padding.left, padding.left + innerWidth]);
 
-    // Y Scale: pingsPerMin (0 -> max)
     const maxVal = d3.max(data, (d) => d.pingsPerMin) || 20;
     const yScale = d3
       .scaleLinear()
       .domain([0, Math.max(15, maxVal * 1.15)])
       .range([padding.top + innerHeight, padding.top]);
 
-    // Defs for subtle gradient fill
     const defs = svg.append('defs');
     const areaGradient = defs
       .append('linearGradient')
@@ -118,7 +108,7 @@ export const TelemetrySparkline: React.FC<TelemetrySparklineProps> = ({
       .append('stop')
       .attr('offset', '0%')
       .attr('stop-color', themeColor)
-      .attr('stop-opacity', 0.35);
+      .attr('stop-opacity', 0.25);
 
     areaGradient
       .append('stop')
@@ -133,11 +123,10 @@ export const TelemetrySparkline: React.FC<TelemetrySparklineProps> = ({
       .attr('x2', padding.left + innerWidth)
       .attr('y1', padding.top + innerHeight)
       .attr('y2', padding.top + innerHeight)
-      .attr('stroke', '#1e2d4d')
+      .attr('stroke', '#e2e8f0')
       .attr('stroke-width', 1)
       .attr('stroke-dasharray', '2,2');
 
-    // Area generator
     const areaGenerator = d3
       .area<PingDataPoint>()
       .x((d) => xScale(d.minuteAgo))
@@ -145,7 +134,6 @@ export const TelemetrySparkline: React.FC<TelemetrySparklineProps> = ({
       .y1((d) => yScale(d.pingsPerMin))
       .curve(d3.curveMonotoneX);
 
-    // Line generator
     const lineGenerator = d3
       .line<PingDataPoint>()
       .x((d) => xScale(d.minuteAgo))
@@ -169,7 +157,6 @@ export const TelemetrySparkline: React.FC<TelemetrySparklineProps> = ({
       .attr('stroke-width', 1.75)
       .attr('stroke-linecap', 'round');
 
-    // Threshold indicator line if idle breach (where pings drop off)
     if (alertType === 'idle' && idleMinutes > 0 && idleMinutes < 60) {
       const breachX = xScale(idleMinutes);
       svg
@@ -178,19 +165,17 @@ export const TelemetrySparkline: React.FC<TelemetrySparklineProps> = ({
         .attr('x2', breachX)
         .attr('y1', padding.top)
         .attr('y2', padding.top + innerHeight)
-        .attr('stroke', '#F17F31')
+        .attr('stroke', '#f59e0b')
         .attr('stroke-width', 1)
         .attr('stroke-dasharray', '2,1')
         .attr('opacity', 0.7);
     }
 
-    // Latest endpoint marker (t=0)
     const latestPoint = data[data.length - 1];
     if (latestPoint) {
       const cx = xScale(latestPoint.minuteAgo);
       const cy = yScale(latestPoint.pingsPerMin);
 
-      // Outer halo
       svg
         .append('circle')
         .attr('cx', cx)
@@ -200,25 +185,23 @@ export const TelemetrySparkline: React.FC<TelemetrySparklineProps> = ({
         .attr('opacity', 0.3)
         .attr('class', 'animate-ping');
 
-      // Center dot
       svg
         .append('circle')
         .attr('cx', cx)
         .attr('cy', cy)
         .attr('r', 2)
-        .attr('fill', latestPoint.pingsPerMin === 0 ? '#151f38' : themeColor)
+        .attr('fill', latestPoint.pingsPerMin === 0 ? '#ffffff' : themeColor)
         .attr('stroke', themeColor)
         .attr('stroke-width', 1.25);
     }
 
-    // Interactive hover overlay group
     const hoverGroup = svg.append('g').style('display', 'none');
 
     const hoverLine = hoverGroup
       .append('line')
       .attr('y1', padding.top)
       .attr('y2', padding.top + innerHeight)
-      .attr('stroke', '#ffffff')
+      .attr('stroke', '#0f172a')
       .attr('stroke-width', 1)
       .attr('stroke-dasharray', '2,2')
       .attr('opacity', 0.6);
@@ -230,7 +213,6 @@ export const TelemetrySparkline: React.FC<TelemetrySparklineProps> = ({
       .attr('stroke', '#ffffff')
       .attr('stroke-width', 1.5);
 
-    // Transparent overlay for capturing pointer events
     const bisect = d3.bisector<PingDataPoint, number>((d) => d.minuteAgo).center;
 
     svg
@@ -263,17 +245,16 @@ export const TelemetrySparkline: React.FC<TelemetrySparklineProps> = ({
 
   return (
     <div
-      className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#090e1c] border border-[#1e2d4d] shadow-sm select-none"
-      title={`Last 60m Telemetry Heartbeat Ping Frequency for ${hub}. Hover sparkline to inspect minute-by-minute rate.`}
+      className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-50 border border-slate-200 shadow-xs select-none"
+      title={`Last 60m signal frequency for ${hub}.`}
     >
-      {/* Label & Status */}
       <div className="flex flex-col text-[9px] font-mono leading-tight shrink-0">
         <span className="text-slate-400 uppercase font-sans font-semibold tracking-wider">
-          60m Pings
+          60m Signal
         </span>
         <span
           className="font-bold"
-          style={{ color: isBreached ? themeColor : '#92C842' }}
+          style={{ color: isBreached ? themeColor : '#10b981' }}
         >
           {hoveredPoint ? (
             <span>
@@ -287,7 +268,6 @@ export const TelemetrySparkline: React.FC<TelemetrySparklineProps> = ({
         </span>
       </div>
 
-      {/* D3 Sparkline SVG Container */}
       <div className="relative flex items-center shrink-0">
         <svg
           ref={svgRef}
@@ -295,20 +275,18 @@ export const TelemetrySparkline: React.FC<TelemetrySparklineProps> = ({
           height={height}
           className="overflow-visible block"
           role="img"
-          aria-label={`60-minute telemetry ping frequency sparkline for ${hub}`}
+          aria-label={`60-minute signal frequency sparkline for ${hub}`}
         />
 
-        {/* Hover Floating Tooltip */}
         {hoveredPoint && (
-          <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded bg-[#0c1427] border border-[#1e2d4d] text-[9px] font-mono text-white shadow-lg pointer-events-none whitespace-nowrap z-20">
-            <span className="text-slate-400">{hoveredPoint.label}:</span>{' '}
-            <strong style={{ color: themeColor }}>{hoveredPoint.pingsPerMin} pings/min</strong>
+          <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded bg-white border border-slate-200 text-[9px] font-mono text-slate-800 shadow-md pointer-events-none whitespace-nowrap z-20">
+            <span className="text-slate-500">{hoveredPoint.label}:</span>{' '}
+            <strong style={{ color: themeColor }}>{hoveredPoint.pingsPerMin} signals/min</strong>
           </div>
         )}
       </div>
 
-      {/* Sparkline Axis Guide (T-60m to Now) */}
-      <div className="hidden sm:flex flex-col text-[8px] font-mono text-slate-500 leading-none shrink-0 border-l border-[#1e2d4d] pl-1.5">
+      <div className="hidden sm:flex flex-col text-[8px] font-mono text-slate-400 leading-none shrink-0 border-l border-slate-200 pl-1.5">
         <span>-60m</span>
         <span className="mt-auto">Now</span>
       </div>

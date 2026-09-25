@@ -27,7 +27,6 @@ export interface GeneratedCredential {
 
 export type NavigationScreen =
   | 'overall_dashboard'
-  | 'employee_compliance_register'
   | 'shift_adherence_30d'
   | 'vsr_location_audit'
   | 'operations'
@@ -36,7 +35,6 @@ export type NavigationScreen =
   | 'vsr_recruitment'
   | 'trends'
   | 'compliance'
-  | 'head_office'
   | 'archive';
 
 export interface VsrLocationAuditRecord {

@@ -1,6 +1,20 @@
 import React, { useState, useMemo } from 'react';
 import { FieldMerchandiserHub } from '../types';
 import { STORE_POS_TERMINALS, POSTerminalRecord } from '../data/terminalData';
+import {
+  Users,
+  Download,
+  MapPin,
+  TrendingUp,
+  ShieldCheck,
+  FileText,
+  Radio,
+  Search,
+  Table as TableIcon,
+  LayoutGrid,
+  CheckCircle2,
+  X
+} from 'lucide-react';
 
 interface FieldMerchandisersViewProps {
   hubs: FieldMerchandiserHub[];
@@ -47,7 +61,7 @@ export const FieldMerchandisersView: React.FC<FieldMerchandisersViewProps> = ({
     setTimeout(() => setBroadcastSent(false), 3000);
   };
 
-  // Export Full Telemetry Log (24 hours of raw heartbeat timestamps for all regional hubs)
+  // Export Full Telemetry Log (24 hours of raw activity timestamps)
   const handleExportFullTelemetryLog = () => {
     setIsExportingLog(true);
     try {
@@ -138,101 +152,60 @@ export const FieldMerchandisersView: React.FC<FieldMerchandisersViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-[#0e1628] border border-[#1e2d4d] rounded-xl p-5 shadow-lg">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-white rounded-[12px] border border-slate-200/80 p-6 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-[#92C842]/10 text-[#92C842] border border-[#92C842]/30">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                />
-              </svg>
+            <span className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200">
+              <Users className="w-5 h-5" />
             </span>
-            <h2 className="text-lg font-bold text-white">Store Workers &amp; Card Machines</h2>
+            <h2 className="text-xl font-black text-slate-900 tracking-tight">Store Workers &amp; Card Machines</h2>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            See where your 78 field workers are stationed, which card machines are active, and monitor store activity across all 4 locations in Nigeria.
+          <p className="text-xs text-slate-500 mt-1 max-w-2xl">
+            See where field workers are stationed, monitor active card machines, battery levels, and live sales activity across all branch stores in Nigeria.
           </p>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* Export Full Telemetry Log Button */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Export Full Activity Log Button */}
           <button
             onClick={handleExportFullTelemetryLog}
             disabled={isExportingLog}
-            className="px-4 py-2 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] hover:border-[#92C842]/50 text-xs font-semibold flex items-center gap-2 transition-all shadow-sm disabled:opacity-50"
-            title="Download 24 hours of raw heartbeat timestamps for all 4 regional hubs as CSV"
+            className="px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-2 transition-all shadow-xs disabled:opacity-50"
+            title="Download activity log as CSV"
           >
-            <svg className={`w-4 h-4 text-[#92C842] ${isExportingLog ? 'animate-bounce' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-              />
-            </svg>
-            <span>{isExportingLog ? 'Creating CSV...' : 'Download 24h Activity Log (CSV)'}</span>
+            <Download className={`w-3.5 h-3.5 text-slate-600 ${isExportingLog ? 'animate-bounce' : ''}`} />
+            <span>{isExportingLog ? 'Creating CSV...' : 'Download Activity Log (CSV)'}</span>
           </button>
 
           {onOpenGpsTracker && (
             <button
               onClick={onOpenGpsTracker}
-              className="px-4 py-2 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] hover:border-[#92C842]/50 text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
+              className="px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-2 transition-all shadow-xs"
               title="Track where workers sign in from using real-time GPS"
             >
-              <svg className="w-4 h-4 text-[#92C842]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                />
-                <path
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                />
-              </svg>
-              <span>Worker GPS Sign-Ins</span>
+              <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+              <span>GPS Map Tracker</span>
             </button>
           )}
 
           {onOpenTrends && (
             <button
               onClick={onOpenTrends}
-              className="px-4 py-2 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] hover:border-[#92C842]/50 text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
-              title="View 7-day machine and staff activity chart"
+              className="px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-2 transition-all shadow-xs"
+              title="View 7-day performance charts"
             >
-              <svg className="w-4 h-4 text-[#92C842]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                />
-              </svg>
-              <span>7-Day Trends</span>
+              <TrendingUp className="w-3.5 h-3.5 text-sky-600" />
+              <span>Performance Trends</span>
             </button>
           )}
 
           {onOpenCompliance && (
             <button
               onClick={onOpenCompliance}
-              className="px-4 py-2 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] hover:border-[#92C842]/50 text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
-              title="View 30-day shift hours and attendance report"
+              className="px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-2 transition-all shadow-xs"
+              title="View 30-day attendance"
             >
-              <svg className="w-4 h-4 text-[#92C842]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                />
-              </svg>
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
               <span>30-Day Attendance</span>
             </button>
           )}
@@ -240,30 +213,23 @@ export const FieldMerchandisersView: React.FC<FieldMerchandisersViewProps> = ({
           {onOpenShiftCompliance && (
             <button
               onClick={onOpenShiftCompliance}
-              className="px-4 py-2 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] hover:border-[#92C842]/50 text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
-              title="View and print daily work hours report (07:00-21:00 WAT standard)"
+              className="px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-2 transition-all shadow-xs"
+              title="View and print daily work hours report"
             >
-              <svg className="w-4 h-4 text-[#92C842]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                />
-              </svg>
-              <span>Daily Shift Report (PDF)</span>
+              <FileText className="w-3.5 h-3.5 text-slate-600" />
+              <span>Daily Shift Report</span>
             </button>
           )}
 
           <button
             onClick={handleBroadcast}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-md ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
               broadcastSent
                 ? 'bg-emerald-600 text-white'
-                : 'bg-[#92C842] hover:bg-[#7bb32e] text-[#090e1c] shadow-[#92C842]/20'
+                : 'bg-[#10b981] hover:bg-emerald-600 text-white'
             }`}
           >
-            {broadcastSent ? '✓ Ping Sent to 1,420 POS!' : 'Broadcast Ping to All Terminals'}
+            {broadcastSent ? '✓ Signal Sent to 1,420 POS!' : 'Broadcast Signal to All Terminals'}
           </button>
         </div>
       </div>
@@ -274,30 +240,30 @@ export const FieldMerchandisersView: React.FC<FieldMerchandisersViewProps> = ({
           <div
             key={hub.hub}
             onClick={() => setSelectedHub(hub.hub)}
-            className={`p-4 rounded-xl border transition-all cursor-pointer ${
+            className={`p-4 rounded-[12px] border transition-all cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.03)] ${
               selectedHub === hub.hub
-                ? 'bg-[#151f38] border-[#92C842] shadow-md shadow-[#92C842]/10 ring-1 ring-[#92C842]'
-                : 'bg-[#0e1628] border-[#1e2d4d] hover:border-[#92C842]/40'
+                ? 'bg-white border-emerald-500 ring-2 ring-emerald-500/20'
+                : 'bg-white border-slate-200/80 hover:border-slate-300'
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-400">{hub.hubDisplayName}</span>
+              <span className="text-xs font-bold text-slate-700">{hub.hubDisplayName}</span>
               <span
                 className="w-2.5 h-2.5 rounded-full"
                 style={{ backgroundColor: hub.colorHex }}
               ></span>
             </div>
             <div className="mt-3 flex items-baseline justify-between">
-              <span className="text-2xl font-bold text-white font-mono">{hub.merchandiserCount}</span>
-              <span className="text-xs text-slate-400">Workers Assigned</span>
+              <span className="text-2xl font-black text-slate-900 font-mono">{hub.merchandiserCount}</span>
+              <span className="text-xs text-slate-500">Staff Assigned</span>
             </div>
-            <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between">
+            <div className="mt-2 text-[11px] text-slate-500 flex items-center justify-between">
               <span>{hub.activePOS} Active Terminals</span>
-              <span className="font-mono text-slate-300">
+              <span className="font-mono text-slate-700 font-semibold">
                 {hub.reconciliationRate}% Reconciled
               </span>
             </div>
-            <div className="mt-3 w-full bg-[#151f38] h-1.5 rounded-full overflow-hidden">
+            <div className="mt-3 w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
               <div
                 className="h-1.5 rounded-full"
                 style={{ width: `${hub.percentage * 2}%`, backgroundColor: hub.colorHex }}
@@ -308,96 +274,85 @@ export const FieldMerchandisersView: React.FC<FieldMerchandisersViewProps> = ({
       </div>
 
       {/* Presentation Mode Switcher & Filter Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#0b1222] border border-[#1e2d4d] rounded-xl px-4 py-2.5 shadow-md">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white border border-slate-200/80 rounded-[12px] p-3 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
         <div className="flex items-center gap-2.5">
-          <span className="text-slate-400 text-xs font-mono uppercase tracking-wider">VIEW AS:</span>
-          <div className="inline-flex rounded-lg bg-[#151f38] p-0.5 border border-[#1e2d4d]">
+          <span className="text-slate-500 text-xs font-semibold uppercase tracking-wider">View:</span>
+          <div className="inline-flex rounded-lg bg-slate-100 p-0.5 border border-slate-200">
             <button
               onClick={() => setActiveViewMode('table')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
                 activeViewMode === 'table'
-                  ? 'bg-[#92C842] text-[#090e1c] shadow-sm font-bold'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-white text-slate-900 font-bold shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M3 10h18M3 14h18m-9-4v8m-7 4h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                />
-              </svg>
-              <span>Table Directory</span>
+              <TableIcon className="w-3.5 h-3.5 text-slate-600" />
+              <span>Table View</span>
             </button>
             <button
               onClick={() => setActiveViewMode('grid')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
                 activeViewMode === 'grid'
-                  ? 'bg-[#92C842] text-[#090e1c] shadow-sm font-bold'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-white text-slate-900 font-bold shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                />
-              </svg>
-              <span>Activity Grid</span>
+              <LayoutGrid className="w-3.5 h-3.5 text-slate-600" />
+              <span>Cards Grid</span>
             </button>
           </div>
         </div>
 
         {/* Hub filter tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto text-xs">
+        <div className="flex items-center gap-1.5 overflow-x-auto text-xs">
           {['All', 'Lagos', 'Ibadan', 'Ogun', 'Benin'].map((hubName) => (
             <button
               key={hubName}
               onClick={() => setSelectedHub(hubName)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                 selectedHub === hubName
-                  ? 'bg-[#92C842] text-[#090e1c]'
-                  : 'bg-[#0e1628] text-slate-400 hover:text-white border border-[#1e2d4d]'
+                  ? 'bg-[#10b981] text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
               }`}
             >
-              {hubName === 'All' ? 'All Locations' : hubName}
+              {hubName === 'All' ? 'All Branches' : hubName}
             </button>
           ))}
         </div>
 
         {/* Search */}
         <div className="relative w-full sm:w-64">
+          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
           <input
             type="text"
-            placeholder="Search terminal, store, worker..."
+            placeholder="Search machine, store, staff..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#0e1628] border border-[#1e2d4d] focus:border-[#92C842] rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500"
+            className="w-full bg-white border border-slate-200 focus:border-emerald-500 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
           />
         </div>
       </div>
 
       {/* VIEW MODE 1: DETAILED TABULAR VIEW */}
       {activeViewMode === 'table' && (
-        <div className="bg-[#0e1628] border border-[#1e2d4d] rounded-xl overflow-hidden shadow-lg">
-          <div className="px-5 py-3 border-b border-[#1e2d4d] bg-[#090e1c]/60 flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-200 uppercase tracking-wider">
-              Card Machines &amp; Store Activity List ({filteredTerminals.length} Terminals)
+        <div className="bg-white rounded-[12px] border border-slate-200/80 overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+          <div className="px-5 py-3.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between text-xs">
+            <span className="font-bold text-slate-900 uppercase tracking-wider">
+              Card Machines &amp; Store Activity List ({filteredTerminals.length} Machines)
             </span>
-            <span className="text-[11px] font-mono text-[#92C842]">LIVE UPDATES (EVERY 4s)</span>
+            <span className="text-[11px] font-mono text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              LIVE REFRESH (4s)
+            </span>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-[#151f38] text-slate-400 font-mono text-[10px] uppercase tracking-wider border-b border-[#1e2d4d]">
+            <table className="w-full text-left text-xs text-slate-700">
+              <thead className="bg-slate-50 text-slate-600 font-mono text-[10px] uppercase tracking-wider border-b border-slate-200">
                 <tr>
                   <th className="px-5 py-3">Machine ID</th>
-                  <th className="px-5 py-3">Store &amp; Location</th>
-                  <th className="px-5 py-3">Branch</th>
-                  <th className="px-5 py-3">Worker in Charge</th>
+                  <th className="px-5 py-3">Store Location</th>
+                  <th className="px-5 py-3">Branch Hub</th>
+                  <th className="px-5 py-3">Staff in Charge</th>
                   <th className="px-5 py-3">Sales Activity</th>
                   <th className="px-5 py-3">Battery</th>
                   <th className="px-5 py-3">Stock Level</th>
@@ -405,26 +360,26 @@ export const FieldMerchandisersView: React.FC<FieldMerchandisersViewProps> = ({
                   <th className="px-5 py-3 text-right">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1e2d4d]/60">
+              <tbody className="divide-y divide-slate-100">
                 {filteredTerminals.map((item) => (
                   <tr
                     key={item.id}
                     onClick={() => setSelectedTerminal(item)}
-                    className="hover:bg-[#151f38]/50 transition-colors cursor-pointer"
+                    className="hover:bg-slate-50/80 transition-colors cursor-pointer"
                   >
-                    <td className="px-5 py-3.5 font-mono font-semibold text-[#92C842]">{item.terminalCode}</td>
-                    <td className="px-5 py-3.5 font-semibold text-white">
+                    <td className="px-5 py-3.5 font-mono font-semibold text-emerald-700">{item.terminalCode}</td>
+                    <td className="px-5 py-3.5 font-semibold text-slate-900">
                       <div>{item.storeName}</div>
-                      <div className="text-[10px] text-slate-400">{item.zone}</div>
+                      <div className="text-[10px] text-slate-400 font-normal">{item.zone}</div>
                     </td>
-                    <td className="px-5 py-3.5 text-slate-400">{item.hub}</td>
-                    <td className="px-5 py-3.5 text-slate-200">{item.assignedRep}</td>
+                    <td className="px-5 py-3.5 text-slate-600">{item.hub}</td>
+                    <td className="px-5 py-3.5 text-slate-800 font-medium">{item.assignedRep}</td>
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-2 font-mono">
-                        <span className="text-xs font-bold text-[#92C842]">{item.intensity}%</span>
-                        <div className="w-16 bg-[#151f38] h-1.5 rounded-full overflow-hidden">
+                        <span className="text-xs font-bold text-slate-900">{item.intensity}%</span>
+                        <div className="w-16 bg-slate-100 h-1.5 rounded-full overflow-hidden">
                           <div
-                            className="h-1.5 rounded-full bg-gradient-to-r from-[#22d3ee] to-[#92C842]"
+                            className="h-1.5 rounded-full bg-emerald-500"
                             style={{ width: `${item.intensity}%` }}
                           />
                         </div>
@@ -432,12 +387,12 @@ export const FieldMerchandisersView: React.FC<FieldMerchandisersViewProps> = ({
                     </td>
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-1.5 font-mono">
-                        <span className={`w-2 h-2 rounded-full ${item.battery < 50 ? 'bg-[#F17F31]' : 'bg-[#92C842]'}`}></span>
+                        <span className={`w-2 h-2 rounded-full ${item.battery < 50 ? 'bg-amber-500' : 'bg-emerald-500'}`}></span>
                         <span>{item.battery}%</span>
                       </div>
                     </td>
                     <td className="px-5 py-3.5 font-mono">
-                      <span className={item.stockLevel < 40 ? 'text-[#F17F31] font-bold' : 'text-slate-200'}>
+                      <span className={item.stockLevel < 40 ? 'text-amber-700 font-bold' : 'text-slate-700'}>
                         {item.stockLevel}% Full
                       </span>
                     </td>
@@ -446,10 +401,10 @@ export const FieldMerchandisersView: React.FC<FieldMerchandisersViewProps> = ({
                       <span
                         className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wide border ${
                           item.status === 'reconciled'
-                            ? 'bg-[#92C842]/15 text-[#92C842] border-[#92C842]/30'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : item.status === 'warning'
-                            ? 'bg-[#F17F31]/15 text-[#F17F31] border-[#F17F31]/30'
-                            : 'bg-blue-500/15 text-blue-400 border-blue-500/30'
+                            ? 'bg-amber-50 text-amber-700 border-amber-200'
+                            : 'bg-sky-50 text-sky-700 border-sky-200'
                         }`}
                       >
                         {item.status === 'reconciled' ? 'BALANCED' : item.status === 'warning' ? 'NEEDS CHECK' : 'ACTIVE'}
@@ -470,17 +425,17 @@ export const FieldMerchandisersView: React.FC<FieldMerchandisersViewProps> = ({
             <div
               key={item.id}
               onClick={() => setSelectedTerminal(item)}
-              className="bg-[#0e1628] border border-[#1e2d4d] hover:border-[#92C842]/40 rounded-xl p-4 shadow-lg cursor-pointer transition-all hover:translate-y-[-2px] space-y-3"
+              className="bg-white rounded-[12px] border border-slate-200/80 hover:border-emerald-400 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] cursor-pointer transition-all hover:translate-y-[-2px] space-y-3"
             >
               <div className="flex items-center justify-between">
-                <span className="font-mono text-xs font-bold text-[#92C842]">{item.terminalCode}</span>
+                <span className="font-mono text-xs font-bold text-emerald-700">{item.terminalCode}</span>
                 <span
                   className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wide border ${
                     item.status === 'reconciled'
-                      ? 'bg-[#92C842]/15 text-[#92C842] border-[#92C842]/30'
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                       : item.status === 'warning'
-                      ? 'bg-[#F17F31]/15 text-[#F17F31] border-[#F17F31]/30'
-                      : 'bg-blue-500/15 text-blue-400 border-blue-500/30'
+                      ? 'bg-amber-50 text-amber-700 border-amber-200'
+                      : 'bg-sky-50 text-sky-700 border-sky-200'
                   }`}
                 >
                   {item.status === 'reconciled' ? 'BALANCED' : item.status === 'warning' ? 'NEEDS CHECK' : 'ACTIVE'}
@@ -488,34 +443,34 @@ export const FieldMerchandisersView: React.FC<FieldMerchandisersViewProps> = ({
               </div>
 
               <div>
-                <h4 className="text-sm font-bold text-white truncate">{item.storeName}</h4>
-                <div className="text-[11px] text-slate-400 truncate">{item.zone} • {item.hub}</div>
+                <h4 className="text-sm font-bold text-slate-900 truncate">{item.storeName}</h4>
+                <div className="text-[11px] text-slate-500 truncate">{item.zone} • {item.hub}</div>
               </div>
 
-              <div className="text-xs text-slate-300">
-                <span className="text-slate-500">Worker:</span> <strong className="text-white">{item.assignedRep}</strong>
+              <div className="text-xs text-slate-600">
+                <span className="text-slate-400">Staff:</span> <strong className="text-slate-900">{item.assignedRep}</strong>
               </div>
 
               <div className="space-y-1 pt-1">
-                <div className="flex justify-between text-[11px] font-mono text-slate-400">
+                <div className="flex justify-between text-[11px] font-mono text-slate-500">
                   <span>Sales Activity</span>
-                  <span className="text-[#92C842] font-bold">{item.intensity}% ({item.hourlyTransactions} tx/hr)</span>
+                  <span className="text-emerald-700 font-bold">{item.intensity}% ({item.hourlyTransactions} tx/hr)</span>
                 </div>
-                <div className="w-full bg-[#151f38] h-1.5 rounded-full overflow-hidden">
+                <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                   <div
-                    className="h-1.5 rounded-full bg-gradient-to-r from-[#22d3ee] to-[#92C842]"
+                    className="h-1.5 rounded-full bg-emerald-500"
                     style={{ width: `${item.intensity}%` }}
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#1e2d4d]/60 text-[11px] font-mono">
-                <div className="flex items-center gap-1.5 text-slate-400">
-                  <span className={`w-2 h-2 rounded-full ${item.battery < 50 ? 'bg-[#F17F31]' : 'bg-[#92C842]'}`} />
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-[11px] font-mono">
+                <div className="flex items-center gap-1.5 text-slate-600">
+                  <span className={`w-2 h-2 rounded-full ${item.battery < 50 ? 'bg-amber-500' : 'bg-emerald-500'}`} />
                   <span>Battery {item.battery}%</span>
                 </div>
-                <div className="text-right text-slate-400">
-                  Stock: <strong className="text-slate-200">{item.stockLevel}%</strong>
+                <div className="text-right text-slate-600">
+                  Stock: <strong className="text-slate-900">{item.stockLevel}%</strong>
                 </div>
               </div>
             </div>
@@ -525,61 +480,61 @@ export const FieldMerchandisersView: React.FC<FieldMerchandisersViewProps> = ({
 
       {/* Selected Terminal Quick Detail Modal */}
       {selectedTerminal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-[#0e1628] border border-[#1e2d4d] rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="bg-white border border-slate-200 rounded-[16px] max-w-md w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-start justify-between">
               <div>
-                <div className="text-xs font-mono text-[#92C842] uppercase tracking-wider font-bold">
-                  Card Machine Telemetry
+                <div className="text-xs font-mono text-emerald-700 uppercase tracking-wider font-bold">
+                  Card Machine Details
                 </div>
-                <h3 className="text-lg font-bold text-white mt-1">{selectedTerminal.storeName}</h3>
-                <p className="text-xs text-slate-400">{selectedTerminal.zone} • {selectedTerminal.hub} Hub</p>
+                <h3 className="text-lg font-bold text-slate-900 mt-1">{selectedTerminal.storeName}</h3>
+                <p className="text-xs text-slate-500">{selectedTerminal.zone} • {selectedTerminal.hub} Hub</p>
               </div>
               <button
                 onClick={() => setSelectedTerminal(null)}
-                className="text-slate-400 hover:text-white p-1"
+                className="text-slate-400 hover:text-slate-700 p-1"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="bg-[#151f38]/60 border border-[#1e2d4d] rounded-xl p-4 space-y-2.5 font-mono text-xs">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 font-mono text-xs">
               <div className="flex justify-between">
-                <span className="text-slate-400">Terminal Code:</span>
-                <span className="text-[#92C842] font-bold">{selectedTerminal.terminalCode}</span>
+                <span className="text-slate-500">Terminal Code:</span>
+                <span className="text-emerald-700 font-bold">{selectedTerminal.terminalCode}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Assigned Worker:</span>
-                <span className="text-white font-semibold">{selectedTerminal.assignedRep}</span>
+                <span className="text-slate-500">Staff in Charge:</span>
+                <span className="text-slate-900 font-semibold">{selectedTerminal.assignedRep}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Status:</span>
-                <span className="text-white uppercase font-bold">{selectedTerminal.status}</span>
+                <span className="text-slate-500">Status:</span>
+                <span className="text-slate-900 uppercase font-bold">{selectedTerminal.status}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Hourly Transactions:</span>
-                <span className="text-white font-bold">{selectedTerminal.hourlyTransactions} tx/hr</span>
+                <span className="text-slate-500">Hourly Transactions:</span>
+                <span className="text-slate-900 font-bold">{selectedTerminal.hourlyTransactions} tx/hr</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Battery Level:</span>
-                <span className={selectedTerminal.battery < 50 ? 'text-[#F17F31] font-bold' : 'text-[#92C842] font-bold'}>
+                <span className="text-slate-500">Battery Level:</span>
+                <span className={selectedTerminal.battery < 50 ? 'text-amber-600 font-bold' : 'text-emerald-600 font-bold'}>
                   {selectedTerminal.battery}%
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Stock Capacity:</span>
-                <span className="text-slate-200">{selectedTerminal.stockLevel}% Full</span>
+                <span className="text-slate-500">Stock Capacity:</span>
+                <span className="text-slate-800">{selectedTerminal.stockLevel}% Full</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Last Telemetry Ping:</span>
-                <span className="text-slate-300">{selectedTerminal.lastPing}</span>
+                <span className="text-slate-500">Last Signal:</span>
+                <span className="text-slate-700">{selectedTerminal.lastPing}</span>
               </div>
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setSelectedTerminal(null)}
-                className="px-4 py-2 rounded-lg bg-[#151f38] hover:bg-[#1f2d52] text-slate-300 text-xs font-semibold"
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold transition-colors"
               >
                 Close
               </button>
