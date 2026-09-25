@@ -14,6 +14,8 @@ interface TopHeaderProps {
   isOverrunSimulated?: boolean;
   onToggleOverrunSimulation?: () => void;
   onOpenShiftCompliance?: () => void;
+  onOpenGpsTracker?: () => void;
+  onOpenOverallDashboard?: () => void;
   currentUser?: AuthUser | null;
   onSignOut?: () => void;
 }
@@ -31,6 +33,8 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   isOverrunSimulated = false,
   onToggleOverrunSimulation,
   onOpenShiftCompliance,
+  onOpenGpsTracker,
+  onOpenOverallDashboard,
   currentUser,
   onSignOut
 }) => {
@@ -76,10 +80,10 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   }, []);
 
   const hubs: { id: Region; label: string }[] = [
-    { id: 'All', label: 'All Hubs' },
+    { id: 'All', label: 'All Locations' },
     { id: 'Lagos', label: 'Lagos' },
     { id: 'Ibadan', label: 'Ibadan' },
-    { id: 'Ogun', label: 'Ogun / Abeokuta' },
+    { id: 'Ogun', label: 'Ogun' },
     { id: 'Benin', label: 'Benin' }
   ];
 
@@ -135,7 +139,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
               />
             </svg>
             <span>
-              Live Log Sync: <span className="text-slate-200">{syncTimeSeconds}s ago</span>
+              Updated: <span className="text-slate-200">{syncTimeSeconds}s ago</span>
             </span>
           </div>
 
@@ -143,7 +147,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           <div
             onClick={onOpenNotifications}
             className="relative cursor-pointer p-1.5 text-slate-400 hover:text-slate-200 rounded-lg hover:bg-[#151f38] transition-colors"
-            title="Operational Alerts"
+            title="Alerts and Notifications"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -163,7 +167,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             <button
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
               className="flex items-center gap-2.5 p-1 rounded-lg hover:bg-[#151f38] transition-all text-left group"
-              title="Click to manage session or switch corporate role"
+              title="Click to manage account or switch user"
             >
               <div className="text-right hidden sm:block">
                 <div className="text-xs font-bold text-slate-100 group-hover:text-white flex items-center justify-end gap-1">
@@ -173,7 +177,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                   </svg>
                 </div>
                 <div className="text-[10px] font-medium tracking-wider text-[#92C842] uppercase truncate max-w-[140px]">
-                  {currentUser ? currentUser.roleTitle : 'Chief Executive Officer'}
+                  {currentUser ? currentUser.roleTitle : 'Super Admin'}
                 </div>
               </div>
 
@@ -197,24 +201,24 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                   </div>
                   <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
                     <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-[#92C842]/10 text-[#92C842] border border-[#92C842]/30 font-semibold">
-                      {currentUser ? currentUser.securityClearance : 'Level 5 (Unrestricted)'}
+                      {currentUser ? currentUser.securityClearance : 'Super Admin'}
                     </span>
                     <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-[#151f38] text-slate-300 border border-[#1e2d4d]">
-                      {currentUser ? currentUser.department : 'Executive Governance'}
+                      {currentUser ? currentUser.department : 'Executive Leadership'}
                     </span>
                   </div>
                 </div>
 
                 <div className="text-[11px] text-slate-400 space-y-1">
                   <div className="flex justify-between">
-                    <span>Region Scope:</span>
+                    <span>Locations:</span>
                     <span className="font-mono text-slate-200">
-                      {currentUser ? currentUser.assignedRegion : 'All 4 Hubs'}
+                      {currentUser ? currentUser.assignedRegion : 'All 4 Locations'}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Session Status:</span>
-                    <span className="font-mono text-[#92C842]">Active (TLS 1.3)</span>
+                    <span>Status:</span>
+                    <span className="font-mono text-[#92C842]">Online & Secure</span>
                   </div>
                 </div>
 
@@ -229,7 +233,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
                     </svg>
-                    <span>Switch Role / Sign Out</span>
+                    <span>Sign Out / Switch User</span>
                   </button>
                 )}
               </div>
@@ -238,15 +242,15 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         </div>
       </div>
 
-      {/* Sub Top Control Bar with CEO Directive info */}
+      {/* Sub Top Control Bar */}
       <div className="px-4 lg:px-6 py-2.5 bg-[#090e1c]/80 border-t border-[#1e2d4d] flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-3 flex-wrap">
           <span className="flex items-center gap-1.5 text-[#92C842] font-semibold tracking-wide">
             <span className="w-2 h-2 rounded-full bg-[#92C842] animate-pulse"></span>
-            TELEMETRY ACTIVE
+            LIVE MACHINES CONNECTED
           </span>
           <span className="text-slate-500">•</span>
-          <span className="text-slate-300">Auto-syncing with Tope's Master Sheet</span>
+          <span className="text-slate-300">Live data connected</span>
           <span className="bg-[#151f38] px-2 py-0.5 rounded border border-[#1e2d4d] text-[11px] font-mono text-slate-300">
             {watTime}
           </span>
@@ -258,9 +262,9 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                   ? 'bg-[#F17F31]/20 text-[#F17F31] border-[#F17F31]/50 shadow-sm'
                   : 'bg-[#151f38] text-slate-400 border-[#1e2d4d] hover:text-slate-200'
               }`}
-              title="Simulate time past 21:00 WAT to test Shift Overrun telemetry check"
+              title="Click to test the alert for staff working past 9:00 PM closing time"
             >
-              {isOverrunSimulated ? '21:15 WAT (Sim Overrun)' : 'Simulate >21:00 WAT'}
+              {isOverrunSimulated ? '9:15 PM (Testing Late Work)' : 'Test Late Shift Alert'}
             </button>
           )}
           <span className="text-slate-500 hidden lg:inline">•</span>
@@ -274,18 +278,62 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
               />
             </svg>
             <span>
-              Role-Based Audit Level: <strong className="text-slate-200 font-medium">CEO Clearance (Tope Balogun)</strong>
+              Signed in as: <strong className="text-slate-200 font-medium">Tope Balogun (Super Admin)</strong>
             </span>
           </div>
         </div>
 
         {/* Actions: Shift Compliance, Refresh and New VSR */}
         <div className="flex items-center gap-2">
+          {onOpenOverallDashboard && (
+            <button
+              onClick={onOpenOverallDashboard}
+              className="px-3 py-1.5 rounded-lg bg-[#82c332] hover:bg-[#71ab2a] text-[#090e1c] font-black flex items-center gap-1.5 transition-all text-xs shadow-md shadow-[#82c332]/25"
+              title="Open Official KEA Client Master Dashboard"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                />
+              </svg>
+              <span className="hidden sm:inline">KEA Master Dashboard</span>
+              <span className="sm:hidden">KEA</span>
+            </button>
+          )}
+
+          {onOpenGpsTracker && (
+            <button
+              onClick={onOpenGpsTracker}
+              className="px-3 py-1.5 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] hover:border-[#92C842]/50 flex items-center gap-1.5 font-medium transition-all text-xs shadow-sm"
+              title="Track where store workers sign in from using GPS"
+            >
+              <svg className="w-3.5 h-3.5 text-[#92C842]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                />
+                <path
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                />
+              </svg>
+              <span className="hidden sm:inline">Worker GPS Tracker</span>
+              <span className="sm:hidden">GPS</span>
+            </button>
+          )}
+
           {onOpenShiftCompliance && (
             <button
               onClick={onOpenShiftCompliance}
               className="px-3 py-1.5 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] hover:border-[#92C842]/50 flex items-center gap-1.5 font-medium transition-all text-xs shadow-sm"
-              title="Shift Start/End Compliance Summary vs Standard 07:00-21:00 WAT Window (PDF Ready)"
+              title="Daily work hours and attendance summary (Print or Save as PDF)"
             >
               <svg className="w-3.5 h-3.5 text-[#92C842]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -295,8 +343,8 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                   strokeWidth="2"
                 />
               </svg>
-              <span className="hidden md:inline">Shift Compliance (PDF)</span>
-              <span className="md:hidden">Compliance</span>
+              <span className="hidden md:inline">Daily Shift Report (PDF)</span>
+              <span className="md:hidden">Shift Report</span>
             </button>
           )}
 
@@ -304,6 +352,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             onClick={onForceRefresh}
             disabled={isRefreshing}
             className="px-3 py-1.5 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] flex items-center gap-2 font-medium transition-colors disabled:opacity-50"
+            title="Refresh all data now"
           >
             <svg
               className={`w-3.5 h-3.5 text-slate-400 ${isRefreshing ? 'animate-spin' : ''}`}
@@ -318,7 +367,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                 strokeWidth="2"
               />
             </svg>
-            <span>{isRefreshing ? 'Syncing...' : 'Force Refresh'}</span>
+            <span>{isRefreshing ? 'Updating...' : 'Refresh Now'}</span>
           </button>
           <button
             onClick={onOpenNewVSR}
@@ -327,7 +376,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span>New VSR Allocation</span>
+            <span>+ Add Store Worker</span>
           </button>
         </div>
       </div>

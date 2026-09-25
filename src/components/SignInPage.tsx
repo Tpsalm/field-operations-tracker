@@ -1,160 +1,6 @@
 import React, { useState } from 'react';
-import { AuthUser, GeneratedCredential, SessionMeta } from '../types';
-import {
-  PRESET_CREDENTIALS,
-  VSR_CREDENTIALS,
-  verifyCredentials,
-  generateCustomAuditorCredential
-} from '../data/credentialsData';
-import { supabase, isSupabaseReachable } from '../lib/supabase';
-import { insertVSRSessionLog } from '../lib/supabaseData';
-
-const getVSRLocationSummary = (latitude: number, longitude: number) => {
-  const regionByCoords =
-    latitude > 6.4 && latitude < 7.1 && longitude > 2.9 && longitude < 4.2
-      ? 'Lagos'
-      : latitude > 7.1 && latitude < 8.2 && longitude > 3.6 && longitude < 4.5
-        ? 'Ibadan'
-        : latitude > 7.0 && latitude < 8.0 && longitude > 3.0 && longitude < 4.2
-          ? 'Ogun'
-          : latitude > 5.8 && latitude < 7.0 && longitude > 5.0 && longitude < 6.5
-            ? 'Benin'
-            : 'Regional Hub';
-
-  const cityByCoords =
-    regionByCoords === 'Lagos'
-      ? 'Lagos'
-      : regionByCoords === 'Ibadan'
-        ? 'Ibadan'
-        : regionByCoords === 'Ogun'
-          ? 'Abeokuta'
-          : regionByCoords === 'Benin'
-            ? 'Benin City'
-            : 'Remote Hub';
-
-  const stateByCoords =
-    regionByCoords === 'Lagos'
-      ? 'Lagos State'
-      : regionByCoords === 'Ibadan'
-        ? 'Oyo State'
-        : regionByCoords === 'Ogun'
-          ? 'Ogun State'
-          : regionByCoords === 'Benin'
-            ? 'Edo State'
-            : 'Remote Area';
-
-  return {
-    region: regionByCoords,
-    city: cityByCoords,
-    state: stateByCoords,
-    label: `${cityByCoords} • ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
-  };
-};
-
-const requireVSRLocationConsent = async (email: string, portal: 'admin' | 'vsr'): Promise<SessionMeta> => {
-  if (portal !== 'vsr') {
-    return {
-      signedInAt: new Date().toISOString(),
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-      location: {
-        label: 'Admin portal access',
-        city: 'Head Office',
-        state: 'Corporate HQ',
-        region: 'Admin',
-        country: 'Nigeria',
-        countryCode: 'NG',
-        source: 'fallback',
-        consentStatus: 'required'
-      }
-    };
-  }
-
-  if (!navigator.geolocation) {
-    throw new Error('Location access is required for every VSR sign-in. This browser does not support geolocation access.');
-  }
-
-  return await new Promise((resolve, reject) => {
-    const completedAt = new Date();
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude, accuracy } = position.coords;
-        const locationSummary = getVSRLocationSummary(latitude, longitude);
-        const sessionMeta: SessionMeta = {
-          signedInAt: completedAt.toISOString(),
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-          location: {
-            latitude,
-            longitude,
-            label: locationSummary.label,
-            city: locationSummary.city,
-            state: locationSummary.state,
-            region: locationSummary.region,
-            country: 'Nigeria',
-            countryCode: 'NG',
-            accuracy,
-            source: 'browser',
-            consentGrantedAt: completedAt.toISOString(),
-            consentStatus: 'accepted'
-          }
-        };
-
-        const logEntry = {
-          email,
-          acceptedAt: completedAt.toISOString(),
-          city: locationSummary.city,
-          state: locationSummary.state,
-          region: locationSummary.region,
-          latitude,
-          longitude,
-          accuracy,
-          locationLabel: locationSummary.label
-        };
-
-        const existing = (() => {
-          try {
-            return JSON.parse(localStorage.getItem('kea_vsr_tracking_log') || '[]');
-          } catch {
-            return [];
-          }
-        })();
-
-        localStorage.setItem('kea_vsr_tracking_log', JSON.stringify([logEntry, ...existing].slice(0, 200)));
-
-        void (async () => {
-          try {
-            await insertVSRSessionLog({
-              email,
-              name: email.split('@')[0].replace(/[.]/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()),
-              role: 'VSR',
-              city: locationSummary.city,
-              state: locationSummary.state,
-              region: locationSummary.region,
-              country: 'Nigeria',
-              countryCode: 'NG',
-              latitude,
-              longitude,
-              accuracy,
-              locationLabel: locationSummary.label,
-              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-              signedInAt: completedAt.toISOString(),
-              consentGrantedAt: completedAt.toISOString(),
-              source: 'browser'
-            });
-          } catch (dbError) {
-            console.warn('Supabase VSR session log insert failed; local tracking log remains in place.', dbError);
-          }
-        })();
-
-        resolve(sessionMeta);
-      },
-      (error) => {
-        reject(new Error('Location access is required before a VSR can enter the platform. Please accept location access to continue.'));
-      },
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
-    );
-  });
-};
+import { AuthUser, GeneratedCredential } from '../types';
+import { PRESET_CREDENTIALS, verifyCredentials, generateCustomAuditorCredential } from '../data/credentialsData';
 
 interface SignInPageProps {
   onSignIn: (user: AuthUser) => void;
@@ -169,222 +15,50 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignIn, defaultEmail =
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  const [portal, setPortal] = useState<'admin' | 'vsr'>('admin');
+  // Dynamic Generator State
   const [generatedList, setGeneratedList] = useState<GeneratedCredential[]>([]);
   const [genHub, setGenHub] = useState<'All' | 'Lagos' | 'Ibadan' | 'Ogun' | 'Benin'>('Lagos');
 
-  const availableCredentials = portal === 'admin' ? PRESET_CREDENTIALS : VSR_CREDENTIALS;
-
   // Handle Form Submission
-  const handleSubmit = async (e?: React.FormEvent) => {
+  const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setErrorMessage('');
     setIsLoading(true);
 
-    try {
-      if (portal === 'vsr') {
-        const locationMeta = await requireVSRLocationConsent(email, portal);
-        const canUseSupabase = Boolean(supabase) && (await isSupabaseReachable());
+    setTimeout(() => {
+      // Check preset credentials or dynamically generated credentials
+      let authenticatedUser = verifyCredentials(email, password);
 
-        if (canUseSupabase) {
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email: email.trim(),
-            password: password.trim()
-          });
-
-          if (!error && data.user) {
-            const { data: profile, error: profileError } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', data.user.id)
-              .maybeSingle();
-
-            if (profile && !profileError) {
-              const nextUser: AuthUser = {
-                id: profile.id,
-                name: profile.name,
-                email: profile.email,
-                role: profile.role,
-                roleTitle: profile.role_title || profile.role,
-                department: profile.department || 'Operations',
-                initials: profile.initials || profile.name.slice(0, 2).toUpperCase(),
-                avatarColor: profile.avatar_color || '#38bdf8',
-                assignedRegion: profile.assigned_region || 'Lagos',
-                securityClearance: profile.security_clearance || 'Level 3 (Audit & HR)',
-                lastLogin: new Date().toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short' }),
-                platform: profile.platform || 'vsr',
-                sessionMeta: locationMeta
-              };
-
-              onSignIn(nextUser);
-              setIsLoading(false);
-              return;
-            }
-          }
-
-          if (error) {
-            console.warn('Supabase VSR auth failed; no local fallback will be used.', error.message);
-          }
-
-          setIsLoading(false);
-          setErrorMessage('VSR login failed. Please confirm the Supabase Auth user exists and that the geolocation consent was granted.');
-          return;
+      if (!authenticatedUser) {
+        const genMatch = generatedList.find(
+          (c) => c.user.email.toLowerCase() === email.trim().toLowerCase() && c.passwordText === password.trim()
+        );
+        if (genMatch) {
+          authenticatedUser = genMatch.user;
         }
+      }
 
+      if (authenticatedUser) {
         setIsLoading(false);
-        setErrorMessage('VSR login is unavailable because Supabase is not reachable. Please ensure the live backend is active.');
-        return;
+        onSignIn(authenticatedUser);
+      } else {
+        setIsLoading(false);
+        setErrorMessage('Invalid corporate credentials. Please select one of the pre-generated accounts below or generate a fresh inspection key.');
       }
-
-      let authSucceeded = false;
-      const canUseSupabase = Boolean(supabase) && (await isSupabaseReachable());
-
-      if (canUseSupabase) {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password: password.trim()
-        });
-
-        if (!error && data.user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', data.user.id)
-            .single();
-
-          if (profile) {
-            const nextUser: AuthUser = {
-              id: profile.id,
-              name: profile.name,
-              email: profile.email,
-              role: profile.role,
-              roleTitle: profile.role_title || profile.role,
-              department: profile.department || 'Operations',
-              initials: profile.initials || profile.name.slice(0, 2).toUpperCase(),
-              avatarColor: profile.avatar_color || '#92C842',
-              assignedRegion: profile.assigned_region || 'All',
-              securityClearance: profile.security_clearance || 'Level 5 (Unrestricted)',
-              lastLogin: new Date().toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short' }),
-              platform: profile.platform || 'admin',
-              sessionMeta: {
-                signedInAt: new Date().toISOString(),
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-                location: {
-                  label: 'Supabase authenticated session',
-                  city: 'Remote Login',
-                  country: 'Nigeria',
-                  countryCode: 'NG',
-                  source: 'fallback'
-                }
-              }
-            };
-
-            onSignIn(nextUser);
-            setIsLoading(false);
-            authSucceeded = true;
-            return;
-          }
-        }
-
-        if (error) {
-          console.warn('Supabase auth failed; falling back to local credential validation.', error.message);
-        }
-      }
-
-      if (authSucceeded) return;
-
-      setTimeout(() => {
-        let authenticatedUser = verifyCredentials(email, password, portal);
-
-        if (!authenticatedUser) {
-          const genMatch = generatedList.find(
-            (c) => c.user.email.toLowerCase() === email.trim().toLowerCase() && c.passwordText === password.trim()
-          );
-          if (genMatch) {
-            authenticatedUser = genMatch.user;
-          }
-        }
-
-        if (authenticatedUser) {
-          setIsLoading(false);
-          onSignIn(authenticatedUser);
-        } else {
-          setIsLoading(false);
-          setErrorMessage('Invalid corporate credentials. Please select one of the pre-generated accounts below or generate a fresh inspection key.');
-        }
-      }, 450);
-    } catch (error) {
-      setIsLoading(false);
-      setErrorMessage(error instanceof Error ? error.message : 'Authentication failed');
-    }
+    }, 450);
   };
 
   // Quick 1-click sign in as any preset
-  const handleQuickSignIn = async (cred: GeneratedCredential) => {
+  const handleQuickSignIn = (cred: GeneratedCredential) => {
     setEmail(cred.user.email);
     setPassword(cred.passwordText);
     setErrorMessage('');
     setIsLoading(true);
 
-    try {
-      if (cred.user.platform === 'vsr') {
-        const locationMeta = await requireVSRLocationConsent(cred.user.email, 'vsr');
-        const canUseSupabase = Boolean(supabase) && (await isSupabaseReachable());
-
-        if (!canUseSupabase) {
-          setIsLoading(false);
-          setErrorMessage('VSR login is unavailable because Supabase is not reachable.');
-          return;
-        }
-
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: cred.user.email.trim(),
-          password: cred.passwordText.trim()
-        });
-
-        if (error || !data.user) {
-          setIsLoading(false);
-          setErrorMessage('The Supabase VSR account could not be authenticated. Please create that user in Supabase Auth first.');
-          return;
-        }
-
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', data.user.id)
-          .maybeSingle();
-
-        if (!profile || profileError) {
-          setIsLoading(false);
-          setErrorMessage('The matching Supabase profile does not exist for this VSR account.');
-          return;
-        }
-
-        onSignIn({
-          id: profile.id,
-          name: profile.name,
-          email: profile.email,
-          role: profile.role,
-          roleTitle: profile.role_title || profile.role,
-          department: profile.department || 'Operations',
-          initials: profile.initials || profile.name.slice(0, 2).toUpperCase(),
-          avatarColor: profile.avatar_color || '#38bdf8',
-          assignedRegion: profile.assigned_region || 'Lagos',
-          securityClearance: profile.security_clearance || 'Level 3 (Audit & HR)',
-          lastLogin: new Date().toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short' }),
-          platform: profile.platform || 'vsr',
-          sessionMeta: locationMeta
-        });
-      } else {
-        onSignIn(cred.user);
-      }
-    } catch (error) {
+    setTimeout(() => {
       setIsLoading(false);
-      setErrorMessage(error instanceof Error ? error.message : 'Location access is required to sign in as a VSR.');
-      return;
-    }
-
-    setIsLoading(false);
+      onSignIn(cred.user);
+    }, 350);
   };
 
   // Generate dynamic auditor account
@@ -440,15 +114,15 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignIn, defaultEmail =
             KEA Operations Suite
           </h1>
           <p className="text-sm text-slate-400 mt-1 max-w-lg mx-auto">
-            Executive control portal for VSR allocations, shift compliance, and head office staffing.
+            Executive control portal for VSR allocations, field merchandiser telemetry, shift compliance, and head office staffing.
           </p>
         </div>
 
-        {/* CENTERED SIGN-IN PANEL */}
-        <div className="flex justify-center">
+        {/* 2-COLUMN SIGN IN & GENERATOR GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* LEFT: AUTHENTICATION FORM (5 cols on LG) */}
-          <div className="w-full max-w-xl bg-[#0e1628] border border-[#1e2d4d] rounded-2xl p-6 sm:p-7 shadow-2xl space-y-5">
+          <div className="lg:col-span-5 bg-[#0e1628] border border-[#1e2d4d] rounded-2xl p-6 sm:p-7 shadow-2xl space-y-5">
             <div className="border-b border-[#1e2d4d] pb-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold text-white tracking-wide">
@@ -458,29 +132,8 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignIn, defaultEmail =
                   AUTHENTICATED GATEWAY
                 </span>
               </div>
-              <div className="mt-3 flex gap-2 rounded-xl border border-[#1e2d4d] bg-[#090e1c] p-1">
-                {(['admin', 'vsr'] as const).map((mode) => (
-                  <button
-                    key={mode}
-                    type="button"
-                    onClick={() => {
-                      setPortal(mode);
-                      setEmail(mode === 'admin' ? PRESET_CREDENTIALS[0].user.email : VSR_CREDENTIALS[0].user.email);
-                      setPassword(mode === 'admin' ? PRESET_CREDENTIALS[0].passwordText : VSR_CREDENTIALS[0].passwordText);
-                      setErrorMessage('');
-                    }}
-                    className={`flex-1 rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-[0.2em] transition ${
-                      portal === mode ? 'bg-[#92C842] text-[#090e1c]' : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    {mode === 'admin' ? 'Super Admin' : 'VSR'}
-                  </button>
-                ))}
-              </div>
               <p className="text-xs text-slate-400 mt-1">
-                {portal === 'admin'
-                  ? 'Enter corporate credentials or select a generated role profile.'
-                  : 'Sign in as a field VSR to access route tracking and field operations.'}
+                Enter corporate credentials or select a generated role profile.
               </p>
             </div>
 
@@ -609,7 +262,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignIn, defaultEmail =
           </div>
 
           {/* RIGHT: PRE-GENERATED CREDENTIALS & ON-DEMAND GENERATOR (7 cols on LG) */}
-          <div className="hidden lg:col-span-7 space-y-6">
+          <div className="lg:col-span-7 space-y-6">
             
             {/* PRE-GENERATED CORPORATE ACCOUNTS LEDGER */}
             <div className="bg-[#0e1628] border border-[#1e2d4d] rounded-2xl p-6 shadow-2xl space-y-4">
@@ -629,13 +282,13 @@ export const SignInPage: React.FC<SignInPageProps> = ({ onSignIn, defaultEmail =
                 </div>
 
                 <span className="text-[10px] font-mono text-slate-400 bg-[#151f38] px-2.5 py-1 rounded border border-[#1e2d4d]">
-                  {portal === 'admin' ? 'READY FOR DEMO / AUDIT' : 'FIELD OPERATION ROUTE ACCESS'}
+                  READY FOR DEMO / AUDIT
                 </span>
               </div>
 
               {/* Cards Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                {availableCredentials.map((cred) => {
+                {PRESET_CREDENTIALS.map((cred) => {
                   const isCurrent = email.toLowerCase() === cred.user.email.toLowerCase();
 
                   return (

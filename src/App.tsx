@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Region,
   TenureFilter,
@@ -8,8 +8,7 @@ import {
   Requisition,
   FundingActionLog,
   FieldMerchandiserHub,
-  AuthUser,
-  SessionMeta
+  AuthUser
 } from './types';
 import {
   INITIAL_STAFF_RECORDS,
@@ -23,58 +22,28 @@ import { PRESET_CREDENTIALS } from './data/credentialsData';
 import { Sidebar } from './components/Sidebar';
 import { TopHeader } from './components/TopHeader';
 import { SignInPage } from './components/SignInPage';
+import { OverallDashboardView } from './components/OverallDashboardView';
+import { EmployeeComplianceRegisterView } from './components/EmployeeComplianceRegisterView';
 import { KPIStats } from './components/KPIStats';
 import { StaffCard } from './components/StaffCard';
 import { RightSidebarWidgets } from './components/RightSidebarWidgets';
+import { NewVSRModal } from './components/NewVSRModal';
+import { StaffDetailModal } from './components/StaffDetailModal';
+import { FieldMerchandisersView } from './components/FieldMerchandisersView';
+import { GpsTrackerView } from './components/GpsTrackerView';
+import { PerformanceTrendsView } from './components/PerformanceTrendsView';
+import { ComplianceDashboardView } from './components/ComplianceDashboardView';
+import { ShiftAdherence30DayView } from './components/ShiftAdherence30DayView';
+import { VsrLocationAuditView } from './components/VsrLocationAuditView';
+import { VsrRecruitmentView } from './components/VsrRecruitmentView';
+import { HeadOfficeView } from './components/HeadOfficeView';
+import { ArchiveView } from './components/ArchiveView';
+import { NotificationDrawer } from './components/NotificationDrawer';
+import { ShiftComplianceModal } from './components/ShiftComplianceModal';
+import { TelemetryPreferencesPanel } from './components/TelemetryPreferencesPanel';
 import { TelemetrySparkline } from './components/TelemetrySparkline';
-import { VSRDashboard } from './components/VSRDashboard';
-import { CredentialAdministrationPanel } from './components/CredentialAdministrationPanel';
-import { WorkflowCenter } from './components/WorkflowCenter';
 import { TelemetryPreferencesConfig } from './types';
-import { loadTelemetryPreferences, saveTelemetryPreferences } from './data/telemetryPreferencesData';
-import { supabase } from './lib/supabase';
-import { VSRLocationAuditTrailView } from './components/VSRLocationAuditTrailView';
-import {
-  loadDashboardData,
-  signOutSupabase,
-  upsertStaffRecord,
-  insertRequisition,
-  insertFundingLog,
-  insertNotification,
-  upsertTelemetryPreferences
-} from './lib/supabaseData';
-import { DashboardSkeleton, ErrorBanner } from './components/DataStateUI';
-
-const FieldMerchandisersView = lazy(() =>
-  import('./components/FieldMerchandisersView').then((module) => ({ default: module.FieldMerchandisersView }))
-);
-const PerformanceTrendsView = lazy(() =>
-  import('./components/PerformanceTrendsView').then((module) => ({ default: module.PerformanceTrendsView }))
-);
-const ComplianceDashboardView = lazy(() =>
-  import('./components/ComplianceDashboardView').then((module) => ({ default: module.ComplianceDashboardView }))
-);
-const HeadOfficeView = lazy(() =>
-  import('./components/HeadOfficeView').then((module) => ({ default: module.HeadOfficeView }))
-);
-const ArchiveView = lazy(() =>
-  import('./components/ArchiveView').then((module) => ({ default: module.ArchiveView }))
-);
-const NewVSRModal = lazy(() =>
-  import('./components/NewVSRModal').then((module) => ({ default: module.NewVSRModal }))
-);
-const StaffDetailModal = lazy(() =>
-  import('./components/StaffDetailModal').then((module) => ({ default: module.StaffDetailModal }))
-);
-const NotificationDrawer = lazy(() =>
-  import('./components/NotificationDrawer').then((module) => ({ default: module.NotificationDrawer }))
-);
-const ShiftComplianceModal = lazy(() =>
-  import('./components/ShiftComplianceModal').then((module) => ({ default: module.ShiftComplianceModal }))
-);
-const TelemetryPreferencesPanel = lazy(() =>
-  import('./components/TelemetryPreferencesPanel').then((module) => ({ default: module.TelemetryPreferencesPanel }))
-);
+import { loadTelemetryPreferences } from './data/telemetryPreferencesData';
 
 // Store opening hours per Nigerian regional hub (in West Africa Time / WAT)
 interface RegionalStoreShiftSchedule {
@@ -94,6 +63,7 @@ const STORE_OPENING_HOURS: RegionalStoreShiftSchedule[] = [
 ];
 
 export default function App() {
+  // Authentication State (Corporate Session in WAT)
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
     try {
       const stored = localStorage.getItem('kea_current_user');
@@ -101,133 +71,19 @@ export default function App() {
     } catch (e) {
       console.error(e);
     }
-    return null;
+    return PRESET_CREDENTIALS[0].user; // Default active executive: Tope Balogun (CEO)
   });
 
-  const captureSessionMeta = (user: AuthUser): AuthUser => {
-    const now = new Date();
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-
-    if (user.platform === 'vsr' && user.sessionMeta?.location?.consentStatus === 'accepted') {
-      const authenticatedUser = {
-        ...user,
-        lastLogin: now.toLocaleString('en-NG', { timeZone: tz, dateStyle: 'medium', timeStyle: 'short' })
-      };
-
-      return authenticatedUser;
-    }
-
-    if (user.platform === 'vsr') {
-      throw new Error('VSR sign-in is blocked until the user accepts the current location. No bypass is allowed.');
-    }
-
-    const fallbackLocation = {
-      label: 'Unknown location',
-      city: 'Unlocated',
-      country: 'Nigeria',
-      countryCode: 'NG',
-      source: 'fallback' as const
-    };
-
-    const sessionMeta: SessionMeta = {
-      signedInAt: now.toISOString(),
-      timezone: tz,
-      location: fallbackLocation
-    };
-
-    if (!navigator.geolocation) {
-      return {
-        ...user,
-        lastLogin: now.toLocaleString('en-NG', { timeZone: tz, dateStyle: 'medium', timeStyle: 'short' }),
-        sessionMeta
-      };
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude, accuracy } = position.coords;
-        const cityGuess = latitude > 6.4 && latitude < 7.1 ? 'Lagos' : latitude > 7.2 && latitude < 8.0 ? 'Ibadan' : 'Regional Hub';
-        const nextSessionMeta: SessionMeta = {
-          signedInAt: now.toISOString(),
-          timezone: tz,
-          location: {
-            latitude,
-            longitude,
-            label: `${cityGuess} • ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
-            city: cityGuess,
-            country: 'Nigeria',
-            countryCode: 'NG',
-            accuracy,
-            source: 'browser'
-          }
-        };
-
-        const authenticatedUser = {
-          ...user,
-          lastLogin: now.toLocaleString('en-NG', { timeZone: tz, dateStyle: 'medium', timeStyle: 'short' }),
-          sessionMeta: nextSessionMeta
-        };
-
-        setCurrentUser(authenticatedUser);
-        localStorage.setItem('kea_current_user', JSON.stringify(authenticatedUser));
-      },
-      () => {
-        const authenticatedUser = {
-          ...user,
-          lastLogin: now.toLocaleString('en-NG', { timeZone: tz, dateStyle: 'medium', timeStyle: 'short' }),
-          sessionMeta
-        };
-        setCurrentUser(authenticatedUser);
-        localStorage.setItem('kea_current_user', JSON.stringify(authenticatedUser));
-      },
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
-    );
-
-    return {
-      ...user,
-      lastLogin: now.toLocaleString('en-NG', { timeZone: tz, dateStyle: 'medium', timeStyle: 'short' }),
-      sessionMeta
-    };
-  };
-
   const handleSignIn = (user: AuthUser) => {
+    setCurrentUser(user);
     try {
-      const authenticatedUser = captureSessionMeta(user);
-      setCurrentUser(authenticatedUser);
-      try {
-        localStorage.setItem('kea_current_user', JSON.stringify(authenticatedUser));
-      } catch (e) {
-        console.error(e);
-      }
-
-      if (user.platform === 'vsr' && user.sessionMeta?.location?.consentStatus === 'accepted') {
-        setNotifications((previous) => [
-          {
-            id: `notif-vsr-login-${Date.now()}`,
-            title: 'VSR location accepted',
-            detail: `${user.name} (${user.email}) accepted location tracking at ${user.sessionMeta?.location.city}, ${user.sessionMeta?.location.state || user.sessionMeta?.location.region || 'Regional Hub'} on ${new Date(user.sessionMeta?.signedInAt || Date.now()).toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short' })}. Coordinates: ${user.sessionMeta?.location.latitude?.toFixed(4) ?? 'n/a'}, ${user.sessionMeta?.location.longitude?.toFixed(4) ?? 'n/a'}.`,
-            time: new Date(user.sessionMeta?.signedInAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' WAT',
-            type: 'alert',
-            unread: true
-          },
-          ...previous
-        ]);
-      }
-    } catch (error) {
-      console.error('VSR access denied due to mandatory location acceptance.', error);
-      throw error;
+      localStorage.setItem('kea_current_user', JSON.stringify(user));
+    } catch (e) {
+      console.error(e);
     }
   };
 
-  const handleSignOut = async () => {
-    try {
-      if (supabase) {
-        await signOutSupabase();
-      }
-    } catch (e) {
-      console.warn('Supabase sign out failed, continuing with local sign-out flow.', e);
-    }
-
+  const handleSignOut = () => {
     setCurrentUser(null);
     try {
       localStorage.removeItem('kea_current_user');
@@ -236,97 +92,8 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
-    let active = true;
-
-    const hydrateSupabaseSession = async () => {
-      if (!supabase) return;
-
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error || !session?.user || !active) return;
-
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        if (!profile || !active) return;
-
-        const hydratedUser: AuthUser = {
-          id: profile.id,
-          name: profile.name,
-          email: profile.email,
-          role: profile.role,
-          roleTitle: profile.role_title || profile.role,
-          department: profile.department || 'Operations',
-          initials: profile.initials || profile.name.slice(0, 2).toUpperCase(),
-          avatarColor: profile.avatar_color || '#92C842',
-          assignedRegion: profile.assigned_region || 'All',
-          securityClearance: profile.security_clearance || 'Level 5 (Unrestricted)',
-          lastLogin: new Date().toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short' }),
-          platform: profile.platform || 'admin',
-          sessionMeta: {
-            signedInAt: new Date().toISOString(),
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-            location: {
-              label: 'Supabase session restored',
-              city: 'Remote Session',
-              country: 'Nigeria',
-              countryCode: 'NG',
-              source: 'fallback'
-            }
-          }
-        };
-
-        setCurrentUser(hydratedUser);
-        localStorage.setItem('kea_current_user', JSON.stringify(hydratedUser));
-      } catch (error) {
-        console.warn('Supabase session hydration failed; using local app session fallback.', error);
-      }
-    };
-
-    hydrateSupabaseSession();
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
   // Navigation & Filter States
-  const [currentScreen, setCurrentScreen] = useState<NavigationScreen>(() => {
-    if (typeof window === 'undefined') return 'operations';
-    const hash = window.location.hash.replace('#', '') as NavigationScreen;
-    const validScreens: NavigationScreen[] = [
-      'operations',
-      'credential_admin',
-      'workflow_center',
-      'merchandisers',
-      'trends',
-      'compliance',
-      'head_office',
-      'archive',
-      'vsr_audit_trail'
-    ];
-    return validScreens.includes(hash) ? hash : 'operations';
-  });
-
-  const [dataLoadState, setDataLoadState] = useState<{ loading: boolean; error: string | null }>({
-    loading: true,
-    error: null
-  });
-
-  useEffect(() => {
-    const nextHash = `#${currentScreen}`;
-    const url = new URL(window.location.href);
-    url.hash = currentScreen;
-    window.history.replaceState({}, '', url);
-    if (window.location.hash !== nextHash) {
-      window.location.hash = currentScreen;
-    }
-  }, [currentScreen]);
-
+  const [currentScreen, setCurrentScreen] = useState<NavigationScreen>('operations');
   const [selectedRegion, setSelectedRegion] = useState<Region>('All');
   const [tenureFilter, setTenureFilter] = useState<TenureFilter>('All');
   const [currentTab, setCurrentTab] = useState<TabType>('active');
@@ -384,82 +151,7 @@ export default function App() {
   const [archiveStaff, setArchiveStaff] = useState<StaffRecord[]>(ARCHIVE_STAFF_RECORDS);
   const [requisitions, setRequisitions] = useState<Requisition[]>(INITIAL_REQUISITIONS);
   const [fundingLogs, setFundingLogs] = useState<FundingActionLog[]>(INITIAL_FUNDING_LOGS);
-  const [merchandiserHubs, setMerchandiserHubs] = useState<FieldMerchandiserHub[]>(MERCHANDISER_HUBS);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const hydrateFromSupabase = async () => {
-      setDataLoadState({ loading: true, error: null });
-
-      if (!supabase) {
-        setDataLoadState({ loading: false, error: null });
-        return;
-      }
-
-      try {
-        const result = await loadDashboardData();
-        if (cancelled) return;
-
-        if (result.status.isUsingSupabase && result.staff.length > 0) {
-          setActiveStaff(result.staff);
-          setRequisitions(result.requisitions);
-          setFundingLogs(result.fundingLogs);
-          setMerchandiserHubs(result.hubs);
-
-          if (result.telemetryPreferences) {
-            setTelemetryPreferences(result.telemetryPreferences);
-          }
-
-          setDataLoadState({ loading: false, error: null });
-          return;
-        }
-
-        if (result.status.error) {
-          setDataLoadState({ loading: false, error: result.status.error });
-        } else {
-          setDataLoadState({ loading: false, error: null });
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setDataLoadState({
-            loading: false,
-            error: error instanceof Error ? error.message : 'Unexpected dashboard data issue.'
-          });
-        }
-      }
-    };
-
-    hydrateFromSupabase();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const handleNavigateScreen = (screen: NavigationScreen) => {
-    setCurrentScreen(screen);
-    setIsShiftComplianceOpen(false);
-    setIsTelemetryPreferencesOpen(false);
-
-    if (screen === 'archive') {
-      setCurrentTab('archive');
-    } else if (screen === 'operations') {
-      setCurrentTab('active');
-    }
-  };
-
-  const handleOpenTelemetryPreferences = () => {
-    setCurrentScreen('telemetry_preferences');
-    setIsTelemetryPreferencesOpen(true);
-    setIsShiftComplianceOpen(false);
-  };
-
-  const handleOpenShiftCompliance = () => {
-    setCurrentScreen('shift_compliance');
-    setIsShiftComplianceOpen(true);
-    setIsTelemetryPreferencesOpen(false);
-  };
+  const [merchandiserHubs] = useState<FieldMerchandiserHub[]>(MERCHANDISER_HUBS);
 
   // Notifications State
   const [notifications, setNotifications] = useState([
@@ -727,7 +419,7 @@ export default function App() {
   };
 
   // Add Directive to Staff Thread
-  const handleSendDirective = async (staffId: string, text: string) => {
+  const handleSendDirective = (staffId: string, text: string) => {
     const now = new Date();
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -771,104 +463,50 @@ export default function App() {
           : null
       );
     }
-
-    try {
-      if (supabase) {
-        await upsertStaffRecord(
-          activeStaff.find((staff) => staff.id === staffId)
-            ? {
-                ...activeStaff.find((staff) => staff.id === staffId)!,
-                thread: [...(activeStaff.find((staff) => staff.id === staffId)?.thread ?? []), { id: `msg-${Date.now()}`, sender: 'CEO', role: 'CEO', text, time: timeStr }]
-              }
-            : undefined
-        );
-      }
-    } catch (error) {
-      console.warn('Supabase directive write-back failed.', error);
-    }
   };
 
   // Create New VSR
-  const handleAddVSR = async (newRep: StaffRecord) => {
+  const handleAddVSR = (newRep: StaffRecord) => {
     setActiveStaff((prev) => [newRep, ...prev]);
-
-    try {
-      if (supabase) {
-        await upsertStaffRecord(newRep);
-      }
-    } catch (error) {
-      console.warn('Supabase staff insert failed; local dashboard state was still updated.', error);
-    }
-
-    const notification = {
-      id: `notif-${Date.now()}`,
-      title: `New VSR Enrolled: ${newRep.name}`,
-      detail: `${newRep.code} assigned to ${newRep.location} (${newRep.region}).`,
-      time: 'Just now',
-      type: 'info' as const,
-      unread: true
-    };
-
-    setNotifications((prev) => [notification, ...prev]);
-    try {
-      if (supabase) {
-        await insertNotification({
-          title: notification.title,
-          detail: notification.detail,
-          time: notification.time,
-          type: notification.type,
-          unread: notification.unread
-        });
-      }
-    } catch (error) {
-      console.warn('Supabase notification insert failed.', error);
-    }
-  };
-
-  const handlePersistTelemetryPreferences = async (newPrefs: TelemetryPreferencesConfig) => {
-    setTelemetryPreferences(newPrefs);
-    saveTelemetryPreferences(newPrefs);
-
-    try {
-      if (supabase) {
-        await upsertTelemetryPreferences(newPrefs);
-      }
-    } catch (error) {
-      console.warn('Supabase telemetry preference write-back failed.', error);
-    }
+    // Also record in notifications
+    setNotifications((prev) => [
+      {
+        id: `notif-${Date.now()}`,
+        title: `New VSR Enrolled: ${newRep.name}`,
+        detail: `${newRep.code} assigned to ${newRep.location} (${newRep.region}).`,
+        time: 'Just now',
+        type: 'info',
+        unread: true
+      },
+      ...prev
+    ]);
   };
 
   // Toggle Staff Funding Status
-  const handleToggleStatus = async (staffId: string) => {
-    const currentStaff = activeStaff.find((s) => s.id === staffId);
-    if (!currentStaff) return;
-
-    const wasFunded = currentStaff.status === 'funded';
-    const updatedStaff: StaffRecord = {
-      ...currentStaff,
-      status: wasFunded ? 'unfunded' : 'funded',
-      statusLabel: wasFunded ? 'UNFUNDED / PENDING VERIFICATION' : 'FUNDED ON 29TH',
-      boxType: wasFunded ? 'blocker' : 'audit'
-    };
-
-    setActiveStaff((prev) => prev.map((s) => (s.id === staffId ? updatedStaff : s)));
-
-    try {
-      if (supabase) {
-        await upsertStaffRecord(updatedStaff);
-      }
-    } catch (error) {
-      console.warn('Supabase staff update failed; local state remains in sync.', error);
-    }
-
+  const handleToggleStatus = (staffId: string) => {
+    setActiveStaff((prev) =>
+      prev.map((s) => {
+        if (s.id === staffId) {
+          const wasFunded = s.status === 'funded';
+          const newStatus = wasFunded ? 'unfunded' : 'funded';
+          const newLabel = wasFunded ? 'UNFUNDED / PENDING VERIFICATION' : 'FUNDED ON 29TH';
+          return {
+            ...s,
+            status: newStatus,
+            statusLabel: newLabel,
+            boxType: wasFunded ? 'blocker' : 'audit'
+          };
+        }
+        return s;
+      })
+    );
     if (selectedStaff && selectedStaff.id === staffId) {
       setSelectedStaff((prev) =>
         prev
           ? {
               ...prev,
-              status: updatedStaff.status,
-              statusLabel: updatedStaff.statusLabel,
-              boxType: updatedStaff.boxType
+              status: prev.status === 'funded' ? 'unfunded' : 'funded',
+              statusLabel: prev.status === 'funded' ? 'UNFUNDED / PENDING VERIFICATION' : 'FUNDED ON 29TH'
             }
           : null
       );
@@ -876,11 +514,11 @@ export default function App() {
   };
 
   // Disburse Funding Action
-  const handleDisburseFunding = async (staffId: string, amount: number) => {
+  const handleDisburseFunding = (staffId: string, amount: number) => {
     const staff = activeStaff.find((s) => s.id === staffId);
     if (!staff) return;
 
-    await handleToggleStatus(staffId);
+    handleToggleStatus(staffId);
 
     const newLog: FundingActionLog = {
       id: `log-${Date.now()}`,
@@ -891,14 +529,6 @@ export default function App() {
     };
 
     setFundingLogs((prev) => [newLog, ...prev]);
-
-    try {
-      if (supabase) {
-        await insertFundingLog(newLog);
-      }
-    } catch (error) {
-      console.warn('Supabase funding log insert failed.', error);
-    }
   };
 
   // Restore staff from archive
@@ -1039,6 +669,7 @@ export default function App() {
 
   const hasUnreadAlerts = notifications.some((n) => n.unread);
 
+  // If user is not logged in, render the corporate Sign In Gateway
   if (!currentUser) {
     return (
       <SignInPage
@@ -1048,79 +679,28 @@ export default function App() {
     );
   }
 
-  if (currentUser.platform === 'vsr') {
-    return <VSRDashboard user={currentUser} onSignOut={handleSignOut} />;
-  }
-
-  const screenTheme: Record<NavigationScreen, { shell: string; glow: string }> = {
-    operations: {
-      shell: 'screen-operations',
-      glow: 'from-[#92C842]/15 via-[#0f172a] to-[#0b1222]'
-    },
-    credential_admin: {
-      shell: 'screen-credential-admin',
-      glow: 'from-[#92C842]/16 via-[#0f172a] to-[#0b1222]'
-    },
-    workflow_center: {
-      shell: 'screen-workflow-center',
-      glow: 'from-[#38bdf8]/14 via-[#0f172a] to-[#0b1222]'
-    },
-    merchandisers: {
-      shell: 'screen-merchandisers',
-      glow: 'from-[#22d3ee]/12 via-[#0f172a] to-[#0b1222]'
-    },
-    trends: {
-      shell: 'screen-trends',
-      glow: 'from-[#38bdf8]/14 via-[#0f172a] to-[#0b1222]'
-    },
-    compliance: {
-      shell: 'screen-compliance',
-      glow: 'from-[#c084fc]/15 via-[#0f172a] to-[#0b1222]'
-    },
-    head_office: {
-      shell: 'screen-head-office',
-      glow: 'from-[#f59e0b]/12 via-[#0f172a] to-[#0b1222]'
-    },
-    archive: {
-      shell: 'screen-archive',
-      glow: 'from-[#64748b]/12 via-[#0f172a] to-[#0b1222]'
-    },
-    telemetry_preferences: {
-      shell: 'screen-telemetry',
-      glow: 'from-[#92C842]/18 via-[#0f172a] to-[#0b1222]'
-    },
-    shift_compliance: {
-      shell: 'screen-compliance',
-      glow: 'from-[#f17f31]/14 via-[#0f172a] to-[#0b1222]'
-    },
-    vsr_audit_trail: {
-      shell: 'screen-telemetry',
-      glow: 'from-[#38bdf8]/16 via-[#0f172a] to-[#0b1222]'
-    }
-  };
-
-  const ScreenPage = ({ screen, children }: { screen: NavigationScreen; children: React.ReactNode }) => (
-    <div key={screen} className={`page-shell screen-page ${screenTheme[screen].shell}`}>
-      <div className={`page-shell__glow bg-gradient-to-br ${screenTheme[screen].glow}`} />
-      {children}
-    </div>
-  );
-
   return (
     <div className="flex min-h-screen w-full bg-[#090e1c] text-slate-200">
       {/* LEFT SIDEBAR */}
       <Sidebar
         currentScreen={currentScreen}
-        onSelectScreen={handleNavigateScreen}
+        onSelectScreen={(screen) => {
+          setCurrentScreen(screen);
+          if (screen === 'archive') {
+            setCurrentTab('archive');
+          } else if (screen === 'operations') {
+            setCurrentTab('active');
+          }
+        }}
         syncTimeSeconds={syncSeconds}
         mobileOpen={mobileMenuOpen}
         onCloseMobile={() => setMobileMenuOpen(false)}
-        onOpenShiftCompliance={handleOpenShiftCompliance}
+        onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
         currentUser={currentUser}
         onSignOut={handleSignOut}
         preferences={telemetryPreferences}
-        onUpdatePreferences={handlePersistTelemetryPreferences}
-        onOpenTelemetryPreferences={handleOpenTelemetryPreferences}
+        onUpdatePreferences={setTelemetryPreferences}
+        onOpenTelemetryPreferences={() => setIsTelemetryPreferencesOpen(true)}
       />
 
       {/* MAIN CONTENT WRAPPER */}
@@ -1141,24 +721,15 @@ export default function App() {
           onToggleMobileMenu={() => setMobileMenuOpen(true)}
           isOverrunSimulated={isOverrunSimulated}
           onToggleOverrunSimulation={() => setIsOverrunSimulated((prev) => !prev)}
-          onOpenShiftCompliance={handleOpenShiftCompliance}
+          onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
+          onOpenGpsTracker={() => setCurrentScreen('gps_tracker')}
+          onOpenOverallDashboard={() => setCurrentScreen('overall_dashboard')}
           currentUser={currentUser}
           onSignOut={handleSignOut}
         />
 
         {/* MAIN BODY AREA */}
-        <main className="flex-1 p-0 space-y-0 min-h-0 overflow-hidden">
-          {dataLoadState.loading && <div className="p-3"><DashboardSkeleton title="Loading operations data" /></div>}
-
-          {dataLoadState.error && (
-            <div className="px-3 pt-3">
-              <ErrorBanner
-                title="Dashboard data warning"
-                message={dataLoadState.error}
-              />
-            </div>
-          )}
-
+        <main className="flex-1 p-4 lg:p-6 space-y-6">
           {/* CRITICAL TELEMETRY ALERT BANNER */}
           {telemetryAlertBanner && (
             <div
@@ -1187,8 +758,8 @@ export default function App() {
                   <div className="flex items-center gap-2.5 flex-wrap">
                     <span className="font-bold text-white text-sm uppercase tracking-wide">
                       {telemetryAlertBanner.type === 'overrun'
-                        ? `Shift Overrun Alert: ${telemetryAlertBanner.hubName}`
-                        : `Store Shift Telemetry Alert: ${telemetryAlertBanner.hubName}`}
+                        ? `Late Shift Alert: ${telemetryAlertBanner.hubName}`
+                        : `Store Machine Alert: ${telemetryAlertBanner.hubName}`}
                     </span>
                     <span
                       className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${
@@ -1198,11 +769,11 @@ export default function App() {
                       }`}
                     >
                       {telemetryAlertBanner.type === 'overrun'
-                        ? '>21:00 WAT Active Telemetry Flagged'
-                        : `${telemetryAlertBanner.idleMinutes}m Idle (>${telemetryAlertBanner.thresholdMinutes || 30}m Post-Shift Breach)`}
+                        ? 'Past 9:00 PM Closing Time'
+                        : `${telemetryAlertBanner.idleMinutes}m Without Signal (>${telemetryAlertBanner.thresholdMinutes || 30}m Limit)`}
                     </span>
 
-                    {/* D3-rendered sparkline visualizing last 60 minutes of telemetry ping frequency for flagged hub */}
+                    {/* D3-rendered sparkline visualizing last 60 minutes of ping frequency for flagged hub */}
                     <TelemetrySparkline
                       hub={telemetryAlertBanner.region || 'Ibadan'}
                       hubName={telemetryAlertBanner.hubName}
@@ -1223,15 +794,15 @@ export default function App() {
                   <p className="text-xs text-slate-300 mt-1">
                     {telemetryAlertBanner.type === 'overrun' ? (
                       <>
-                        Official store closing hours concluded at{' '}
-                        <strong className="text-white font-mono">21:00 WAT</strong>. Active merchandiser POS heartbeats are still being received from{' '}
-                        <strong className="text-white">{telemetryAlertBanner.hubName}</strong>. End-of-day terminal sign-off or overtime clearance required.
+                        Store closing time is{' '}
+                        <strong className="text-white font-mono">9:00 PM (21:00 WAT)</strong>. Card machines are still active in{' '}
+                        <strong className="text-white">{telemetryAlertBanner.hubName}</strong>. Please check why workers are still active.
                       </>
                     ) : (
                       <>
-                        Store shift commenced at{' '}
-                        <strong className="text-white font-mono">{telemetryAlertBanner.shiftTimeStr}</strong>. Merchandiser POS telemetry has remained idle for more than{' '}
-                        <strong className="text-white font-mono">{telemetryAlertBanner.thresholdMinutes || 30} minutes</strong> without active heartbeat.
+                        Store shift started at{' '}
+                        <strong className="text-white font-mono">{telemetryAlertBanner.shiftTimeStr}</strong>. Card machines have not sent any signal for more than{' '}
+                        <strong className="text-white font-mono">{telemetryAlertBanner.thresholdMinutes || 30} minutes</strong>.
                       </>
                     )}
                   </p>
@@ -1243,7 +814,7 @@ export default function App() {
                     onClick={handleBroadcastEODShutdown}
                     className="px-3.5 py-2 rounded-lg bg-[#E05252] hover:bg-[#c94343] text-white font-bold text-xs shadow-md shadow-[#E05252]/20 transition-transform active:scale-95"
                   >
-                    Broadcast EOD Terminal Sign-Off
+                    Send Closing Notice
                   </button>
                 ) : (
                   telemetryAlertBanner.region && (
@@ -1251,23 +822,23 @@ export default function App() {
                       onClick={() => handlePingRegionTelemetry(telemetryAlertBanner.region!)}
                       className="px-3.5 py-2 rounded-lg bg-[#92C842] hover:bg-[#7bb32e] text-[#090e1c] font-bold text-xs shadow-md shadow-[#92C842]/20 transition-transform active:scale-95"
                     >
-                      Dispatch Ping &amp; Restore
+                      Send Test Signal
                     </button>
                   )
                 )}
                 <button
-                  onClick={handleOpenTelemetryPreferences}
+                  onClick={() => setIsTelemetryPreferencesOpen(true)}
                   className="px-3 py-2 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] hover:border-[#92C842]/50 text-xs font-semibold transition-colors"
-                  title="Configure custom alert thresholds or toggle alerts"
+                  title="Configure alert settings and thresholds"
                 >
-                  Preferences ({telemetryPreferences.globalIdleThresholdMinutes}m)
+                  Alert Settings ({telemetryPreferences.globalIdleThresholdMinutes}m)
                 </button>
                 <button
-                  onClick={handleOpenShiftCompliance}
+                  onClick={() => setIsShiftComplianceOpen(true)}
                   className="px-3 py-2 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] hover:border-[#92C842]/50 text-xs font-semibold transition-colors"
-                  title="Open the shift compliance report (PDF ready)"
+                  title="View PDF-ready Shift Compliance Audit Report"
                 >
-                  Audit Report (PDF)
+                  Daily Report (PDF)
                 </button>
                 <button
                   onClick={() => {
@@ -1276,7 +847,7 @@ export default function App() {
                   }}
                   className="px-3 py-2 rounded-lg bg-[#0e1628] hover:bg-[#1a2745] text-slate-200 border border-[#1e2d4d] text-xs font-semibold transition-colors"
                 >
-                  Inspect Field Hub
+                  View Terminals &amp; Hubs
                 </button>
                 <button
                   onClick={() => setTelemetryAlertBanner(null)}
@@ -1289,48 +860,70 @@ export default function App() {
             </div>
           )}
 
-          {currentScreen === 'credential_admin' && (
-            <ScreenPage screen="credential_admin">
-              <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading credential administration...</div>}>
-                <CredentialAdministrationPanel />
-              </Suspense>
-            </ScreenPage>
+          {/* SCREEN: Official KEA Client Master Dashboard (VSR Workforce & Recruitment Dashboard) */}
+          {currentScreen === 'overall_dashboard' && (
+            <OverallDashboardView
+              onNavigate={(screen) => setCurrentScreen(screen)}
+              onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
+            />
           )}
 
-          {currentScreen === 'workflow_center' && (
-            <ScreenPage screen="workflow_center">
-              <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading workflow center...</div>}>
-                <WorkflowCenter user={currentUser} />
-              </Suspense>
-            </ScreenPage>
+          {/* SCREEN: Live Employee & Compliance Register (Dual Guarantor KYC & RSA Reconciliation) */}
+          {currentScreen === 'employee_compliance_register' && (
+            <EmployeeComplianceRegisterView
+              onNavigateBack={() => setCurrentScreen('overall_dashboard')}
+            />
+          )}
+
+          {/* SCREEN: Shift Adherence (30 Days) */}
+          {currentScreen === 'shift_adherence_30d' && (
+            <ShiftAdherence30DayView
+              onBackToDashboard={() => setCurrentScreen('overall_dashboard')}
+              onOpenLocationAudit={() => setCurrentScreen('vsr_location_audit')}
+              onOpenShiftModal={() => setIsShiftComplianceOpen(true)}
+            />
+          )}
+
+          {/* SCREEN: VSR Location Audit */}
+          {currentScreen === 'vsr_location_audit' && (
+            <VsrLocationAuditView
+              onBackToDashboard={() => setCurrentScreen('overall_dashboard')}
+              onOpenShiftAdherence={() => setCurrentScreen('shift_adherence_30d')}
+            />
+          )}
+
+          {/* SCREEN: VSR Recruitment Pipeline */}
+          {currentScreen === 'vsr_recruitment' && (
+            <VsrRecruitmentView
+              onNavigateBack={() => setCurrentScreen('overall_dashboard')}
+            />
           )}
 
           {/* SCREEN 1: Operations & VSR */}
           {currentScreen === 'operations' && (
-            <ScreenPage screen="operations">
-              <div className="space-y-2">
-                {/* Executive KPI Stats (5 cards) */}
-                <KPIStats
-                  fundedCount={128}
-                  unfundedCount={36}
-                  prospectiveCount={16}
-                  merchandiserCount={78}
-                  hqPersonnelCount={34}
-                  onFilterStatus={(status) => {
-                    setKpiStatusFilter(status);
-                    setCurrentPage(1);
-                  }}
-                  onSelectTab={(tab) => {
-                    setCurrentTab(tab);
-                    setCurrentPage(1);
-                  }}
-                  onSelectScreen={(screen) => setCurrentScreen(screen)}
-                />
+            <div className="space-y-6">
+              {/* Executive KPI Stats (5 cards) */}
+              <KPIStats
+                fundedCount={128}
+                unfundedCount={36}
+                prospectiveCount={16}
+                merchandiserCount={78}
+                hqPersonnelCount={34}
+                onFilterStatus={(status) => {
+                  setKpiStatusFilter(status);
+                  setCurrentPage(1);
+                }}
+                onSelectTab={(tab) => {
+                  setCurrentTab(tab);
+                  setCurrentPage(1);
+                }}
+                onSelectScreen={(screen) => setCurrentScreen(screen)}
+              />
 
               {/* Regional Filter & Pipeline Category Subheaders */}
-              <div className="space-y-1.5">
+              <div className="space-y-4">
                 {/* Region and Tenure Filter Buttons */}
-                <div className="flex flex-wrap items-center justify-between gap-3 py-0.5">
+                <div className="flex flex-wrap items-center justify-between gap-4 py-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     {(['All', 'Lagos', 'Ibadan', 'Ogun', 'Benin'] as Region[]).map((regionKey) => {
                       const isSelected = selectedRegion === regionKey;
@@ -1391,7 +984,7 @@ export default function App() {
                 </div>
 
                 {/* Tab Bar & Live Search Field */}
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1e2d4d] pb-2">
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#1e2d4d] pb-3">
                   <div className="flex items-center gap-2 flex-wrap">
                     <button
                       onClick={() => {
@@ -1494,9 +1087,9 @@ export default function App() {
               </div>
 
               {/* Main Content Two-Column Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 {/* LEFT COLUMN: Staff Cards List (~70% / 8 Cols) */}
-                <div className="lg:col-span-8 space-y-2">
+                <div className="lg:col-span-8 space-y-4">
                   {kpiStatusFilter !== 'all' && (
                     <div className="flex items-center justify-between p-2.5 bg-[#151f38] border border-[#1e2d4d] rounded-lg text-xs">
                       <span className="text-slate-300">
@@ -1521,41 +1114,13 @@ export default function App() {
                   ))}
 
                   {paginatedStaff.length === 0 && (
-                    <div className="rounded-xl border border-dashed border-[#1e2d4d] bg-[#0b1222] p-6 text-slate-300">
-                      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-                        <div>
-                          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">No data available</p>
-                          <h3 className="mt-2 text-lg font-bold text-white">Operations feed is currently empty</h3>
-                          <p className="mt-1 text-sm text-slate-400">
-                            No staff records match the selected region, tenure, or status filters.
-                          </p>
-                        </div>
-                        <div className="inline-flex items-center gap-2 rounded-full border border-[#1e2d4d] bg-[#0e1628] px-3 py-1.5 text-[10px] font-mono uppercase tracking-[0.16em] text-slate-400">
-                          <span className="h-2 w-2 rounded-full bg-[#92C842]" />
-                          system standby
-                        </div>
-                      </div>
-
-                      <div className="mt-5 rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-4">
-                        <div className="mb-3 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-slate-400">
-                          <span>live signal status</span>
-                          <span className="text-[#92C842]">online</span>
-                        </div>
-                        <div className="flex h-16 items-end gap-2">
-                          {[18, 34, 22, 52, 41, 68, 47, 76, 58, 82, 70, 90].map((bar, index) => (
-                            <div
-                              key={index}
-                              className="flex-1 rounded-t-md bg-gradient-to-t from-[#92C842]/70 via-[#92C842]/45 to-[#92C842]/15"
-                              style={{ height: `${bar}%` }}
-                            />
-                          ))}
-                        </div>
-                      </div>
+                    <div className="text-center py-16 bg-[#0e1628] border border-[#1e2d4d] rounded-xl text-slate-400 text-xs">
+                      No staff records found matching your filters.
                     </div>
                   )}
 
                   {/* Pagination Controls */}
-                  <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-xs text-slate-400">
+                  <div className="flex flex-wrap items-center justify-between gap-4 pt-3 text-xs text-slate-400">
                     <div>
                       Showing <span className="text-white font-semibold">{paginatedStaff.length}</span> of{' '}
                       <span className="text-white font-semibold">{filteredStaffList.length}</span>{' '}
@@ -1607,89 +1172,67 @@ export default function App() {
                     requisitions={requisitions}
                     fundingLogs={fundingLogs}
                     merchandiserHubs={enrichedMerchandiserHubs}
-                    onSelectScreen={handleNavigateScreen}
+                    onSelectScreen={(screen) => setCurrentScreen(screen)}
                   />
                 </div>
               </div>
-              </div>
-            </ScreenPage>
+            </div>
           )}
 
           {/* SCREEN 2: Field Merchandisers */}
           {currentScreen === 'merchandisers' && (
-            <ScreenPage screen="merchandisers">
-              <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading merchandiser dashboard...</div>}>
-                <FieldMerchandisersView
-                  hubs={enrichedMerchandiserHubs}
-                  onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
-                  onOpenShiftCompliance={handleOpenShiftCompliance}
-                  onOpenTrends={() => setCurrentScreen('trends')}
-                  onOpenCompliance={() => setCurrentScreen('compliance')}
-                />
-              </Suspense>
-            </ScreenPage>
+            <FieldMerchandisersView
+              hubs={enrichedMerchandiserHubs}
+              onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
+              onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
+              onOpenTrends={() => setCurrentScreen('trends')}
+              onOpenCompliance={() => setCurrentScreen('compliance')}
+              onOpenGpsTracker={() => setCurrentScreen('gps_tracker')}
+            />
+          )}
+
+          {/* SCREEN: Worker GPS Sign-Ins & Location Tracking */}
+          {currentScreen === 'gps_tracker' && (
+            <GpsTrackerView
+              onBackToDashboard={() => setCurrentScreen('operations')}
+            />
           )}
 
           {/* SCREEN 3: Regional Performance Trends (D3 Line Chart) */}
           {currentScreen === 'trends' && (
-            <ScreenPage screen="trends">
-              <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading trends dashboard...</div>}>
-                <PerformanceTrendsView
-                  onOpenShiftCompliance={handleOpenShiftCompliance}
-                  onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
-                />
-              </Suspense>
-            </ScreenPage>
+            <PerformanceTrendsView
+              onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
+              onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
+            />
           )}
 
           {/* SCREEN 4: Centralized Shift Compliance Dashboard (30-Day D3 Adherence) */}
           {currentScreen === 'compliance' && (
-            <ScreenPage screen="compliance">
-              <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading compliance dashboard...</div>}>
-                <ComplianceDashboardView
-                  onOpenShiftCompliance={handleOpenShiftCompliance}
-                  onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
-                />
-              </Suspense>
-            </ScreenPage>
+            <ComplianceDashboardView
+              onOpenShiftCompliance={() => setIsShiftComplianceOpen(true)}
+              onOpenNewVSR={() => setIsNewVSRModalOpen(true)}
+            />
           )}
 
           {/* SCREEN 5: Head Office & Hiring */}
           {currentScreen === 'head_office' && (
-            <ScreenPage screen="head_office">
-              <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading head office hub...</div>}>
-                <HeadOfficeView
-                  requisitions={requisitions}
-                  onAddRequisition={async (newReq) => {
-                    setRequisitions((prev) => [newReq, ...prev]);
-                    try {
-                      if (supabase) {
-                        await insertRequisition(newReq);
-                      }
-                    } catch (error) {
-                      console.warn('Supabase requisition insert failed.', error);
-                    }
-                  }}
-                />
-              </Suspense>
-            </ScreenPage>
+            <HeadOfficeView
+              requisitions={requisitions}
+              onAddRequisition={(newReq) => setRequisitions((prev) => [newReq, ...prev])}
+            />
           )}
 
           {/* SCREEN 5: Archive & Disengaged */}
           {currentScreen === 'archive' && (
-            <ScreenPage screen="archive">
-              <Suspense fallback={<div className="rounded-xl border border-[#1e2d4d] bg-[#0e1628] p-8 text-center text-sm text-slate-400">Loading archive...</div>}>
-                <ArchiveView
-                  archivedStaff={archiveStaff}
-                  onRestoreStaff={handleRestoreStaff}
-                />
-              </Suspense>
-            </ScreenPage>
+            <ArchiveView
+              archivedStaff={archiveStaff}
+              onRestoreStaff={handleRestoreStaff}
+            />
           )}
         </main>
 
         {/* FOOTER BAR */}
-        <footer className="px-4 py-3 bg-[#0b1222] border-t border-[#1e2d4d] text-xs text-slate-500 flex flex-wrap items-center justify-between gap-3">
+        <footer className="px-6 py-4 bg-[#0b1222] border-t border-[#1e2d4d] text-xs text-slate-500 flex flex-wrap items-center justify-between gap-4">
           <div>© 2025 KEA Corporate Hospitality Services Ltd. All Operations &amp; Field Telemetry Protected.</div>
           <div className="flex items-center gap-4 text-[11px] font-mono">
             <span className="text-slate-400">Node: LOS-HQ-01</span>
@@ -1698,76 +1241,47 @@ export default function App() {
         </footer>
       </div>
 
-      {currentScreen === 'shift_compliance' && (
-        <ScreenPage screen="shift_compliance">
-          <Suspense fallback={null}>
-            <ShiftComplianceModal
-              isOpen={true}
-              onClose={() => {
-                setIsShiftComplianceOpen(false);
-                handleNavigateScreen('operations');
-              }}
-              regionalTelemetry={regionalTelemetry}
-              isOverrunSimulated={isOverrunSimulated}
-              hubs={enrichedMerchandiserHubs}
-            />
-          </Suspense>
-        </ScreenPage>
-      )}
-
-      {currentScreen === 'telemetry_preferences' && (
-        <ScreenPage screen="telemetry_preferences">
-          <Suspense fallback={null}>
-            <TelemetryPreferencesPanel
-              isOpen={true}
-              onClose={() => {
-                setIsTelemetryPreferencesOpen(false);
-                handleNavigateScreen('operations');
-              }}
-              preferences={telemetryPreferences}
-              onUpdatePreferences={handlePersistTelemetryPreferences}
-              regionalTelemetry={regionalTelemetry}
-            />
-          </Suspense>
-        </ScreenPage>
-      )}
-
-      {currentScreen === 'vsr_audit_trail' && (
-        <ScreenPage screen="vsr_audit_trail">
-          <VSRLocationAuditTrailView />
-        </ScreenPage>
-      )}
-
       {/* MODALS */}
-      <Suspense fallback={null}>
-        <NewVSRModal
-          isOpen={isNewVSRModalOpen}
-          onClose={() => setIsNewVSRModalOpen(false)}
-          onSubmit={handleAddVSR}
-          defaultRegion={selectedRegion}
-        />
-      </Suspense>
+      <NewVSRModal
+        isOpen={isNewVSRModalOpen}
+        onClose={() => setIsNewVSRModalOpen(false)}
+        onSubmit={handleAddVSR}
+        defaultRegion={selectedRegion}
+      />
 
-      <Suspense fallback={null}>
-        <StaffDetailModal
-          staff={selectedStaff}
-          onClose={() => setSelectedStaff(null)}
-          onToggleStatus={handleToggleStatus}
-          onDisburseFunding={handleDisburseFunding}
-          onAddDirective={handleSendDirective}
-        />
-      </Suspense>
+      <StaffDetailModal
+        staff={selectedStaff}
+        onClose={() => setSelectedStaff(null)}
+        onToggleStatus={handleToggleStatus}
+        onDisburseFunding={handleDisburseFunding}
+        onAddDirective={handleSendDirective}
+      />
 
-      <Suspense fallback={null}>
-        <NotificationDrawer
-          isOpen={isNotificationOpen}
-          onClose={() => setIsNotificationOpen(false)}
-          notifications={notifications}
-          onMarkAllRead={() =>
-            setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })))
-          }
-        />
-      </Suspense>
+      <NotificationDrawer
+        isOpen={isNotificationOpen}
+        onClose={() => setIsNotificationOpen(false)}
+        notifications={notifications}
+        onMarkAllRead={() =>
+          setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })))
+        }
+      />
+
+      <ShiftComplianceModal
+        isOpen={isShiftComplianceOpen}
+        onClose={() => setIsShiftComplianceOpen(false)}
+        regionalTelemetry={regionalTelemetry}
+        isOverrunSimulated={isOverrunSimulated}
+        hubs={enrichedMerchandiserHubs}
+      />
+
+      {/* EXECUTIVE TELEMETRY PREFERENCES MODAL */}
+      <TelemetryPreferencesPanel
+        isOpen={isTelemetryPreferencesOpen}
+        onClose={() => setIsTelemetryPreferencesOpen(false)}
+        preferences={telemetryPreferences}
+        onUpdatePreferences={setTelemetryPreferences}
+        regionalTelemetry={regionalTelemetry}
+      />
     </div>
   );
 }

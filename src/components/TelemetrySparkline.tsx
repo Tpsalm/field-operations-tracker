@@ -91,7 +91,7 @@ export const TelemetrySparkline: React.FC<TelemetrySparklineProps> = ({
     const innerWidth = width - padding.left - padding.right;
     const innerHeight = height - padding.top - padding.bottom;
 
-    // X Scale: minuteAgo (60 -> 0) mapped left to right
+    // X Scale: minuteAgo (60 -> 0) scaled left to right
     const xScale = d3
       .scaleLinear()
       .domain([60, 0])

@@ -91,8 +91,60 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
   const navItems = [
     {
+      id: 'overall_dashboard' as NavigationScreen,
+      label: 'KEA Master Dashboard',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+          />
+        </svg>
+      )
+    },
+    {
+      id: 'shift_adherence_30d' as NavigationScreen,
+      label: 'Shift Adherence (30 Days)',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+          />
+        </svg>
+      )
+    },
+    {
+      id: 'vsr_location_audit' as NavigationScreen,
+      label: 'VSR Location Audit',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" strokeWidth="2" />
+          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" strokeWidth="2" />
+        </svg>
+      )
+    },
+    {
+      id: 'employee_compliance_register' as NavigationScreen,
+      label: 'Internal Staffs',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+          />
+        </svg>
+      )
+    },
+    {
       id: 'operations' as NavigationScreen,
-      label: 'Operations & VSR',
+      label: 'VSR Staffs And Payment',
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -105,26 +157,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )
     },
     {
-      id: 'credential_admin' as NavigationScreen,
-      label: 'Credential Administration',
+      id: 'vsr_recruitment' as NavigationScreen,
+      label: 'VSR Recruitment',
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path d="M12 4v16m8-8h-16" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-        </svg>
-      )
-    },
-    {
-      id: 'workflow_center' as NavigationScreen,
-      label: 'Workflow Center',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path d="M4 6h16v12H4zM8 10h8M8 14h5" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+          <path
+            d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+          />
         </svg>
       )
     },
     {
       id: 'merchandisers' as NavigationScreen,
-      label: 'Field Merchandisers',
+      label: 'Store Workers & Terminals',
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -137,8 +185,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )
     },
     {
+      id: 'gps_tracker' as NavigationScreen,
+      label: 'Worker GPS Sign-Ins',
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+          />
+          <path
+            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+          />
+        </svg>
+      )
+    },
+    {
       id: 'trends' as NavigationScreen,
-      label: 'Performance Trends',
+      label: 'Activity Trends',
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -152,7 +220,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'compliance' as NavigationScreen,
-      label: 'Compliance Dashboard',
+      label: 'Staff Work Hours',
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -166,7 +234,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'head_office' as NavigationScreen,
-      label: 'Head Office & Hiring',
+      label: 'Head Office Team',
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -180,7 +248,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'archive' as NavigationScreen,
-      label: 'Archive & Disengaged',
+      label: 'Past Staff Records',
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -189,15 +257,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             strokeLinejoin="round"
             strokeWidth="2"
           />
-        </svg>
-      )
-    },
-    {
-      id: 'vsr_audit_trail' as NavigationScreen,
-      label: 'VSR Location Audit Trail',
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path d="M12 2a8 8 0 018 8c0 5.5-8 12-8 12S4 15.5 4 10a8 8 0 018-8zm0 4.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
         </svg>
       )
     }
@@ -215,7 +274,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaM-FAr5FKmzgGhQH5eWL6YXxVuMYXgDAKFN_R7hja3iHfyknwvu7yBhjXKUY76ANao3E5ud0dMVdQUxs77cYxyUZEKntxE1DScy8Z93vCQATIEgwPqiO5DlH9-u0drJ3mWKWUtwTECHt1jRISb007pK6PvRhC9pIG5ksxGsFw84QPcvxwqc723WynagMHw61ou_Ly3A8r3i63Tup_-nO-uwIGfhGiR_WhE0xBrmd7illUTzyX9bHWqEMC0UMMWEctYg"
             />
             <div>
-              <div className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Operations Suite</div>
+              <div className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Operations Dashboard</div>
               <div className="text-[10px] text-[#92C842] font-medium tracking-tight">KEA Hospitality</div>
             </div>
           </div>
@@ -236,9 +295,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#92C842] opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-[#92C842]"></span>
             </span>
-            <span className="font-bold text-[11px] tracking-wider text-white">LIVE TELEMETRY</span>
+            <span className="font-bold text-[11px] tracking-wider text-white">LIVE MACHINES</span>
           </div>
-          <span className="text-xs font-mono font-medium text-slate-400">99.8%</span>
+          <span className="text-xs font-mono font-medium text-[#92C842]">99.8% Online</span>
         </div>
 
         {/* Primary Navigation Links */}
@@ -264,6 +323,151 @@ export const Sidebar: React.FC<SidebarProps> = ({
             );
           })}
 
+          {/* Telemetry Preferences Section in Sidebar */}
+          <div className="pt-2 mt-2 border-t border-[#1e2d4d]/60">
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => {
+                  if (onOpenTelemetryPreferences) onOpenTelemetryPreferences();
+                  if (onCloseMobile) onCloseMobile();
+                }}
+                className="flex-1 flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold bg-[#151f38] hover:bg-[#1a2745] text-slate-300 hover:text-white border border-[#1e2d4d] hover:border-[#92C842]/40 transition-all text-left shadow-sm"
+              >
+                <div className="flex items-center gap-2.5 truncate">
+                  <SlidersHorizontal className="w-4 h-4 text-[#92C842] shrink-0" />
+                  <span className="truncate">Alert Settings</span>
+                </div>
+                <span className="text-[10px] font-mono font-bold bg-[#92C842]/15 text-[#92C842] px-1.5 py-0.2 rounded border border-[#92C842]/30 shrink-0 ml-1">
+                  {preferences?.globalIdleThresholdMinutes || 30}m
+                </span>
+              </button>
+
+              <button
+                onClick={() => setIsInlinePreferencesExpanded((prev) => !prev)}
+                className={`p-2 rounded-lg border transition-all ${
+                  isInlinePreferencesExpanded
+                    ? 'bg-[#92C842]/15 text-[#92C842] border-[#92C842]/30'
+                    : 'bg-[#151f38] hover:bg-[#1a2745] text-slate-400 hover:text-white border-[#1e2d4d]'
+                }`}
+                title="Open quick alert settings"
+              >
+                {isInlinePreferencesExpanded ? (
+                  <ChevronUp className="w-3.5 h-3.5" />
+                ) : (
+                  <ChevronDown className="w-3.5 h-3.5" />
+                )}
+              </button>
+            </div>
+
+            {/* Inline Quick Settings Drawer */}
+            {isInlinePreferencesExpanded && (
+              <div className="mt-2 p-2.5 rounded-xl bg-[#090e1c] border border-[#1e2d4d] space-y-2 text-xs">
+                <div className="flex items-center justify-between text-[11px] font-semibold text-slate-300">
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="w-3 h-3 text-[#F17F31]" />
+                    <span>Inactivity Limit</span>
+                  </span>
+                  <span className="font-mono text-[#92C842] font-bold">
+                    {preferences?.globalIdleThresholdMinutes || 30} min
+                  </span>
+                </div>
+
+                {/* Preset Chips */}
+                <div className="grid grid-cols-4 gap-1">
+                  {[15, 30, 45, 60].map((mins) => {
+                    const isSelected = (preferences?.globalIdleThresholdMinutes || 30) === mins;
+                    return (
+                      <button
+                        key={mins}
+                        onClick={() => handleQuickApplyThreshold(mins)}
+                        className={`py-1 rounded text-[10px] font-mono transition-all text-center ${
+                          isSelected
+                            ? 'bg-[#92C842] text-[#090e1c] font-bold shadow-sm'
+                            : 'bg-[#151f38] text-slate-400 hover:text-white border border-[#1e2d4d]'
+                        }`}
+                      >
+                        {mins}m
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Hubs Alert Summary / Quick Toggles */}
+                <div className="space-y-1 pt-1.5 border-t border-[#1e2d4d]/60">
+                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider flex justify-between">
+                    <span>Location Alerts</span>
+                    <span className="text-slate-400 font-normal">Late • Quiet</span>
+                  </div>
+                  {(['Lagos', 'Ibadan', 'Ogun', 'Benin'] as const).map((hub) => {
+                    const pref = preferences?.hubs?.[hub];
+                    const overrunOn = pref ? pref.shiftOverrunAlert : true;
+                    const idleOn = pref ? pref.idleBreachAlert : true;
+                    return (
+                      <div key={hub} className="flex items-center justify-between text-[11px] text-slate-300">
+                        <span className="font-medium">{hub} ({pref?.idleThresholdMinutes || 30}m)</span>
+                        <div className="flex items-center gap-1 font-mono text-[10px]">
+                          <button
+                            onClick={() => handleQuickToggleOverrun(hub)}
+                            className={`px-1.5 py-0.2 rounded font-semibold transition-all ${
+                              overrunOn
+                                ? 'bg-[#E05252]/20 text-[#E05252] border border-[#E05252]/30'
+                                : 'bg-[#151f38] text-slate-600 border border-transparent'
+                            }`}
+                            title={`${hub}: Alert if staff works past 9:00 PM`}
+                          >
+                            LATE
+                          </button>
+                          <button
+                            onClick={() => handleQuickToggleIdle(hub)}
+                            className={`px-1.5 py-0.2 rounded font-semibold transition-all ${
+                              idleOn
+                                ? 'bg-[#F17F31]/20 text-[#F17F31] border border-[#F17F31]/30'
+                                : 'bg-[#151f38] text-slate-600 border border-transparent'
+                            }`}
+                            title={`${hub}: Alert if machines are inactive`}
+                          >
+                            QUIET
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={() => {
+                    if (onOpenTelemetryPreferences) onOpenTelemetryPreferences();
+                    if (onCloseMobile) onCloseMobile();
+                  }}
+                  className="w-full mt-1.5 py-1.5 rounded-lg bg-[#92C842]/10 hover:bg-[#92C842]/20 text-[#92C842] border border-[#92C842]/30 text-[11px] font-bold text-center transition-all"
+                >
+                  All Alert Settings →
+                </button>
+              </div>
+            )}
+          </div>
+
+          {onOpenShiftCompliance && (
+            <div className="pt-2 mt-2 border-t border-[#1e2d4d]/60">
+              <button
+                onClick={() => {
+                  onOpenShiftCompliance();
+                  if (onCloseMobile) onCloseMobile();
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold bg-[#151f38] hover:bg-[#1a2745] text-slate-300 hover:text-white border border-[#1e2d4d] hover:border-[#92C842]/40 transition-all text-left shadow-sm"
+              >
+                <svg className="w-4 h-4 text-[#92C842]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                  />
+                </svg>
+                <span>Daily Shift Report (PDF)</span>
+              </button>
+            </div>
+          )}
         </nav>
       </div>
 
@@ -288,7 +492,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={onSignOut}
                 className="p-1.5 rounded-lg bg-[#151f38] hover:bg-red-500/20 text-slate-400 hover:text-red-300 border border-[#1e2d4d] hover:border-red-500/30 transition-all shrink-0"
-                title="Switch Corporate Role / Sign Out"
+                title="Sign Out / Switch User"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
@@ -300,24 +504,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Left Sidebar Engine Sync Bottom Status */}
         <div className="p-4 border-t border-[#1e2d4d] bg-[#090e1c]/80 text-xs">
-        <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 mb-1">
-          <span>SYNC ENGINE</span>
-          <span className="text-[#92C842] flex items-center gap-1 font-mono">ONLINE</span>
-        </div>
-        <div className="flex items-center gap-2 text-slate-400 text-[11px]">
-          <svg className="w-3.5 h-3.5 text-[#92C842] animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-            />
-          </svg>
-          <span className="truncate">Synced {syncTimeSeconds}s ago with Tope's Master Log</span>
+          <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 mb-1">
+            <span>LIVE SYNC</span>
+            <span className="text-[#92C842] flex items-center gap-1 font-mono">ONLINE</span>
+          </div>
+          <div className="flex items-center gap-2 text-slate-400 text-[11px]">
+            <svg className="w-3.5 h-3.5 text-[#92C842] animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+              />
+            </svg>
+            <span className="truncate">Updated {syncTimeSeconds}s ago</span>
+          </div>
         </div>
       </div>
     </div>
-  </div>
   );
 
   return (

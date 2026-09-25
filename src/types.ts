@@ -4,34 +4,11 @@ export type TenureFilter = 'All' | '0–3 Mo (New)' | '3–6 Mo (Mid)' | '6+ Mo'
 
 export type TabType = 'active' | 'prospective' | 'archive';
 
-export type AppRole = 'SUPER_ADMIN' | 'CEO' | 'OPS_DIRECTOR' | 'REGIONAL_SUPERVISOR' | 'AUDIT_LEAD' | 'VSR' | 'VSR_SUPERVISOR';
-
-export interface LoginLocation {
-  latitude?: number;
-  longitude?: number;
-  label: string;
-  city?: string;
-  state?: string;
-  region?: string;
-  country?: string;
-  countryCode?: string;
-  accuracy?: number;
-  source: 'browser' | 'fallback';
-  consentGrantedAt?: string;
-  consentStatus?: 'accepted' | 'required' | 'denied';
-}
-
-export interface SessionMeta {
-  signedInAt: string;
-  timezone: string;
-  location: LoginLocation;
-}
-
 export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role: AppRole;
+  role: 'CEO' | 'OPS_DIRECTOR' | 'REGIONAL_SUPERVISOR' | 'AUDIT_LEAD';
   roleTitle: string;
   department: string;
   initials: string;
@@ -39,8 +16,6 @@ export interface AuthUser {
   assignedRegion: 'All' | 'Lagos' | 'Ibadan' | 'Ogun' | 'Benin';
   securityClearance: 'Level 5 (Unrestricted)' | 'Level 4 (Regional Ops)' | 'Level 3 (Audit & HR)';
   lastLogin?: string;
-  platform?: 'admin' | 'vsr';
-  sessionMeta?: SessionMeta;
 }
 
 export interface GeneratedCredential {
@@ -51,15 +26,101 @@ export interface GeneratedCredential {
 }
 
 export type NavigationScreen =
+  | 'overall_dashboard'
+  | 'employee_compliance_register'
+  | 'shift_adherence_30d'
+  | 'vsr_location_audit'
   | 'operations'
-  | 'credential_admin'
-  | 'workflow_center'
   | 'merchandisers'
+  | 'gps_tracker'
+  | 'vsr_recruitment'
   | 'trends'
   | 'compliance'
   | 'head_office'
-  | 'archive'
-  | 'vsr_audit_trail';
+  | 'archive';
+
+export interface VsrLocationAuditRecord {
+  id: string;
+  vsrCode: string;
+  vsrName: string;
+  phone: string;
+  hub: 'Lagos' | 'Ibadan' | 'Ogun' | 'Benin';
+  corridor: string;
+  assignedStore: string;
+  assignedStoreCoords: { lat: number; lng: number };
+
+  // Sign-In Details
+  signInTimeWat: string;
+  signInDate: string;
+  signInLocationName: string;
+  signInAddress: string;
+  signInCoords: { lat: number; lng: number };
+  signInDistanceMeters: number;
+  signInGeofenceStatus: 'in_store' | 'near_store' | 'out_of_bounds';
+  signInAccuracyMeters: number;
+  signInOnTimeStatus: 'on_time' | 'early' | 'late';
+
+  // Sign-Out Details
+  signOutTimeWat: string | null;
+  signOutDate?: string;
+  signOutLocationName: string | null;
+  signOutAddress: string | null;
+  signOutCoords: { lat: number; lng: number } | null;
+  signOutDistanceMeters?: number;
+  signOutGeofenceStatus?: 'in_store' | 'near_store' | 'out_of_bounds' | null;
+
+  // Duration & Closing Adherence (21:00 WAT cutoff)
+  totalHoursFormatted: string;
+  totalHoursDecimal: number;
+  closingComplianceStatus:
+    | 'on_time_signout'
+    | 'minor_overrun'
+    | 'major_overrun'
+    | 'early_signout'
+    | 'active_shift'
+    | 'missing_signout';
+
+  // Telemetry & Hardware Security
+  deviceModel: string;
+  networkCarrier: string;
+  ipAddress: string;
+  batteryPct: number;
+  verificationMethod:
+    | 'GPS Geofence + QR'
+    | 'GPS Geofence'
+    | 'Store QR Code'
+    | 'Supervisor Override'
+    | 'Biometric Face Match';
+
+  // Audit Verification
+  auditStatus: 'verified' | 'flagged' | 'pending_review';
+  auditFlagReason?: string;
+  auditNotes?: string;
+  supervisorName?: string;
+}
+
+export interface WorkerGpsSignIn {
+  id: string;
+  workerName: string;
+  workerCode: string;
+  workerPhone: string;
+  assignedStore: string;
+  assignedHub: 'Lagos' | 'Ibadan' | 'Ogun' | 'Benin';
+  signInTimeWat: string;
+  signInDate: string;
+  latitude: number;
+  longitude: number;
+  locationAddress: string;
+  geofenceStatus: 'in_store' | 'near_store' | 'out_of_bounds';
+  distanceMeters: number;
+  batteryPct: number;
+  deviceModel: string;
+  networkCarrier: string;
+  verificationMethod: 'GPS Geofence' | 'Store QR Code' | 'Manager Override';
+  status: 'approved' | 'flagged' | 'pending_review';
+  liveIpAddress?: string;
+  signInAccuracyMeters?: number;
+}
 
 export interface RegionalShiftDayData {
   expectedHours: number;

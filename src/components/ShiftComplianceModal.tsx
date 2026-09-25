@@ -261,9 +261,9 @@ ${complianceData
   if (!isOpen) return null;
 
   return (
-    <div className="w-full p-0 sm:p-3">
-      {/* Page Container */}
-      <div className="relative w-full max-w-6xl mx-auto bg-[#0b1222] border border-[#1e2d4d] rounded-2xl shadow-2xl overflow-hidden flex flex-col print-container">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-black/80 backdrop-blur-sm animate-in fade-in">
+      {/* Modal Container */}
+      <div className="relative w-full max-w-5xl bg-[#0b1222] border border-[#1e2d4d] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] print-container">
         
         {/* MODAL HEADER & ACTION TOOLBAR (Hidden when printing via .no-print) */}
         <div className="no-print p-4 sm:p-5 bg-[#0e1628] border-b border-[#1e2d4d] flex flex-wrap items-center justify-between gap-4">

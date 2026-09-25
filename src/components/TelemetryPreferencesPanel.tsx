@@ -189,10 +189,16 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
   const hubKeys: Array<'Lagos' | 'Ibadan' | 'Ogun' | 'Benin'> = ['Lagos', 'Ibadan', 'Ogun', 'Benin'];
 
   return (
-    <div className="w-full p-0 sm:p-2">
-      {/* Main Page Container */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5">
+      {/* Dark backdrop */}
       <div
-        className="relative w-full max-w-6xl mx-auto bg-[#0c1427] border border-[#1e2d4d] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+      />
+
+      {/* Main Modal Container */}
+      <div
+        className="relative w-full max-w-4xl max-h-[90vh] bg-[#0c1427] border border-[#1e2d4d] rounded-2xl shadow-2xl flex flex-col overflow-hidden z-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header Bar */}
@@ -204,14 +210,14 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold text-white tracking-wide">
-                  Telemetry Preferences &amp; Alert Rules
+                  Alert Settings &amp; Notification Rules
                 </h2>
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#92C842]/15 text-[#92C842] border border-[#92C842]/30">
-                  EXECUTIVE SUITE
+                  SUPER ADMIN
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Toggle automated alert types per hub and customize idle breach thresholds (default 30m).
+                Turn alerts on or off for each store and choose how many minutes of inactivity trigger a warning (default 30 mins).
               </p>
             </div>
           </div>
@@ -220,14 +226,14 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
             {showSavedFeedback && (
               <span className="hidden sm:flex items-center gap-1.5 text-xs font-mono text-[#92C842] bg-[#92C842]/10 border border-[#92C842]/30 px-2.5 py-1 rounded-lg animate-pulse">
                 <Check className="w-3.5 h-3.5" />
-                <span>Saved to WAT Session</span>
+                <span>Settings Saved</span>
               </span>
             )}
 
             <button
               onClick={handleResetToDefaults}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#151f38] hover:bg-[#1a2745] text-slate-300 hover:text-white border border-[#1e2d4d] text-xs font-medium transition-all"
-              title="Reset idle thresholds to 30m and re-enable all alert types"
+              title="Reset limits to 30 mins and turn on all alert types"
             >
               <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
               <span className="hidden sm:inline">Reset Defaults</span>
@@ -250,10 +256,10 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
               <div className="flex items-center gap-2">
                 <ShieldAlert className="w-4 h-4 text-[#92C842]" />
                 <span className="font-bold text-xs uppercase tracking-wider text-slate-300">
-                  Global Baseline Threshold
+                  Default Inactivity Limit
                 </span>
                 <span className="text-[10px] text-slate-400 font-mono">
-                  (Currently fixed standard: 30 minutes)
+                  (Standard: 30 minutes)
                 </span>
               </div>
 
@@ -265,7 +271,7 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                   }}
                   className="px-2.5 py-1 rounded bg-[#92C842]/10 hover:bg-[#92C842]/20 text-[#92C842] border border-[#92C842]/30 text-xs font-mono font-medium"
                 >
-                  Enable All Alerts
+                  Turn On All Alerts
                 </button>
                 <button
                   onClick={() => {
@@ -274,7 +280,7 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                   }}
                   className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700 text-xs font-mono font-medium"
                 >
-                  Mute All Alerts
+                  Silence All Alerts
                 </button>
               </div>
             </div>
@@ -284,7 +290,7 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <label className="text-xs text-slate-300 font-medium flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5 text-[#F17F31]" />
-                  <span>Batch Idle Threshold for All Hubs:</span>
+                  <span>Set Inactivity Limit for All Stores:</span>
                 </label>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold font-mono text-[#92C842]">
@@ -295,7 +301,7 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                     className="px-3 py-1 rounded-lg bg-[#92C842] hover:bg-[#7bb32e] text-[#090e1c] font-bold text-xs transition-all shadow-sm active:scale-95 flex items-center gap-1.5"
                   >
                     <Check className="w-3.5 h-3.5" />
-                    <span>Apply to All 4 Hubs</span>
+                    <span>Apply to All 4 Stores</span>
                   </button>
                 </div>
               </div>
@@ -411,15 +417,15 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                       </div>
 
                       <div className="mt-1 flex items-center justify-between text-[11px] text-slate-400">
-                        <span>Sector: <strong className="text-slate-300">{meta.sector}</strong></span>
-                        <span>Hours: <strong className="text-slate-300 font-mono">{meta.opening} - {meta.closing}</strong></span>
+                        <span>Area: <strong className="text-slate-300">{meta.sector}</strong></span>
+                        <span>Shift: <strong className="text-slate-300 font-mono">{meta.opening} - {meta.closing}</strong></span>
                       </div>
 
-                      {/* Live Telemetry Ping Status */}
+                      {/* Live Ping Status */}
                       <div className="mt-2 p-2 rounded-lg bg-[#090e1c] border border-[#1e2d4d]/80 flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2">
                           <Activity className="w-3.5 h-3.5 text-slate-400" />
-                          <span className="text-slate-400 text-[11px]">Heartbeat:</span>
+                          <span className="text-slate-400 text-[11px]">Last Signal:</span>
                           <span className="font-mono font-bold text-white">
                             {currentIdleMinutes}m ago
                           </span>
@@ -429,7 +435,7 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                           {isCurrentlyIdleBreached ? (
                             <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#F17F31]/20 text-[#F17F31] border border-[#F17F31]/40 flex items-center gap-1">
                               <AlertTriangle className="w-3 h-3" />
-                              <span>BREACH (&gt;{pref.idleThresholdMinutes}m)</span>
+                              <span>INACTIVE (&gt;{pref.idleThresholdMinutes}m)</span>
                             </span>
                           ) : !pref.idleBreachAlert ? (
                             <span className="px-2 py-0.5 rounded text-[10px] font-mono text-slate-400 bg-slate-800 border border-slate-700">
@@ -438,7 +444,7 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                           ) : (
                             <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#92C842]/15 text-[#92C842] border border-[#92C842]/30 flex items-center gap-1">
                               <CheckCircle2 className="w-3 h-3" />
-                              <span>OK (&lt;{pref.idleThresholdMinutes}m)</span>
+                              <span>ACTIVE (&lt;{pref.idleThresholdMinutes}m)</span>
                             </span>
                           )}
                         </div>
@@ -448,7 +454,7 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                     {/* Alert Types Toggles */}
                     <div className="space-y-3 pt-2 border-t border-[#1e2d4d]/60">
                       <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                        Alert Types Configuration
+                        Alert Settings for this Location
                       </div>
 
                       {/* 1. Shift Overrun Toggle */}
@@ -456,14 +462,14 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                         <div className="space-y-0.5">
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-semibold text-white">
-                              Shift Overrun Alert
+                              Late Shift Alert
                             </span>
                             <span className="text-[10px] font-mono text-[#E05252] bg-[#E05252]/10 px-1.5 py-0.2 rounded border border-[#E05252]/20">
-                              &gt;21:00 WAT
+                              Past 9:00 PM
                             </span>
                           </div>
                           <p className="text-[11px] text-slate-400 leading-tight">
-                            Alert if POS terminals continue recording active sales telemetry past 21:00 WAT closing cutoff.
+                            Notify me if card machines are still active past the 9:00 PM closing time.
                           </p>
                         </div>
 
@@ -488,14 +494,14 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                         <div className="space-y-0.5">
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-semibold text-white">
-                              Idle Breach Alert
+                              Machine Inactive Alert
                             </span>
                             <span className="text-[10px] font-mono text-[#F17F31] bg-[#F17F31]/10 px-1.5 py-0.2 rounded border border-[#F17F31]/20">
-                              Heartbeat Loss
+                              No Signal
                             </span>
                           </div>
                           <p className="text-[11px] text-slate-400 leading-tight">
-                            Alert if hub reports no merchandiser heartbeat for longer than the custom idle threshold post-opening.
+                            Notify me if card machines have not sent any signal for longer than the allowed time limit.
                           </p>
                         </div>
 
@@ -520,7 +526,7 @@ export const TelemetryPreferencesPanel: React.FC<TelemetryPreferencesPanelProps>
                         <div className="flex items-center justify-between">
                           <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                             <Clock className="w-3.5 h-3.5 text-[#92C842]" />
-                            <span>Custom Idle Threshold:</span>
+                            <span>Max Allowed Inactive Time:</span>
                           </label>
                           <div className="flex items-center gap-1.5">
                             <input
