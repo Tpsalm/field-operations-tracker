@@ -409,65 +409,113 @@ export const VsrRecruitmentView: React.FC<VsrRecruitmentViewProps> = ({
           </div>
         </div>
 
-        {/* Top Funnel KPI Cards */}
+        {/* Top Funnel KPI Cards (Click to filter list) */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-5 pt-5 border-t border-slate-100">
-          <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80">
+          <div
+            onClick={() => setSelectedStageFilter('All')}
+            className={`rounded-xl p-3 border transition-all cursor-pointer shadow-xs ${
+              selectedStageFilter === 'All'
+                ? 'bg-emerald-50/50 border-emerald-500 ring-2 ring-emerald-500/20'
+                : 'bg-slate-50 border-slate-200/80 hover:border-slate-300 hover:bg-slate-100/60'
+            }`}
+            title="Click to view all applicants"
+          >
             <span className="text-[10px] uppercase font-bold text-slate-500 block tracking-wider">
               Total Applicants
             </span>
             <div className="flex items-baseline justify-between mt-1">
               <span className="text-2xl font-black text-slate-900 font-mono">{totalCount}</span>
-              <span className="text-[10px] text-slate-500 font-mono">In System</span>
+              <span className="text-[10px] text-slate-500 font-mono">In System ↗</span>
             </div>
           </div>
 
-          <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80">
+          <div
+            onClick={() => setSelectedStageFilter('interview')}
+            className={`rounded-xl p-3 border transition-all cursor-pointer shadow-xs ${
+              selectedStageFilter === 'interview'
+                ? 'bg-amber-50/50 border-amber-500 ring-2 ring-amber-500/20'
+                : 'bg-slate-50 border-slate-200/80 hover:border-amber-300 hover:bg-slate-100/60'
+            }`}
+            title="Click to view candidates in interview / testing"
+          >
             <span className="text-[10px] uppercase font-bold text-amber-700 block tracking-wider">
               Interview / Test
             </span>
             <div className="flex items-baseline justify-between mt-1">
               <span className="text-2xl font-black text-amber-600 font-mono">{inAssessmentCount}</span>
-              <span className="text-[10px] text-amber-600/80 font-mono">Testing</span>
+              <span className="text-[10px] text-amber-600/80 font-mono">Testing ↗</span>
             </div>
           </div>
 
-          <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80">
+          <div
+            onClick={() => setSelectedStageFilter('kyc_guarantors')}
+            className={`rounded-xl p-3 border transition-all cursor-pointer shadow-xs ${
+              selectedStageFilter === 'kyc_guarantors'
+                ? 'bg-purple-50/50 border-purple-500 ring-2 ring-purple-500/20'
+                : 'bg-slate-50 border-slate-200/80 hover:border-purple-300 hover:bg-slate-100/60'
+            }`}
+            title="Click to view candidates in reference check & vetting"
+          >
             <span className="text-[10px] uppercase font-bold text-purple-700 block tracking-wider">
               Reference Check
             </span>
             <div className="flex items-baseline justify-between mt-1">
               <span className="text-2xl font-black text-purple-600 font-mono">{inKycCount}</span>
-              <span className="text-[10px] text-purple-600/80 font-mono">Vetting</span>
+              <span className="text-[10px] text-purple-600/80 font-mono">Vetting ↗</span>
             </div>
           </div>
 
-          <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80">
+          <div
+            onClick={() => setSelectedStageFilter('selected')}
+            className={`rounded-xl p-3 border transition-all cursor-pointer shadow-xs ${
+              selectedStageFilter === 'selected'
+                ? 'bg-emerald-50/50 border-emerald-500 ring-2 ring-emerald-500/20'
+                : 'bg-slate-50 border-slate-200/80 hover:border-emerald-300 hover:bg-slate-100/60'
+            }`}
+            title="Click to view approved candidates ready to deploy"
+          >
             <span className="text-[10px] uppercase font-bold text-emerald-700 block tracking-wider">
               Ready to Hire
             </span>
             <div className="flex items-baseline justify-between mt-1">
               <span className="text-2xl font-black text-emerald-600 font-mono">{selectedCount}</span>
-              <span className="text-[10px] text-emerald-600 font-mono">Approved</span>
+              <span className="text-[10px] text-emerald-600 font-mono">Approved ↗</span>
             </div>
           </div>
 
-          <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80">
+          <div
+            onClick={() => setSelectedStageFilter('selected')}
+            className={`rounded-xl p-3 border transition-all cursor-pointer shadow-xs ${
+              selectedStageFilter === 'selected'
+                ? 'bg-sky-50/50 border-sky-500 ring-2 ring-sky-500/20'
+                : 'bg-slate-50 border-slate-200/80 hover:border-sky-300 hover:bg-slate-100/60'
+            }`}
+            title="Click to filter approved selection cohort"
+          >
             <span className="text-[10px] uppercase font-bold text-sky-700 block tracking-wider">
               Pass Rate
             </span>
             <div className="flex items-baseline justify-between mt-1">
               <span className="text-2xl font-black text-sky-600 font-mono">{selectionRate}%</span>
-              <span className="text-[10px] text-sky-600/80 font-mono">Selected</span>
+              <span className="text-[10px] text-sky-600/80 font-mono">Selected ↗</span>
             </div>
           </div>
 
-          <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/80">
+          <div
+            onClick={() => setSelectedStageFilter('rejected')}
+            className={`rounded-xl p-3 border transition-all cursor-pointer shadow-xs ${
+              selectedStageFilter === 'rejected'
+                ? 'bg-rose-50/50 border-rose-500 ring-2 ring-rose-500/20'
+                : 'bg-slate-50 border-slate-200/80 hover:border-rose-300 hover:bg-slate-100/60'
+            }`}
+            title="Click to view disqualified candidates"
+          >
             <span className="text-[10px] uppercase font-bold text-rose-700 block tracking-wider">
               Disqualified
             </span>
             <div className="flex items-baseline justify-between mt-1">
               <span className="text-2xl font-black text-rose-600 font-mono">{rejectedCount}</span>
-              <span className="text-[10px] text-rose-600/80 font-mono">Rejected</span>
+              <span className="text-[10px] text-rose-600/80 font-mono">Rejected ↗</span>
             </div>
           </div>
         </div>

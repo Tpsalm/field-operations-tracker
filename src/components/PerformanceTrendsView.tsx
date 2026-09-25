@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import * as d3 from 'd3';
 import { SEVEN_DAY_TELEMETRY_TRENDS, HUB_TREND_CONFIGS, HubTrendConfig } from '../data/telemetryTrendsData';
 import { DailyHubTelemetryPoint } from '../types';
-import { TrendingUp, Download, FileText, UserPlus, BarChart3, Clock, CheckCircle2 } from 'lucide-react';
+import { TrendingUp, Download, FileText, UserPlus, BarChart3, Clock, CheckCircle2, X, Search } from 'lucide-react';
 
 interface PerformanceTrendsViewProps {
   onOpenShiftCompliance?: () => void;
@@ -10,6 +10,7 @@ interface PerformanceTrendsViewProps {
 }
 
 type MetricDisplayMode = 'absolute' | 'capacity_pct';
+type KpiModalType = 'today_active' | 'peak_activity' | 'daily_avg' | 'uptime_rate' | null;
 
 export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
   onOpenShiftCompliance,
@@ -33,6 +34,8 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
   // Selected or Hovered Day Index (0 to 6)
   const [hoveredDayIndex, setHoveredDayIndex] = useState<number | null>(6);
   const [hoveredSeries, setHoveredSeries] = useState<string | null>(null);
+  const [kpiModalType, setKpiModalType] = useState<KpiModalType>(null);
+  const [kpiModalSearch, setKpiModalSearch] = useState<string>('');
 
   // Summary Metrics Calculation
   const summaryStats = useMemo(() => {
@@ -445,21 +448,25 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
         </div>
       </div>
 
-      {/* 2. EXECUTIVE 7-DAY KPI CARDS */}
+      {/* 2. EXECUTIVE 7-DAY KPI CARDS (Click to open live tabular telemetry records) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Today's Active Telemetry */}
-        <div className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-emerald-400 transition-colors">
+        <div 
+          onClick={() => setKpiModalType('today_active')}
+          className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer group"
+          title="Click to view full tabular list of today's active terminals across all hubs"
+        >
           <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
             <span>TODAY'S ACTIVE MACHINES</span>
             <span className="text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.2 rounded text-[10px]">● LIVE</span>
           </div>
           <div className="my-2">
-            <div className="text-2xl font-black text-slate-900 font-mono">
+            <div className="text-2xl font-black text-slate-900 font-mono group-hover:text-emerald-600 transition-colors">
               {summaryStats.currentTotal.toLocaleString()}
             </div>
-            <div className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5">
-              <span className="text-emerald-700 font-bold">+{summaryStats.growthPercent}%</span>
-              <span>vs 7-Day Launch Base</span>
+            <div className="text-xs text-slate-500 mt-0.5 flex items-center justify-between">
+              <span className="text-emerald-700 font-bold">+{summaryStats.growthPercent}% vs Launch</span>
+              <span className="text-emerald-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Ledger ↗</span>
             </div>
           </div>
           <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
@@ -468,17 +475,22 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
         </div>
 
         {/* Card 2: 7-Day Peak */}
-        <div className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-sky-400 transition-colors">
+        <div 
+          onClick={() => setKpiModalType('peak_activity')}
+          className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-sky-400 hover:shadow-md transition-all cursor-pointer group"
+          title="Click to view tabular peak activity report per hub"
+        >
           <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
             <span>7-DAY PEAK ACTIVITY</span>
-            <span className="text-slate-400">{summaryStats.peakDayDisplay}</span>
+            <span className="text-slate-400 font-bold">{summaryStats.peakDayDisplay}</span>
           </div>
           <div className="my-2">
-            <div className="text-2xl font-black text-slate-900 font-mono">
+            <div className="text-2xl font-black text-slate-900 font-mono group-hover:text-sky-600 transition-colors">
               {summaryStats.peakTotal.toLocaleString()}
             </div>
-            <div className="text-xs text-slate-500 mt-0.5">
-              Peak weekend sales surge
+            <div className="text-xs text-slate-500 mt-0.5 flex items-center justify-between">
+              <span>Peak weekend surge</span>
+              <span className="text-sky-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Ledger ↗</span>
             </div>
           </div>
           <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
@@ -487,17 +499,22 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
         </div>
 
         {/* Card 3: 7-Day Average Active Devices */}
-        <div className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-amber-400 transition-colors">
+        <div 
+          onClick={() => setKpiModalType('daily_avg')}
+          className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-amber-400 hover:shadow-md transition-all cursor-pointer group"
+          title="Click to view daily average throughput table"
+        >
           <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
             <span>7-DAY DAILY AVERAGE</span>
-            <span className="text-slate-400">4 BRANCHES</span>
+            <span className="text-slate-400 font-semibold">4 BRANCHES</span>
           </div>
           <div className="my-2">
-            <div className="text-2xl font-black text-slate-900 font-mono">
+            <div className="text-2xl font-black text-slate-900 font-mono group-hover:text-amber-600 transition-colors">
               {summaryStats.avgTotal.toLocaleString()}
             </div>
-            <div className="text-xs text-slate-500 mt-0.5">
-              Net growth: <strong className="text-emerald-700">+{summaryStats.growthCount} nodes</strong>
+            <div className="text-xs text-slate-500 mt-0.5 flex items-center justify-between">
+              <span>Net: <strong className="text-emerald-700">+{summaryStats.growthCount} nodes</strong></span>
+              <span className="text-amber-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Ledger ↗</span>
             </div>
           </div>
           <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
@@ -506,17 +523,22 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
         </div>
 
         {/* Card 4: Telemetry Uptime & Reliability */}
-        <div className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-purple-400 transition-colors">
+        <div 
+          onClick={() => setKpiModalType('uptime_rate')}
+          className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-purple-400 hover:shadow-md transition-all cursor-pointer group"
+          title="Click to view 7-day uptime & network reliability incident log"
+        >
           <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
             <span>SYSTEM UPTIME RATE</span>
             <span className="text-emerald-700 font-semibold">WAT WINDOW</span>
           </div>
           <div className="my-2">
-            <div className="text-2xl font-black text-slate-900 font-mono">
+            <div className="text-2xl font-black text-slate-900 font-mono group-hover:text-purple-600 transition-colors">
               {summaryStats.uptimeRate}%
             </div>
-            <div className="text-xs text-slate-500 mt-0.5">
-              07:00–21:00 WAT standard adherence
+            <div className="text-xs text-slate-500 mt-0.5 flex items-center justify-between">
+              <span>07:00–21:00 WAT standard</span>
+              <span className="text-purple-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Logs ↗</span>
             </div>
           </div>
           <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
@@ -890,6 +912,144 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
           </table>
         </div>
       </div>
+
+      {/* 5. INTERACTIVE KPI METRICS DRILL-DOWN MODAL */}
+      {kpiModalType && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-[16px] border border-slate-200/80 shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200">
+                  <BarChart3 className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                      Live Telemetry Audit
+                    </span>
+                    <span className="text-xs text-slate-500 font-mono">07:00–21:00 WAT</span>
+                  </div>
+                  <h3 className="text-base font-black text-slate-900 mt-0.5">
+                    {kpiModalType === 'today_active' && "Today's Active POS Terminals & Field Units"}
+                    {kpiModalType === 'peak_activity' && "7-Day Peak Concurrency Breakdown (Per Hub)"}
+                    {kpiModalType === 'daily_avg' && "7-Day Daily Rolling Averages vs Hub Baseline"}
+                    {kpiModalType === 'uptime_rate' && "System Network Uptime & Telemetry Reliability Log"}
+                  </h3>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleExportCSV}
+                  className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-500" />
+                  <span>CSV</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setKpiModalType(null);
+                    setKpiModalSearch('');
+                  }}
+                  className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Search & Filter */}
+            <div className="px-6 py-3 border-b border-slate-200 bg-white flex items-center justify-between gap-4">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Filter hub, date, or metric notes..."
+                  value={kpiModalSearch}
+                  onChange={(e) => setKpiModalSearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all text-slate-800 font-mono"
+                />
+              </div>
+              <div className="text-xs text-slate-500 font-mono">
+                Showing <strong>{SEVEN_DAY_TELEMETRY_TRENDS.length}</strong> audited records
+              </div>
+            </div>
+
+            {/* Modal Body - Tabular List */}
+            <div className="overflow-y-auto flex-1 p-6">
+              <table className="w-full text-left text-xs text-slate-700">
+                <thead className="bg-slate-50 text-slate-600 font-mono text-[10px] uppercase tracking-wider border-b border-slate-200 sticky top-0">
+                  <tr>
+                    <th className="px-4 py-3">Day / Date</th>
+                    <th className="px-4 py-3 text-emerald-700">Lagos (680 Cap)</th>
+                    <th className="px-4 py-3 text-sky-700">Ibadan (340 Cap)</th>
+                    <th className="px-4 py-3 text-amber-700">Ogun (220 Cap)</th>
+                    <th className="px-4 py-3 text-purple-700">Benin (180 Cap)</th>
+                    <th className="px-4 py-3 text-right">Combined Active</th>
+                    <th className="px-4 py-3">Operational Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-mono">
+                  {SEVEN_DAY_TELEMETRY_TRENDS
+                    .filter((row) => {
+                      if (!kpiModalSearch) return true;
+                      const q = kpiModalSearch.toLowerCase();
+                      return (
+                        row.displayDate.toLowerCase().includes(q) ||
+                        row.dayLabel.toLowerCase().includes(q) ||
+                        (row.notes && row.notes.toLowerCase().includes(q))
+                      );
+                    })
+                    .map((row) => (
+                      <tr key={row.date} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="px-4 py-3 font-bold text-slate-900">
+                          {row.displayDate} <span className="text-[10px] font-normal text-slate-400">({row.dayLabel})</span>
+                        </td>
+                        <td className="px-4 py-3 font-semibold text-emerald-700">
+                          {row.Lagos} <span className="text-[10px] text-slate-400">({Math.round((row.Lagos / 680) * 100)}%)</span>
+                        </td>
+                        <td className="px-4 py-3 font-semibold text-sky-700">
+                          {row.Ibadan} <span className="text-[10px] text-slate-400">({Math.round((row.Ibadan / 340) * 100)}%)</span>
+                        </td>
+                        <td className="px-4 py-3 font-semibold text-amber-700">
+                          {row.Ogun} <span className="text-[10px] text-slate-400">({Math.round((row.Ogun / 220) * 100)}%)</span>
+                        </td>
+                        <td className="px-4 py-3 font-semibold text-purple-700">
+                          {row.Benin} <span className="text-[10px] text-slate-400">({Math.round((row.Benin / 180) * 100)}%)</span>
+                        </td>
+                        <td className="px-4 py-3 text-right font-black text-slate-900 text-sm">
+                          {row.total.toLocaleString()}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                            {row.notes ? row.notes.slice(0, 32) + '...' : 'Verified Normal'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs">
+              <div className="text-slate-500 font-mono">
+                System Timezone: <strong>WAT (UTC+1)</strong> • Baseline Concurrency: <strong>1,420 POS</strong>
+              </div>
+              <button
+                onClick={() => {
+                  setKpiModalType(null);
+                  setKpiModalSearch('');
+                }}
+                className="px-4 py-2 rounded-lg bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors"
+              >
+                Close Audit Table
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

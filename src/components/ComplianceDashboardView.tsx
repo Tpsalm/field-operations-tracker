@@ -17,7 +17,8 @@ import {
   ArrowRight,
   TrendingUp,
   BarChart3,
-  FileText
+  FileText,
+  X
 } from 'lucide-react';
 
 interface ComplianceDashboardViewProps {
@@ -28,6 +29,7 @@ interface ComplianceDashboardViewProps {
 type SelectedRegion = 'All' | 'Lagos' | 'Ibadan' | 'Ogun' | 'Benin';
 type ChartMode = 'dual_hours' | 'variance_bars' | 'adherence_pct';
 type TimeRange = '30d' | '14d' | '7d';
+type KpiModalType = 'attendance_rate' | 'on_time_shifts' | 'late_closings' | 'hours_logged' | 'closing_cutoff' | null;
 
 export const ComplianceDashboardView: React.FC<ComplianceDashboardViewProps> = ({
   onOpenShiftCompliance,
@@ -43,6 +45,9 @@ export const ComplianceDashboardView: React.FC<ComplianceDashboardViewProps> = (
   const [hoveredDayIndex, setHoveredDayIndex] = useState<number | null>(29);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [kpiModalType, setKpiModalType] = useState<KpiModalType>(null);
+  const [kpiModalSearch, setKpiModalSearch] = useState<string>('');
+  const [selectedInspectDay, setSelectedInspectDay] = useState<DailyAdherenceRecord | null>(null);
 
   // Filter dataset by selected time range
   const filteredDataset: DailyAdherenceRecord[] = useMemo(() => {
@@ -581,72 +586,105 @@ export const ComplianceDashboardView: React.FC<ComplianceDashboardViewProps> = (
         </div>
       </div>
 
-      {/* 2. 5 EXECUTIVE COMPLIANCE KPI STATS */}
+      {/* 2. 5 EXECUTIVE COMPLIANCE KPI STATS (Click to open live tabular records popup) */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
         {/* KPI 1 */}
-        <div className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-emerald-400 transition-colors">
+        <div 
+          onClick={() => setKpiModalType('attendance_rate')}
+          className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer group"
+          title="Click to view full tabular compliance rate for all days"
+        >
           <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
             <span>ATTENDANCE RATE</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 group-hover:scale-110 transition-transform" />
           </div>
           <div className="my-2">
-            <div className="text-2xl font-black text-slate-900 font-mono">{dynamicKpis.avgAdherence}%</div>
-            <div className="text-xs text-slate-500 mt-0.5">Target: ≥98.0% standard</div>
+            <div className="text-2xl font-black text-slate-900 font-mono group-hover:text-emerald-600 transition-colors">{dynamicKpis.avgAdherence}%</div>
+            <div className="text-xs text-slate-500 mt-0.5 flex items-center justify-between">
+              <span>Target: ≥98.0% standard</span>
+              <span className="text-emerald-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Ledger ↗</span>
+            </div>
           </div>
         </div>
 
         {/* KPI 2 */}
-        <div className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-emerald-400 transition-colors">
+        <div 
+          onClick={() => setKpiModalType('on_time_shifts')}
+          className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer group"
+          title="Click to view tabular list of compliant on-time shift days"
+        >
           <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
             <span>ON-TIME SHIFTS</span>
-            <span className="text-emerald-700 font-bold">ON-TARGET</span>
+            <span className="text-emerald-700 font-bold text-[10px] bg-emerald-50 px-1.5 py-0.2 rounded">ON-TARGET</span>
           </div>
           <div className="my-2">
-            <div className="text-2xl font-black text-slate-900 font-mono">
+            <div className="text-2xl font-black text-slate-900 font-mono group-hover:text-emerald-600 transition-colors">
               {dynamicKpis.compliantDays}{' '}
               <span className="text-xs text-slate-400 font-normal">/ {dynamicKpis.totalDays}d</span>
             </div>
-            <div className="text-xs text-slate-500 mt-0.5">Compliant with 21:00 WAT</div>
+            <div className="text-xs text-slate-500 mt-0.5 flex items-center justify-between">
+              <span>Compliant with 21:00 WAT</span>
+              <span className="text-emerald-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Ledger ↗</span>
+            </div>
           </div>
         </div>
 
         {/* KPI 3 */}
-        <div className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-amber-400 transition-colors">
+        <div 
+          onClick={() => setKpiModalType('late_closings')}
+          className="bg-white rounded-[12px] border border-amber-200 p-4 shadow-[0_2px_8px_rgba(245,158,11,0.06)] flex flex-col justify-between hover:border-amber-400 hover:shadow-md transition-all cursor-pointer group"
+          title="Click to view tabular list of late closing days"
+        >
           <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
-            <span>LATE CLOSINGS</span>
-            <AlertTriangle className="w-4 h-4 text-amber-500" />
+            <span className="text-amber-700 font-bold">LATE CLOSINGS</span>
+            <AlertTriangle className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" />
           </div>
           <div className="my-2">
             <div className="text-2xl font-black text-amber-600 font-mono">{dynamicKpis.overrunDays} Days</div>
-            <div className="text-xs text-slate-500 mt-0.5">Exceeded 21:00 WAT cutoff</div>
+            <div className="text-xs text-slate-500 mt-0.5 flex items-center justify-between">
+              <span>Exceeded 21:00 WAT cutoff</span>
+              <span className="text-amber-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Audit ↗</span>
+            </div>
           </div>
         </div>
 
         {/* KPI 4 */}
-        <div className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-sky-400 transition-colors">
+        <div 
+          onClick={() => setKpiModalType('hours_logged')}
+          className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-sky-400 hover:shadow-md transition-all cursor-pointer group"
+          title="Click to view tabular expected vs logged hours reconciliation"
+        >
           <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
             <span>HOURS LOGGED</span>
-            <TrendingUp className="w-4 h-4 text-sky-500" />
+            <TrendingUp className="w-4 h-4 text-sky-500 group-hover:scale-110 transition-transform" />
           </div>
           <div className="my-2">
-            <div className="text-2xl font-black text-slate-900 font-mono">
+            <div className="text-2xl font-black text-slate-900 font-mono group-hover:text-sky-600 transition-colors">
               {dynamicKpis.actSum}h
             </div>
-            <div className="text-xs text-slate-500 mt-0.5">
-              Expected: {dynamicKpis.expSum}h ({dynamicKpis.netVariance >= 0 ? `+${dynamicKpis.netVariance}` : dynamicKpis.netVariance}h)
+            <div className="text-xs text-slate-500 mt-0.5 flex items-center justify-between">
+              <span>Exp: {dynamicKpis.expSum}h ({dynamicKpis.netVariance >= 0 ? `+${dynamicKpis.netVariance}` : dynamicKpis.netVariance}h)</span>
+              <span className="text-sky-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Ledger ↗</span>
             </div>
           </div>
         </div>
 
         {/* KPI 5 */}
-        <div className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-indigo-400 transition-colors">
+        <div 
+          onClick={() => setKpiModalType('closing_cutoff')}
+          className="bg-white rounded-[12px] border border-slate-200/80 p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-indigo-400 hover:shadow-md transition-all cursor-pointer group"
+          title="Click to view schedule benchmark per hub"
+        >
           <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
             <span>CLOSING CUTOFF</span>
-            <Clock className="w-4 h-4 text-indigo-500" />
+            <Clock className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition-transform" />
           </div>
           <div className="my-2">
-            <div className="text-2xl font-black text-slate-900 font-mono">21:00 WAT</div>
-            <div className="text-xs text-slate-500 mt-0.5">Strict daily cutoff</div>
+            <div className="text-2xl font-black text-slate-900 font-mono group-hover:text-indigo-600 transition-colors">21:00 WAT</div>
+            <div className="text-xs text-slate-500 mt-0.5 flex items-center justify-between">
+              <span>Strict daily cutoff</span>
+              <span className="text-indigo-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Schedule ↗</span>
+            </div>
           </div>
         </div>
       </div>
@@ -789,6 +827,172 @@ export const ComplianceDashboardView: React.FC<ComplianceDashboardViewProps> = (
           </div>
         </div>
       </div>
+
+      {/* KPI METRIC DRILL-DOWN TABULAR POPUP MODAL */}
+      {kpiModalType && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white border border-slate-200 rounded-[16px] w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
+            {/* Modal Header */}
+            <div className="p-5 border-b border-slate-200 bg-white flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded text-[10px] font-bold font-mono uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    LIVE COMPLIANCE AUDIT
+                  </span>
+                  <span className="text-xs text-slate-500 font-mono">
+                    30-Day Period • {selectedRegion === 'All' ? 'All 4 Regional Hubs' : `${selectedRegion} Hub`}
+                  </span>
+                </div>
+                <h3 className="text-lg font-black text-slate-900 tracking-tight mt-1 flex items-center gap-2">
+                  {kpiModalType === 'attendance_rate' && <span>📈 Shift Attendance Rate Audit ({dynamicKpis.avgAdherence}%)</span>}
+                  {kpiModalType === 'on_time_shifts' && <span>✅ On-Time Shift Days ({dynamicKpis.compliantDays} / {dynamicKpis.totalDays} Days)</span>}
+                  {kpiModalType === 'late_closings' && <span>⚠️ Late Closings Exceeding 21:00 WAT ({dynamicKpis.overrunDays} Days)</span>}
+                  {kpiModalType === 'hours_logged' && <span>⏱️ Expected vs Actual Logged Hours ({dynamicKpis.actSum}h Logged)</span>}
+                  {kpiModalType === 'closing_cutoff' && <span>🕒 Mandatory 21:00 WAT Closing Schedule Benchmark</span>}
+                </h3>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleExportCSV}
+                  className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Export CSV</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setKpiModalType(null);
+                    setKpiModalSearch('');
+                  }}
+                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Filter / Search Bar */}
+            <div className="p-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="relative flex-1 min-w-[200px] max-w-sm">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Filter by date, day, or operational notes..."
+                  value={kpiModalSearch}
+                  onChange={(e) => setKpiModalSearch(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="text-slate-500 text-[11px] font-mono">
+                Showing {filteredDataset.length} recorded shift days
+              </div>
+            </div>
+
+            {/* Table Area */}
+            <div className="overflow-y-auto max-h-[550px] flex-1">
+              <table className="w-full text-left text-xs text-slate-700">
+                <thead className="bg-slate-50 text-slate-600 font-mono text-[10px] uppercase tracking-wider sticky top-0 border-b border-slate-200">
+                  <tr>
+                    <th className="py-3 px-4">Date / Day</th>
+                    <th className="py-3 px-4">Expected Hours</th>
+                    <th className="py-3 px-4">Logged Hours</th>
+                    <th className="py-3 px-4">Variance</th>
+                    <th className="py-3 px-4">Compliance %</th>
+                    <th className="py-3 px-4">Staff / Terminals</th>
+                    <th className="py-3 px-4">21:00 WAT Status</th>
+                    <th className="py-3 px-4">Daily Dispatch Notes</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-mono">
+                  {filteredDataset
+                    .filter((rec) => {
+                      const data = getDayRegionData(rec, selectedRegion);
+                      if (kpiModalType === 'on_time_shifts' && data.varianceHours > 0.15) return false;
+                      if (kpiModalType === 'late_closings' && data.varianceHours <= 0.15) return false;
+                      if (kpiModalSearch.trim()) {
+                        const q = kpiModalSearch.toLowerCase();
+                        const matchDate = rec.date.toLowerCase().includes(q) || rec.displayDate.toLowerCase().includes(q);
+                        const matchDay = rec.dayOfWeek.toLowerCase().includes(q);
+                        const matchNotes = (data.notes || '').toLowerCase().includes(q);
+                        return matchDate || matchDay || matchNotes;
+                      }
+                      return true;
+                    })
+                    .map((rec) => {
+                      const data = getDayRegionData(rec, selectedRegion);
+                      const isOverrun = data.varianceHours > 0.15;
+                      const isUnder = data.varianceHours < -0.15;
+
+                      return (
+                        <tr
+                          key={rec.date}
+                          className="hover:bg-emerald-50/50 transition-colors"
+                        >
+                          <td className="py-3 px-4 font-bold text-slate-900">
+                            {rec.displayDate} ({rec.dayOfWeek})
+                          </td>
+                          <td className="py-3 px-4 text-slate-600">{data.expectedHours.toFixed(1)}h</td>
+                          <td className="py-3 px-4 font-bold text-slate-900">{data.actualHours.toFixed(1)}h</td>
+                          <td className="py-3 px-4">
+                            <span className={`px-1.5 py-0.5 rounded text-[11px] font-bold ${
+                              isOverrun ? 'bg-amber-50 text-amber-700 border border-amber-200' : isUnder ? 'bg-sky-50 text-sky-700 border border-sky-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            }`}>
+                              {data.varianceHours >= 0 ? `+${data.varianceHours}` : data.varianceHours}h
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`font-black ${data.adherenceRate >= 99 ? 'text-emerald-600' : data.adherenceRate >= 97 ? 'text-sky-600' : 'text-amber-600'}`}>
+                              {data.adherenceRate}%
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-slate-800">
+                            {data.merchandiserCount} Staff • {data.activePOS} POS
+                          </td>
+                          <td className="py-3 px-4 font-sans">
+                            {isOverrun ? (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 inline-flex items-center gap-1">
+                                ⚠️ Late Closing
+                              </span>
+                            ) : isUnder ? (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200 inline-flex items-center gap-1">
+                                ⏱️ Early Signoff
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
+                                ✓ On-Time (21:00)
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 max-w-xs truncate text-[11px] text-slate-500 font-sans">
+                            {data.notes || 'Routine standard shift logged.'}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-3.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs">
+              <span className="text-slate-500">
+                Super Admin Work Hours &amp; Shift Compliance
+              </span>
+              <button
+                onClick={() => {
+                  setKpiModalType(null);
+                  setKpiModalSearch('');
+                }}
+                className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs transition-colors"
+              >
+                Close Audit Table
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

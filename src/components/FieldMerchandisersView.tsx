@@ -239,22 +239,30 @@ export const FieldMerchandisersView: React.FC<FieldMerchandisersViewProps> = ({
         {hubs.map((hub) => (
           <div
             key={hub.hub}
-            onClick={() => setSelectedHub(hub.hub)}
-            className={`p-4 rounded-[12px] border transition-all cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.03)] ${
+            onClick={() => setSelectedHub(selectedHub === hub.hub ? 'All' : hub.hub)}
+            className={`p-4 rounded-[12px] border transition-all cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.03)] group ${
               selectedHub === hub.hub
-                ? 'bg-white border-emerald-500 ring-2 ring-emerald-500/20'
-                : 'bg-white border-slate-200/80 hover:border-slate-300'
+                ? 'bg-emerald-50/20 border-emerald-500 ring-2 ring-emerald-500/20'
+                : 'bg-white border-slate-200/80 hover:border-emerald-300 hover:shadow-md'
             }`}
+            title={`Click to filter list for ${hub.hubDisplayName} (or click again to show all)`}
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-700">{hub.hubDisplayName}</span>
-              <span
-                className="w-2.5 h-2.5 rounded-full"
-                style={{ backgroundColor: hub.colorHex }}
-              ></span>
+              <div className="flex items-center gap-1.5">
+                {selectedHub === hub.hub && (
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">Active</span>
+                )}
+                <span
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ backgroundColor: hub.colorHex }}
+                ></span>
+              </div>
             </div>
             <div className="mt-3 flex items-baseline justify-between">
-              <span className="text-2xl font-black text-slate-900 font-mono">{hub.merchandiserCount}</span>
+              <span className="text-2xl font-black text-slate-900 font-mono group-hover:text-emerald-600 transition-colors">
+                {hub.merchandiserCount}
+              </span>
               <span className="text-xs text-slate-500">Staff Assigned</span>
             </div>
             <div className="mt-2 text-[11px] text-slate-500 flex items-center justify-between">

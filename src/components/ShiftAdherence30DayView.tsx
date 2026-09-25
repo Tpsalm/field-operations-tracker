@@ -34,6 +34,7 @@ interface ShiftAdherence30DayViewProps {
 type HubKey = 'All' | 'Lagos' | 'Ibadan' | 'Ogun' | 'Benin';
 type TimeWindow = '30d' | '14d' | '7d';
 type StatusFilter = 'all' | 'compliant' | 'overrun' | 'under_hours';
+type KpiModalType = 'adherence_rate' | 'on_time_days' | 'late_closing_days' | 'hours_logged' | 'staff_on_duty' | null;
 
 export const ShiftAdherence30DayView: React.FC<ShiftAdherence30DayViewProps> = ({
   onBackToDashboard,
@@ -44,6 +45,8 @@ export const ShiftAdherence30DayView: React.FC<ShiftAdherence30DayViewProps> = (
   const [timeWindow, setTimeWindow] = useState<TimeWindow>('30d');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [kpiModalType, setKpiModalType] = useState<KpiModalType>(null);
+  const [kpiModalSearch, setKpiModalSearch] = useState<string>('');
   const [selectedDayRecord, setSelectedDayRecord] = useState<DailyAdherenceRecord | null>(
     THIRTY_DAY_ADHERENCE_DATA[THIRTY_DAY_ADHERENCE_DATA.length - 1]
   );
@@ -244,85 +247,109 @@ export const ShiftAdherence30DayView: React.FC<ShiftAdherence30DayViewProps> = (
         </div>
       </div>
 
-      {/* 5 EXECUTIVE KPI STATS */}
+      {/* 5 EXECUTIVE KPI STATS (Click to open full tabular live data popup) */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
         {/* KPI 1: Overall Adherence Rate */}
-        <div className="bg-white rounded-[12px] border border-slate-200/80 p-4 flex flex-col justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:border-emerald-400 transition-colors">
+        <div
+          onClick={() => setKpiModalType('adherence_rate')}
+          className="bg-white rounded-[12px] border border-slate-200/80 p-4 flex flex-col justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer group"
+          title="Click to view full tabular adherence list for all 30 days"
+        >
           <div className="flex items-center justify-between text-slate-500 text-xs mb-2">
             <span className="font-semibold uppercase text-[10px] tracking-wider">Attendance Rate</span>
-            <ShieldCheck className="w-4 h-4 text-emerald-500" />
+            <ShieldCheck className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform" />
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 font-mono">{kpis.avgAdherence}%</div>
-            <div className="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
+            <div className="text-2xl font-black text-slate-900 font-mono group-hover:text-emerald-600 transition-colors">{kpis.avgAdherence}%</div>
+            <div className="text-[11px] text-slate-500 mt-1 flex items-center justify-between">
               <span className="text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.2 rounded text-[10px]">Target ≥ 98%</span>
-              <span>• On Target</span>
+              <span className="text-emerald-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">View List ↗</span>
             </div>
           </div>
         </div>
 
         {/* KPI 2: Compliant Days */}
-        <div className="bg-white rounded-[12px] border border-slate-200/80 p-4 flex flex-col justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:border-emerald-400 transition-colors">
+        <div
+          onClick={() => setKpiModalType('on_time_days')}
+          className="bg-white rounded-[12px] border border-slate-200/80 p-4 flex flex-col justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer group"
+          title="Click to view tabular list of all on-time shift days"
+        >
           <div className="flex items-center justify-between text-slate-500 text-xs mb-2">
             <span className="font-semibold uppercase text-[10px] tracking-wider">On-Time Days</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 group-hover:scale-110 transition-transform" />
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 font-mono">
+            <div className="text-2xl font-black text-slate-900 font-mono group-hover:text-emerald-600 transition-colors">
               {kpis.compliantCount} <span className="text-xs text-slate-400 font-normal">/ {kpis.totalDays}</span>
             </div>
-            <div className="text-[11px] text-slate-500 mt-1">
-              {Math.round((kpis.compliantCount / kpis.totalDays) * 100)}% on-time closing rate
+            <div className="text-[11px] text-slate-500 mt-1 flex items-center justify-between">
+              <span>{Math.round((kpis.compliantCount / kpis.totalDays) * 100)}% on-time closing</span>
+              <span className="text-emerald-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">View List ↗</span>
             </div>
           </div>
         </div>
 
         {/* KPI 3: Overrun Days (> 21:00 WAT) */}
-        <div className="bg-white rounded-[12px] border border-slate-200/80 p-4 flex flex-col justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:border-amber-400 transition-colors">
+        <div
+          onClick={() => setKpiModalType('late_closing_days')}
+          className="bg-white rounded-[12px] border border-amber-200 p-4 flex flex-col justify-between shadow-[0_2px_8px_rgba(245,158,11,0.06)] hover:border-amber-400 hover:shadow-md transition-all cursor-pointer group"
+          title="Click to view tabular list of late closing overrun days"
+        >
           <div className="flex items-center justify-between text-slate-500 text-xs mb-2">
-            <span className="font-semibold uppercase text-[10px] tracking-wider">Late Closing Days</span>
-            <AlertTriangle className="w-4 h-4 text-amber-500" />
+            <span className="font-semibold uppercase text-[10px] tracking-wider text-amber-700">Late Closing Days</span>
+            <AlertTriangle className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" />
           </div>
           <div>
             <div className="text-2xl font-black text-amber-600 font-mono">{kpis.overrunCount} Days</div>
-            <div className="text-[11px] text-slate-500 mt-1">
-              {kpis.overrunCount > 0 ? 'Closed after 21:00 WAT cutoff' : 'Zero closing breaches'}
+            <div className="text-[11px] text-slate-500 mt-1 flex items-center justify-between">
+              <span>{kpis.overrunCount > 0 ? 'Closed past 21:00 WAT' : 'Zero breaches'}</span>
+              <span className="text-amber-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Audit List ↗</span>
             </div>
           </div>
         </div>
 
         {/* KPI 4: Net Hours Variance */}
-        <div className="bg-white rounded-[12px] border border-slate-200/80 p-4 flex flex-col justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:border-sky-400 transition-colors">
+        <div
+          onClick={() => setKpiModalType('hours_logged')}
+          className="bg-white rounded-[12px] border border-slate-200/80 p-4 flex flex-col justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:border-sky-400 hover:shadow-md transition-all cursor-pointer group"
+          title="Click to view tabular breakdown of expected vs actual hours logged"
+        >
           <div className="flex items-center justify-between text-slate-500 text-xs mb-2">
             <span className="font-semibold uppercase text-[10px] tracking-wider">Hours Logged</span>
-            <TrendingUp className="w-4 h-4 text-sky-500" />
+            <TrendingUp className="w-4 h-4 text-sky-500 group-hover:scale-110 transition-transform" />
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 font-mono">
+            <div className="text-2xl font-black text-slate-900 font-mono group-hover:text-sky-600 transition-colors">
               {kpis.actHours}h
             </div>
-            <div className="text-[11px] text-slate-500 mt-1">
-              Expected: <strong className="text-slate-700 font-mono">{kpis.expHours}h</strong> ({kpis.netVariance >= 0 ? `+${kpis.netVariance}` : kpis.netVariance}h)
+            <div className="text-[11px] text-slate-500 mt-1 flex items-center justify-between">
+              <span>Exp: <strong className="text-slate-700 font-mono">{kpis.expHours}h</strong> ({kpis.netVariance >= 0 ? `+${kpis.netVariance}` : kpis.netVariance}h)</span>
+              <span className="text-sky-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Ledger ↗</span>
             </div>
           </div>
         </div>
 
         {/* KPI 5: Active Daily Workforce */}
-        <div className="bg-white rounded-[12px] border border-slate-200/80 p-4 flex flex-col justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:border-indigo-400 transition-colors">
+        <div
+          onClick={() => setKpiModalType('staff_on_duty')}
+          className="bg-white rounded-[12px] border border-slate-200/80 p-4 flex flex-col justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:border-indigo-400 hover:shadow-md transition-all cursor-pointer group"
+          title="Click to view tabular roster of daily staff and active POS terminals"
+        >
           <div className="flex items-center justify-between text-slate-500 text-xs mb-2">
             <span className="font-semibold uppercase text-[10px] tracking-wider">Avg Staff On Duty</span>
-            <Users className="w-4 h-4 text-indigo-500" />
+            <Users className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition-transform" />
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 font-mono">{kpis.avgMerchPerDay} Staff</div>
-            <div className="text-[11px] text-slate-500 mt-1">
-              Active across <strong className="text-slate-700 font-mono">{kpis.avgPOSPerDay}</strong> store POS machines
+            <div className="text-2xl font-black text-slate-900 font-mono group-hover:text-indigo-600 transition-colors">{kpis.avgMerchPerDay} Staff</div>
+            <div className="text-[11px] text-slate-500 mt-1 flex items-center justify-between">
+              <span><strong className="text-slate-700 font-mono">{kpis.avgPOSPerDay}</strong> active POS</span>
+              <span className="text-indigo-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Roster ↗</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* REGIONAL STORE SHIFT BENCHMARKS BANNER */}
+      {/* REGIONAL STORE SHIFT BENCHMARKS BANNER (Click card to filter by Hub) */}
       <div className="bg-slate-50 border border-slate-200/80 rounded-[12px] p-4">
         <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
           <div className="flex items-center gap-2">
@@ -337,7 +364,12 @@ export const ShiftAdherence30DayView: React.FC<ShiftAdherence30DayViewProps> = (
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-          <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-xs">
+          <div 
+            onClick={() => setSelectedHub('Lagos')}
+            className={`p-3 rounded-lg border shadow-xs cursor-pointer transition-all hover:scale-[1.02] ${
+              selectedHub === 'Lagos' ? 'bg-emerald-50/70 border-emerald-500 ring-2 ring-emerald-500/20' : 'bg-white border-slate-200 hover:border-emerald-300'
+            }`}
+          >
             <div className="flex items-center justify-between font-bold text-slate-900 mb-1">
               <span>Lagos Southwest</span>
               <span className="text-emerald-700 font-mono bg-emerald-50 px-1.5 py-0.2 rounded text-[11px]">14.0h Shift</span>
@@ -348,7 +380,12 @@ export const ShiftAdherence30DayView: React.FC<ShiftAdherence30DayViewProps> = (
             <div className="text-slate-400 text-[10px] mt-0.5">38 Avg Field Reps • 680 POS Nodes</div>
           </div>
 
-          <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-xs">
+          <div 
+            onClick={() => setSelectedHub('Ibadan')}
+            className={`p-3 rounded-lg border shadow-xs cursor-pointer transition-all hover:scale-[1.02] ${
+              selectedHub === 'Ibadan' ? 'bg-sky-50/70 border-sky-500 ring-2 ring-sky-500/20' : 'bg-white border-slate-200 hover:border-sky-300'
+            }`}
+          >
             <div className="flex items-center justify-between font-bold text-slate-900 mb-1">
               <span>Oyo Ibadan Cluster</span>
               <span className="text-sky-700 font-mono bg-sky-50 px-1.5 py-0.2 rounded text-[11px]">13.5h Shift</span>
@@ -359,7 +396,12 @@ export const ShiftAdherence30DayView: React.FC<ShiftAdherence30DayViewProps> = (
             <div className="text-slate-400 text-[10px] mt-0.5">19 Avg Field Reps • 340 POS Nodes</div>
           </div>
 
-          <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-xs">
+          <div 
+            onClick={() => setSelectedHub('Ogun')}
+            className={`p-3 rounded-lg border shadow-xs cursor-pointer transition-all hover:scale-[1.02] ${
+              selectedHub === 'Ogun' ? 'bg-amber-50/70 border-amber-500 ring-2 ring-amber-500/20' : 'bg-white border-slate-200 hover:border-amber-300'
+            }`}
+          >
             <div className="flex items-center justify-between font-bold text-slate-900 mb-1">
               <span>Ogun Hub (Abeokuta)</span>
               <span className="text-amber-700 font-mono bg-amber-50 px-1.5 py-0.2 rounded text-[11px]">13.0h Shift</span>
@@ -370,7 +412,12 @@ export const ShiftAdherence30DayView: React.FC<ShiftAdherence30DayViewProps> = (
             <div className="text-slate-400 text-[10px] mt-0.5">12 Avg Field Reps • 220 POS Nodes</div>
           </div>
 
-          <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-xs">
+          <div 
+            onClick={() => setSelectedHub('Benin')}
+            className={`p-3 rounded-lg border shadow-xs cursor-pointer transition-all hover:scale-[1.02] ${
+              selectedHub === 'Benin' ? 'bg-purple-50/70 border-purple-500 ring-2 ring-purple-500/20' : 'bg-white border-slate-200 hover:border-purple-300'
+            }`}
+          >
             <div className="flex items-center justify-between font-bold text-slate-900 mb-1">
               <span>Benin Sector (Edo)</span>
               <span className="text-purple-700 font-mono bg-purple-50 px-1.5 py-0.2 rounded text-[11px]">13.0h Shift</span>
@@ -883,6 +930,182 @@ export const ShiftAdherence30DayView: React.FC<ShiftAdherence30DayViewProps> = (
                 className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition-colors"
               >
                 Close View
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* KPI METRICS DRILL-DOWN TABULAR MODAL */}
+      {kpiModalType && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white border border-slate-200 rounded-[16px] w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
+            {/* Modal Header */}
+            <div className="p-5 border-b border-slate-200 bg-white flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded text-[10px] font-bold font-mono uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    LIVE KPI BREAKDOWN
+                  </span>
+                  <span className="text-xs text-slate-500 font-mono">
+                    30-Day Period • {selectedHub === 'All' ? 'All 4 Regional Hubs' : `${selectedHub} Hub`}
+                  </span>
+                </div>
+                <h3 className="text-lg font-black text-slate-900 tracking-tight mt-1 flex items-center gap-2">
+                  {kpiModalType === 'adherence_rate' && <span>📈 Daily Attendance Rate Breakdown ({kpis.avgAdherence}%)</span>}
+                  {kpiModalType === 'on_time_days' && <span>✅ On-Time Shift Days ({kpis.compliantCount} / {kpis.totalDays} Days)</span>}
+                  {kpiModalType === 'late_closing_days' && <span>⚠️ Late Closing &amp; Overrun Audit ({kpis.overrunCount} Days)</span>}
+                  {kpiModalType === 'hours_logged' && <span>⏱️ Hours Logged vs Expected Schedule ({kpis.actHours}h Total)</span>}
+                  {kpiModalType === 'staff_on_duty' && <span>👥 Daily Active Staff &amp; POS Deployment ({kpis.avgMerchPerDay} Avg Staff)</span>}
+                </h3>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleExportCsv}
+                  className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Export CSV</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setKpiModalType(null);
+                    setKpiModalSearch('');
+                  }}
+                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Filter / Search Bar */}
+            <div className="p-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="relative flex-1 min-w-[200px] max-w-sm">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Filter by date, day, or operational notes..."
+                  value={kpiModalSearch}
+                  onChange={(e) => setKpiModalSearch(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="text-slate-500 text-[11px] font-mono">
+                Click any record to open full day details
+              </div>
+            </div>
+
+            {/* Table Area */}
+            <div className="overflow-y-auto max-h-[550px] flex-1">
+              <table className="w-full text-left text-xs text-slate-700">
+                <thead className="bg-slate-50 text-slate-600 font-mono text-[10px] uppercase tracking-wider sticky top-0 border-b border-slate-200">
+                  <tr>
+                    <th className="py-3 px-4">Date / Day</th>
+                    <th className="py-3 px-4">Expected Hours</th>
+                    <th className="py-3 px-4">Logged Hours</th>
+                    <th className="py-3 px-4">Variance</th>
+                    <th className="py-3 px-4">Attendance Rate</th>
+                    <th className="py-3 px-4">Staff on Duty</th>
+                    <th className="py-3 px-4">Active Terminals</th>
+                    <th className="py-3 px-4">21:00 Closing Status</th>
+                    <th className="py-3 px-4">Daily Notes</th>
+                    <th className="py-3 px-4 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-mono">
+                  {baseData
+                    .filter((rec) => {
+                      const data = getRecordForHub(rec, selectedHub);
+                      if (kpiModalType === 'on_time_days' && data.status !== 'compliant') return false;
+                      if (kpiModalType === 'late_closing_days' && data.status !== 'minor_overrun' && data.status !== 'major_overrun') return false;
+                      if (kpiModalSearch.trim()) {
+                        const q = kpiModalSearch.toLowerCase();
+                        const matchDate = rec.date.toLowerCase().includes(q) || rec.displayDate.toLowerCase().includes(q);
+                        const matchDay = rec.dayOfWeek.toLowerCase().includes(q);
+                        const matchNotes = (data.notes || '').toLowerCase().includes(q);
+                        return matchDate || matchDay || matchNotes;
+                      }
+                      return true;
+                    })
+                    .map((rec) => {
+                      const data = getRecordForHub(rec, selectedHub);
+                      const isOverrun = data.status === 'major_overrun' || data.status === 'minor_overrun';
+                      const isUnder = data.status === 'under_hours';
+
+                      return (
+                        <tr
+                          key={rec.date}
+                          onClick={() => {
+                            setSelectedDayRecord(rec);
+                            setIsDetailModalOpen(true);
+                          }}
+                          className="hover:bg-emerald-50/50 cursor-pointer transition-colors"
+                        >
+                          <td className="py-3 px-4 font-bold text-slate-900">
+                            {rec.displayDate} ({rec.dayOfWeek})
+                          </td>
+                          <td className="py-3 px-4 text-slate-600">{data.expectedHours.toFixed(1)}h</td>
+                          <td className="py-3 px-4 font-bold text-slate-900">{data.actualHours.toFixed(1)}h</td>
+                          <td className="py-3 px-4">
+                            <span className={`px-1.5 py-0.5 rounded text-[11px] font-bold ${
+                              isOverrun ? 'bg-amber-50 text-amber-700 border border-amber-200' : isUnder ? 'bg-sky-50 text-sky-700 border border-sky-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            }`}>
+                              {data.varianceHours >= 0 ? `+${data.varianceHours}` : data.varianceHours}h
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`font-black ${data.adherenceRate >= 99 ? 'text-emerald-600' : data.adherenceRate >= 97 ? 'text-sky-600' : 'text-amber-600'}`}>
+                              {data.adherenceRate}%
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 font-semibold text-slate-800">{data.merchandiserCount} staff</td>
+                          <td className="py-3 px-4 text-slate-700">{data.activePOS} nodes</td>
+                          <td className="py-3 px-4 font-sans">
+                            {isOverrun ? (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 inline-flex items-center gap-1">
+                                ⚠️ Late Closing
+                              </span>
+                            ) : isUnder ? (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200 inline-flex items-center gap-1">
+                                ⏱️ Early Signoff
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
+                                ✓ On-Time (21:00)
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 max-w-xs truncate text-[11px] text-slate-500 font-sans">
+                            {data.notes || 'Routine standard shift logged.'}
+                          </td>
+                          <td className="py-3 px-4 text-right font-sans">
+                            <button className="px-2 py-1 rounded bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 text-[11px] font-bold transition-colors">
+                              Inspect ↗
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-3.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs">
+              <span className="text-slate-500">
+                Super Admin Operations Live Telemetry Ledger
+              </span>
+              <button
+                onClick={() => {
+                  setKpiModalType(null);
+                  setKpiModalSearch('');
+                }}
+                className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs transition-colors"
+              >
+                Close Ledger
               </button>
             </div>
           </div>
