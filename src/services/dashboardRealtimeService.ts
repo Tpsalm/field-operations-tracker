@@ -353,6 +353,14 @@ class DashboardRealtimeService {
           badgeColor: '#3b82f6'
         };
 
+      case 'red_flags':
+        return {
+          title: 'Audit Red Flags Ledger (3 Staff Requiring Action)',
+          description: 'Personnel flagged by automated compliance audits for float discrepancies or device inactivity.',
+          records: LIVE_VSR_DATA.filter(r => r.status.toLowerCase().includes('review') || (r.reasonNotes && r.reasonNotes.length > 0)).map(toVsr),
+          badgeColor: '#f43f5e'
+        };
+
       case 'no_loan':
         return {
           title: 'No Loan Required / Insured But No Loan (5 Personnel)',

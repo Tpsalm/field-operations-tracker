@@ -723,15 +723,9 @@ export const OverallDashboardView: React.FC<OverallDashboardViewProps> = ({
 
               {/* Card 4: PROSPECTIVE STAFF */}
               <div 
-                onClick={() => {
-                  if (onNavigate) {
-                    onNavigate('vsr_recruitment');
-                  } else {
-                    openDrillDown('prospective');
-                  }
-                }}
+                onClick={() => openDrillDown('prospective')}
                 className="bg-white rounded-[12px] p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md hover:border-blue-300 transition-all cursor-pointer flex flex-col justify-between group"
-                title="Click to open VSR Recruitment"
+                title="Click to drill down into 5 Prospective Candidates"
               >
                 <div className="flex items-center justify-between gap-1 mb-2">
                   <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
@@ -742,13 +736,13 @@ export const OverallDashboardView: React.FC<OverallDashboardViewProps> = ({
                   </span>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-extrabold text-slate-900 tracking-tight font-mono">
+                  <span className="text-3xl font-extrabold text-slate-900 tracking-tight font-mono group-hover:text-blue-600 transition-colors">
                     {metrics.prospectiveStaffCount}
                   </span>
                 </div>
                 <div className="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-400 flex items-center justify-between">
                   <span>Pending onboarding</span>
-                  <span className="text-blue-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Recruit ↗</span>
+                  <span className="text-blue-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Drill ↗</span>
                 </div>
               </div>
 
@@ -804,7 +798,7 @@ export const OverallDashboardView: React.FC<OverallDashboardViewProps> = ({
 
               {/* Card 7: RED FLAGS / AUDIT ACTIONS */}
               <div 
-                onClick={() => setSelectedDrillDown('Red Flagged – Removed from Active')}
+                onClick={() => openDrillDown('red_flags')}
                 className="bg-white rounded-[12px] p-4 border border-rose-200 shadow-[0_2px_8px_rgba(244,63,94,0.06)] hover:shadow-md hover:border-rose-300 transition-all cursor-pointer flex flex-col justify-between group"
                 title="Click to drill down into 3 Red Flagged Personnel"
               >
@@ -842,7 +836,7 @@ export const OverallDashboardView: React.FC<OverallDashboardViewProps> = ({
                 <span>Records requiring review: <strong className="font-bold font-mono text-slate-900">18</strong></span>
                 <span className="text-slate-300">|</span>
                 <button 
-                  onClick={() => setSelectedDrillDown('Red Flagged – Removed from Active')}
+                  onClick={() => openDrillDown('red_flags')}
                   className="text-rose-600 hover:text-rose-700 hover:underline flex items-center gap-1 font-bold"
                 >
                   <span>🚩 Red Flagged: 3</span>
