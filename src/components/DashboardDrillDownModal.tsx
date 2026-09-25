@@ -109,8 +109,6 @@ export const DashboardDrillDownModal: React.FC<DashboardDrillDownModalProps> = (
     }
   }, [availableLocations, availableStatuses, locationFilter, statusFilter]);
 
-  if (!isOpen) return null;
-
   // Filter records
   const filteredRecords = useMemo(() => {
     return records.filter(record => {
@@ -232,6 +230,8 @@ export const DashboardDrillDownModal: React.FC<DashboardDrillDownModalProps> = (
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 1500);
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
