@@ -28,6 +28,8 @@ export const GpsTrackerView: React.FC<GpsTrackerViewProps> = ({ onBackToDashboar
   const [showSimulatorModal, setShowSimulatorModal] = useState<boolean>(false);
   const [actionSuccessMsg, setActionSuccessMsg] = useState<string>('');
   const [isExportingCsv, setIsExportingCsv] = useState<boolean>(false);
+  const [kpiModalType, setKpiModalType] = useState<'total' | 'in_store' | 'out_of_bounds' | 'pending_review' | null>(null);
+  const [kpiModalSearch, setKpiModalSearch] = useState<string>('');
 
   // Check-in simulator state
   const [simWorkerName, setSimWorkerName] = useState<string>('Blessing Emmanuel');
@@ -313,28 +315,39 @@ export const GpsTrackerView: React.FC<GpsTrackerViewProps> = ({ onBackToDashboar
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Signed In */}
         <div
-          onClick={() => setSelectedStatusFilter('all')}
-          className={`bg-white rounded-[12px] border p-4 transition-all cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.03)] ${
-            selectedStatusFilter === 'all' ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200/80 hover:border-slate-300'
+          onClick={() => {
+            setSelectedStatusFilter('all');
+            setKpiModalType('total');
+          }}
+          className={`bg-white rounded-[12px] border p-4 transition-all cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.03)] group ${
+            selectedStatusFilter === 'all' ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200/80 hover:border-slate-300 hover:shadow-md'
           }`}
+          title="Click to view full tabular list of all staff check-ins today"
         >
           <div className="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
             <span>TOTAL SIGNED IN TODAY</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-slate-900 font-mono">{stats.total}</span>
+            <span className="text-3xl font-black text-slate-900 font-mono group-hover:text-emerald-600 transition-colors">{stats.total}</span>
             <span className="text-xs text-slate-500">Staff</span>
           </div>
-          <p className="mt-2 text-[11px] text-slate-400">All registered morning check-ins</p>
+          <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between">
+            <span>All registered morning check-ins</span>
+            <span className="text-emerald-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Table ↗</span>
+          </div>
         </div>
 
         {/* Inside Store (Safe) */}
         <div
-          onClick={() => setSelectedStatusFilter('in_store')}
-          className={`bg-white rounded-[12px] border p-4 transition-all cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.03)] ${
-            selectedStatusFilter === 'in_store' ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200/80 hover:border-slate-300'
+          onClick={() => {
+            setSelectedStatusFilter('in_store');
+            setKpiModalType('in_store');
+          }}
+          className={`bg-white rounded-[12px] border p-4 transition-all cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.03)] group ${
+            selectedStatusFilter === 'in_store' ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200/80 hover:border-slate-300 hover:shadow-md'
           }`}
+          title="Click to view tabular list of verified inside-store check-ins"
         >
           <div className="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
             <span>INSIDE STORE (VERIFIED)</span>
@@ -346,15 +359,22 @@ export const GpsTrackerView: React.FC<GpsTrackerViewProps> = ({ onBackToDashboar
               {stats.total > 0 ? Math.round((stats.insideStore / stats.total) * 100) : 0}%
             </span>
           </div>
-          <p className="mt-2 text-[11px] text-slate-400">Within 50 meters of store premises</p>
+          <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between">
+            <span>Within 50 meters of store premises</span>
+            <span className="text-emerald-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Table ↗</span>
+          </div>
         </div>
 
         {/* Outside Store (Alert) */}
         <div
-          onClick={() => setSelectedStatusFilter('out_of_bounds')}
-          className={`bg-white rounded-[12px] border p-4 transition-all cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.03)] ${
-            selectedStatusFilter === 'out_of_bounds' ? 'border-rose-500 ring-2 ring-rose-500/20' : 'border-slate-200/80 hover:border-slate-300'
+          onClick={() => {
+            setSelectedStatusFilter('out_of_bounds');
+            setKpiModalType('out_of_bounds');
+          }}
+          className={`bg-white rounded-[12px] border p-4 transition-all cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.03)] group ${
+            selectedStatusFilter === 'out_of_bounds' ? 'border-rose-500 ring-2 ring-rose-500/20' : 'border-slate-200/80 hover:border-slate-300 hover:shadow-md'
           }`}
+          title="Click to view tabular list of out-of-bounds alerts"
         >
           <div className="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
             <span>OUTSIDE STORE (ALERT)</span>
@@ -366,15 +386,22 @@ export const GpsTrackerView: React.FC<GpsTrackerViewProps> = ({ onBackToDashboar
               Needs Check
             </span>
           </div>
-          <p className="mt-2 text-[11px] text-rose-600 font-medium">Signed in far from assigned store</p>
+          <div className="mt-2 text-[11px] text-rose-600 font-medium flex items-center justify-between">
+            <span>Signed in far from assigned store</span>
+            <span className="text-rose-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Table ↗</span>
+          </div>
         </div>
 
         {/* Pending Review */}
         <div
-          onClick={() => setSelectedStatusFilter('pending_review')}
-          className={`bg-white rounded-[12px] border p-4 transition-all cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.03)] ${
-            selectedStatusFilter === 'pending_review' ? 'border-amber-500 ring-2 ring-amber-500/20' : 'border-slate-200/80 hover:border-slate-300'
+          onClick={() => {
+            setSelectedStatusFilter('pending_review');
+            setKpiModalType('pending_review');
+          }}
+          className={`bg-white rounded-[12px] border p-4 transition-all cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.03)] group ${
+            selectedStatusFilter === 'pending_review' ? 'border-amber-500 ring-2 ring-amber-500/20' : 'border-slate-200/80 hover:border-slate-300 hover:shadow-md'
           }`}
+          title="Click to view tabular list of check-ins waiting for review"
         >
           <div className="flex items-center justify-between text-xs text-slate-500 font-semibold mb-2">
             <span>WAITING FOR REVIEW</span>
@@ -384,7 +411,10 @@ export const GpsTrackerView: React.FC<GpsTrackerViewProps> = ({ onBackToDashboar
             <span className="text-3xl font-black text-amber-600 font-mono">{stats.pendingReview}</span>
             <span className="text-xs text-slate-500">Staff</span>
           </div>
-          <p className="mt-2 text-[11px] text-slate-400">Near store perimeter or manual check-in</p>
+          <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between">
+            <span>Near store perimeter or manual check-in</span>
+            <span className="text-amber-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Table ↗</span>
+          </div>
         </div>
       </div>
 
@@ -767,6 +797,157 @@ export const GpsTrackerView: React.FC<GpsTrackerViewProps> = ({ onBackToDashboar
                 className="px-4 py-2 rounded-xl bg-[#10b981] hover:bg-emerald-600 text-white text-xs font-bold shadow-sm"
               >
                 Save Sign-In
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* GPS KPI METRICS DRILL-DOWN TABULAR MODAL */}
+      {kpiModalType && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-[16px] border border-slate-200/90 shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                      Live GPS Check-In Audit
+                    </span>
+                    <span className="text-xs text-slate-500 font-mono">07:00–21:00 WAT</span>
+                  </div>
+                  <h3 className="text-base font-black text-slate-900 mt-0.5">
+                    {kpiModalType === 'total' && 'Total Morning Check-Ins Today'}
+                    {kpiModalType === 'in_store' && 'Verified Inside-Store Check-Ins (<50m)'}
+                    {kpiModalType === 'out_of_bounds' && 'Out of Bounds Alerts (Distance Violation)'}
+                    {kpiModalType === 'pending_review' && 'Check-Ins Waiting for Supervisor Review'}
+                  </h3>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleExportCsv}
+                  className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-500" />
+                  <span>CSV</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setKpiModalType(null);
+                    setKpiModalSearch('');
+                  }}
+                  className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Search & Filter */}
+            <div className="px-6 py-3 border-b border-slate-200 bg-white flex items-center justify-between gap-4">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search staff, code, store, or address..."
+                  value={kpiModalSearch}
+                  onChange={(e) => setKpiModalSearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all text-slate-800 font-mono"
+                />
+              </div>
+              <div className="text-xs text-slate-500 font-mono">
+                Showing <strong>{filteredSignIns.length}</strong> check-in records
+              </div>
+            </div>
+
+            {/* Modal Body - Tabular List */}
+            <div className="overflow-y-auto flex-1 p-6">
+              <table className="w-full text-left text-xs text-slate-700">
+                <thead className="bg-slate-50 text-slate-600 font-mono text-[10px] uppercase tracking-wider border-b border-slate-200 sticky top-0">
+                  <tr>
+                    <th className="px-4 py-3">Staff / Code</th>
+                    <th className="px-4 py-3">Assigned Store</th>
+                    <th className="px-4 py-3">Hub Area</th>
+                    <th className="px-4 py-3">Sign-In Time</th>
+                    <th className="px-4 py-3">Distance</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-mono">
+                  {filteredSignIns
+                    .filter((item) => {
+                      if (!kpiModalSearch.trim()) return true;
+                      const q = kpiModalSearch.toLowerCase();
+                      return (
+                        item.workerName.toLowerCase().includes(q) ||
+                        item.workerCode.toLowerCase().includes(q) ||
+                        item.assignedStore.toLowerCase().includes(q) ||
+                        item.locationAddress.toLowerCase().includes(q)
+                      );
+                    })
+                    .map((item) => {
+                      const isInside = item.geofenceStatus === 'in_store';
+                      return (
+                        <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="px-4 py-3 font-bold text-slate-900">
+                            <div>{item.workerName}</div>
+                            <span className="text-[10px] text-slate-400 font-normal">{item.workerCode}</span>
+                          </td>
+                          <td className="px-4 py-3 font-semibold text-slate-800">
+                            <div>{item.assignedStore}</div>
+                            <span className="text-[10px] text-slate-400 font-normal">{item.locationAddress}</span>
+                          </td>
+                          <td className="px-4 py-3 text-slate-600">{item.assignedHub}</td>
+                          <td className="px-4 py-3 font-semibold text-slate-900">{item.signInTimeWat}</td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              isInside ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
+                            }`}>
+                              {item.distanceMeters}m away
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              isInside ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
+                            }`}>
+                              {isInside ? '✓ Inside Store' : '⚠️ Alert (Outside)'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <button
+                              onClick={() => {
+                                setSelectedSignIn(item);
+                                setKpiModalType(null);
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 text-[11px] font-bold transition-colors"
+                            >
+                              Inspect ↗
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs">
+              <span className="text-slate-500 font-mono">Geofence Radius: <strong>50 Meters</strong> • Verification: <strong>GPS + Cell Tower</strong></span>
+              <button
+                onClick={() => {
+                  setKpiModalType(null);
+                  setKpiModalSearch('');
+                }}
+                className="px-4 py-2 rounded-lg bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors"
+              >
+                Close Table
               </button>
             </div>
           </div>

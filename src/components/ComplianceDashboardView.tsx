@@ -358,7 +358,8 @@ export const ComplianceDashboardView: React.FC<ComplianceDashboardViewProps> = (
         const dotG = dotsGroup.append('g')
           .attr('transform', `translate(${cx}, ${cy})`)
           .style('cursor', 'pointer')
-          .on('mouseenter', () => setHoveredDayIndex(idx));
+          .on('mouseenter', () => setHoveredDayIndex(idx))
+          .on('click', () => setKpiModalType('attendance_rate'));
 
         if (isHovered) {
           dotG.append('circle')
@@ -413,7 +414,8 @@ export const ComplianceDashboardView: React.FC<ComplianceDashboardViewProps> = (
           .attr('fill', barColor)
           .attr('opacity', isSelected ? 1 : 0.8)
           .attr('cursor', 'pointer')
-          .on('mouseenter', () => setHoveredDayIndex(idx));
+          .on('mouseenter', () => setHoveredDayIndex(idx))
+          .on('click', () => setKpiModalType('hours_logged'));
 
         if (isSelected) {
           g.append('text')
@@ -478,7 +480,8 @@ export const ComplianceDashboardView: React.FC<ComplianceDashboardViewProps> = (
           .attr('stroke', '#ffffff')
           .attr('stroke-width', 2)
           .style('cursor', 'pointer')
-          .on('mouseenter', () => setHoveredDayIndex(idx));
+          .on('mouseenter', () => setHoveredDayIndex(idx))
+          .on('click', () => setKpiModalType('attendance_rate'));
       });
     }
 
@@ -503,7 +506,7 @@ export const ComplianceDashboardView: React.FC<ComplianceDashboardViewProps> = (
       .attr('width', innerWidth)
       .attr('height', innerHeight)
       .attr('fill', 'transparent')
-      .style('cursor', 'crosshair');
+      .style('cursor', 'pointer');
 
     overlay.on('mousemove', (event) => {
       const [mouseX] = d3.pointer(event);
@@ -520,6 +523,10 @@ export const ComplianceDashboardView: React.FC<ComplianceDashboardViewProps> = (
       });
 
       setHoveredDayIndex(closestIdx);
+    });
+
+    overlay.on('click', () => {
+      setKpiModalType('attendance_rate');
     });
 
   }, [filteredDataset, selectedRegion, chartMode, hoveredDayIndex]);
@@ -740,6 +747,15 @@ export const ComplianceDashboardView: React.FC<ComplianceDashboardViewProps> = (
                 <option value="variance_bars">Variance Delta (+ Over / - Under)</option>
                 <option value="adherence_pct">Compliance Rate (%)</option>
               </select>
+
+              {/* View Chart Records Button */}
+              <button
+                onClick={() => setKpiModalType('attendance_rate')}
+                className="px-3 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all"
+                title="Click to view full tabular data of all chart days"
+              >
+                <span>View Chart Table ↗</span>
+              </button>
             </div>
           </div>
 
@@ -830,7 +846,7 @@ export const ComplianceDashboardView: React.FC<ComplianceDashboardViewProps> = (
 
       {/* KPI METRIC DRILL-DOWN TABULAR POPUP MODAL */}
       {kpiModalType && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white border border-slate-200 rounded-[16px] w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
             {/* Modal Header */}
             <div className="p-5 border-b border-slate-200 bg-white flex flex-wrap items-center justify-between gap-3">

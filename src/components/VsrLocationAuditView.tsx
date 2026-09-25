@@ -826,7 +826,7 @@ export const VsrLocationAuditView: React.FC<VsrLocationAuditViewProps> = ({
 
       {/* FULL VSR AUDIT DETAIL MODAL */}
       {isDetailModalOpen && selectedVsr && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white border border-slate-200 rounded-[16px] w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl">
             {/* Modal Header */}
             <div className="p-6 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white z-10">
@@ -1035,7 +1035,7 @@ export const VsrLocationAuditView: React.FC<VsrLocationAuditViewProps> = ({
 
       {/* KPI METRICS DRILL-DOWN TABULAR MODAL */}
       {kpiModalType && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white border border-slate-200 rounded-[16px] w-full max-w-6xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
             {/* Modal Header */}
             <div className="p-5 border-b border-slate-200 bg-white flex flex-wrap items-center justify-between gap-3">

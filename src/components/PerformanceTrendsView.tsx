@@ -294,7 +294,8 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
         .attr('d', lineGenerator)
         .style('cursor', 'pointer')
         .on('mouseenter', () => setHoveredSeries(key))
-        .on('mouseleave', () => setHoveredSeries(null));
+        .on('mouseleave', () => setHoveredSeries(null))
+        .on('click', () => setKpiModalType('today_active'));
 
       const dotsGroup = g.append('g').attr('class', `dots-${key}`);
 
@@ -312,6 +313,9 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
           })
           .on('mouseleave', () => {
             setHoveredSeries(null);
+          })
+          .on('click', () => {
+            setKpiModalType('today_active');
           });
 
         if (isDaySelected || isHovered) {
@@ -368,7 +372,7 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
       .attr('width', innerWidth)
       .attr('height', innerHeight)
       .attr('fill', 'transparent')
-      .style('cursor', 'crosshair');
+      .style('cursor', 'pointer');
 
     overlay.on('mousemove', (event) => {
       const [mouseX] = d3.pointer(event);
@@ -385,6 +389,10 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
       });
 
       setHoveredDayIndex(closestIdx);
+    });
+
+    overlay.on('click', () => {
+      setKpiModalType('today_active');
     });
 
   }, [activeHubs, displayMode, hoveredDayIndex, hoveredSeries]);
@@ -648,6 +656,15 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
                   % Capacity
                 </button>
               </div>
+
+              {/* View Table Button */}
+              <button
+                onClick={() => setKpiModalType('today_active')}
+                className="px-3 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all"
+                title="Click to view full tabular data of 7-day telemetry trends"
+              >
+                <span>View 7-Day Table ↗</span>
+              </button>
             </div>
           </div>
 
@@ -915,7 +932,7 @@ export const PerformanceTrendsView: React.FC<PerformanceTrendsViewProps> = ({
 
       {/* 5. INTERACTIVE KPI METRICS DRILL-DOWN MODAL */}
       {kpiModalType && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white rounded-[16px] border border-slate-200/80 shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">

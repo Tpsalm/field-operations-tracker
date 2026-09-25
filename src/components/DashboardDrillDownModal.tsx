@@ -24,6 +24,8 @@ interface DrillDownModalState {
   description: string;
   records: UnifiedRecord[];
   badgeColor?: string;
+  filterKey?: string;
+  extraParam?: string;
 }
 
 interface DashboardDrillDownModalProps {
@@ -58,6 +60,7 @@ export const DashboardDrillDownModal: React.FC<DashboardDrillDownModalProps> = (
   const records = state ? state.records : (propRecords || []);
   const badgeColor = state ? (state.badgeColor || '#10b981') : propBadgeColor;
   const handleSelect = onSelectRecord || onViewRecordDetails;
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [locationFilter, setLocationFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -68,7 +71,16 @@ export const DashboardDrillDownModal: React.FC<DashboardDrillDownModalProps> = (
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [inspectRecord, setInspectRecord] = useState<UnifiedRecord | null>(null);
 
-  if (!isOpen) return null;
+  // AUTOMATIC STATE RESET: When modal opens or title/filter changes, reset all search/pagination state
+  useEffect(() => {
+    if (isOpen) {
+      setSearchQuery('');
+      setLocationFilter('All');
+      setStatusFilter('All');
+      setCurrentPage(1);
+      setInspectRecord(null);
+    }
+  }, [isOpen, title, state?.filterKey, state?.extraParam]);
 
   // Extract unique locations and statuses from provided records
   const availableLocations = useMemo(() => {
@@ -86,6 +98,18 @@ export const DashboardDrillDownModal: React.FC<DashboardDrillDownModalProps> = (
     });
     return ['All', ...Array.from(statuses).sort()];
   }, [records]);
+
+  // Ensure filters match available records
+  useEffect(() => {
+    if (locationFilter !== 'All' && !availableLocations.includes(locationFilter)) {
+      setLocationFilter('All');
+    }
+    if (statusFilter !== 'All' && !availableStatuses.includes(statusFilter)) {
+      setStatusFilter('All');
+    }
+  }, [availableLocations, availableStatuses, locationFilter, statusFilter]);
+
+  if (!isOpen) return null;
 
   // Filter records
   const filteredRecords = useMemo(() => {
@@ -140,10 +164,13 @@ export const DashboardDrillDownModal: React.FC<DashboardDrillDownModalProps> = (
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(sortedRecords.length / pageSize));
+  
+  // Safe page index calculation
+  const safeCurrentPage = Math.min(currentPage, totalPages);
   const paginatedRecords = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
+    const start = (safeCurrentPage - 1) * pageSize;
     return sortedRecords.slice(start, start + pageSize);
-  }, [sortedRecords, currentPage, pageSize]);
+  }, [sortedRecords, safeCurrentPage, pageSize]);
 
   // Toggle sorting
   const handleSort = (field: SortField) => {
@@ -207,8 +234,8 @@ export const DashboardDrillDownModal: React.FC<DashboardDrillDownModalProps> = (
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white border border-slate-200/90 rounded-[16px] w-full max-w-6xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="bg-white border border-slate-200/90 rounded-[16px] w-full max-w-6xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         
         {/* MODAL HEADER */}
         <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between gap-4">

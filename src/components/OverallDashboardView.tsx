@@ -854,7 +854,11 @@ export const OverallDashboardView: React.FC<OverallDashboardViewProps> = ({
             <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-5 border-b border-slate-100 bg-white">
               
               {/* Donut Chart 1: Active Workforce */}
-              <div className="bg-white rounded-[12px] p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col items-center justify-between transition-all hover:border-emerald-300">
+              <div 
+                onClick={() => openDrillDown('total_active')}
+                className="bg-white rounded-[12px] p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col items-center justify-between transition-all hover:border-emerald-300 cursor-pointer group"
+                title="Click to drill down into Active Workforce"
+              >
                 <div className="flex items-center justify-between w-full mb-2">
                   <h3 className="text-sm font-bold text-slate-800">
                     Active Workforce
@@ -872,7 +876,7 @@ export const OverallDashboardView: React.FC<OverallDashboardViewProps> = ({
                       stroke="#ffffff"
                       strokeWidth="3"
                       className="cursor-pointer hover:opacity-90 transition-all hover:scale-105 origin-center"
-                      onClick={() => openDrillDown('active_vsr')}
+                      onClick={(e) => { e.stopPropagation(); openDrillDown('active_vsr'); }}
                     >
                       <title>Active VSR (45) - Click to drill down</title>
                     </path>
@@ -882,14 +886,14 @@ export const OverallDashboardView: React.FC<OverallDashboardViewProps> = ({
                       stroke="#ffffff"
                       strokeWidth="3"
                       className="cursor-pointer hover:opacity-90 transition-all hover:scale-105 origin-center"
-                      onClick={() => openDrillDown('asst_vsr')}
+                      onClick={(e) => { e.stopPropagation(); openDrillDown('asst_vsr'); }}
                     >
                       <title>Active ASST. VSR (6) - Click to drill down</title>
                     </path>
                   </svg>
 
                   <div 
-                    onClick={() => openDrillDown('total_active')}
+                    onClick={(e) => { e.stopPropagation(); openDrillDown('total_active'); }}
                     className="absolute inset-0 flex items-center justify-center cursor-pointer group"
                     title="Click to drill down into Total Active Workforce"
                   >
@@ -904,14 +908,14 @@ export const OverallDashboardView: React.FC<OverallDashboardViewProps> = ({
 
                 <div className="flex items-center justify-center gap-4 text-xs font-medium pt-2 text-slate-600">
                   <button 
-                    onClick={() => openDrillDown('active_vsr')}
+                    onClick={(e) => { e.stopPropagation(); openDrillDown('active_vsr'); }}
                     className="flex items-center gap-1.5 hover:text-emerald-600 transition-colors"
                   >
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                     <span>Active VSR (45)</span>
                   </button>
                   <button 
-                    onClick={() => openDrillDown('asst_vsr')}
+                    onClick={(e) => { e.stopPropagation(); openDrillDown('asst_vsr'); }}
                     className="flex items-center gap-1.5 hover:text-slate-800 transition-colors"
                   >
                     <span className="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
@@ -921,7 +925,11 @@ export const OverallDashboardView: React.FC<OverallDashboardViewProps> = ({
               </div>
 
               {/* Donut Chart 2: VSR Funding Status */}
-              <div className="bg-white rounded-[12px] p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col items-center justify-between transition-all hover:border-emerald-300">
+              <div 
+                onClick={() => openDrillDown('funded_vsr')}
+                className="bg-white rounded-[12px] p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col items-center justify-between transition-all hover:border-emerald-300 cursor-pointer group"
+                title="Click to drill down into VSR Funding Status"
+              >
                 <div className="flex items-center justify-between w-full mb-2">
                   <h3 className="text-sm font-bold text-slate-800">
                     VSR Funding Status
@@ -939,7 +947,7 @@ export const OverallDashboardView: React.FC<OverallDashboardViewProps> = ({
                       stroke="#ffffff"
                       strokeWidth="3"
                       className="cursor-pointer hover:opacity-90 transition-all hover:scale-105 origin-center"
-                      onClick={() => openDrillDown('funded_vsr')}
+                      onClick={(e) => { e.stopPropagation(); openDrillDown('funded_vsr'); }}
                     >
                       <title>Funded (32) - Click to drill down</title>
                     </path>
@@ -954,14 +962,14 @@ export const OverallDashboardView: React.FC<OverallDashboardViewProps> = ({
                       stroke="#ffffff"
                       strokeWidth="3"
                       className="cursor-pointer hover:opacity-90 transition-all hover:scale-105 origin-center"
-                      onClick={() => openDrillDown('status', 'Insured, awaiting funding')}
+                      onClick={(e) => { e.stopPropagation(); openDrillDown('status', 'Insured, awaiting funding'); }}
                     >
                       <title>Other Statuses (10) - Click to drill down</title>
                     </path>
                   </svg>
 
                   <div 
-                    onClick={() => openDrillDown('funded_vsr')}
+                    onClick={(e) => { e.stopPropagation(); openDrillDown('funded_vsr'); }}
                     className="absolute inset-0 flex items-center justify-center cursor-pointer group"
                     title="Click to drill down into 32 Funded VSRs"
                   >
@@ -976,28 +984,28 @@ export const OverallDashboardView: React.FC<OverallDashboardViewProps> = ({
 
                 <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] font-medium pt-2 w-full px-2 text-slate-600">
                   <button 
-                    onClick={() => openDrillDown('funded_vsr')}
+                    onClick={(e) => { e.stopPropagation(); openDrillDown('funded_vsr'); }}
                     className="flex items-center gap-1.5 hover:text-emerald-600 text-left transition-colors"
                   >
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
                     <span className="truncate">Funded (32)</span>
                   </button>
                   <button 
-                    onClick={() => openDrillDown('status', 'Awaiting Funding')}
+                    onClick={(e) => { e.stopPropagation(); openDrillDown('status', 'Awaiting Funding'); }}
                     className="flex items-center gap-1.5 hover:text-amber-600 text-left transition-colors"
                   >
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-400 flex-shrink-0"></span>
                     <span className="truncate">Awaiting (0)</span>
                   </button>
                   <button 
-                    onClick={() => openDrillDown('no_loan')}
+                    onClick={(e) => { e.stopPropagation(); openDrillDown('no_loan'); }}
                     className="flex items-center gap-1.5 hover:text-blue-600 text-left transition-colors"
                   >
                     <span className="w-2.5 h-2.5 rounded-full bg-blue-400 flex-shrink-0"></span>
                     <span className="truncate">No Loan (1)</span>
                   </button>
                   <button 
-                    onClick={() => openDrillDown('status', 'Insured, not to be funded')}
+                    onClick={(e) => { e.stopPropagation(); openDrillDown('status', 'Insured, not to be funded'); }}
                     className="flex items-center gap-1.5 hover:text-slate-800 text-left transition-colors"
                   >
                     <span className="w-2.5 h-2.5 rounded-full bg-slate-300 flex-shrink-0"></span>
@@ -1007,7 +1015,11 @@ export const OverallDashboardView: React.FC<OverallDashboardViewProps> = ({
               </div>
 
               {/* Donut Chart 3: Fidelity Insurance Coverage */}
-              <div className="bg-white rounded-[12px] p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col items-center justify-between transition-all hover:border-emerald-300">
+              <div 
+                onClick={() => openDrillDown('total_insured')}
+                className="bg-white rounded-[12px] p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col items-center justify-between transition-all hover:border-emerald-300 cursor-pointer group"
+                title="Click to drill down into Fidelity Insurance Coverage"
+              >
                 <div className="flex items-center justify-between w-full mb-2">
                   <h3 className="text-sm font-bold text-slate-800">
                     Fidelity Insurance Coverage
@@ -1078,7 +1090,11 @@ export const OverallDashboardView: React.FC<OverallDashboardViewProps> = ({
 
             {/* MONTHLY STAFF ONBOARDING (Light Theme + Mint Gradient Fills + Subtle Dashed Gridlines) */}
             <div className="p-5 border-b border-slate-100 bg-white">
-              <div className="border border-slate-200/80 rounded-[12px] p-5 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+              <div 
+                onClick={() => openDrillDown('total_active')}
+                className="border border-slate-200/80 rounded-[12px] p-5 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)] cursor-pointer hover:border-emerald-300 transition-all"
+                title="Click to drill down into Monthly Staff Onboarding Cohort"
+              >
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <h3 className="text-base font-bold text-slate-900">
@@ -1194,7 +1210,11 @@ export const OverallDashboardView: React.FC<OverallDashboardViewProps> = ({
             </div>
 
             <div className="p-5 border-b border-slate-100 bg-white">
-              <div className="border border-slate-200/80 rounded-[12px] p-5 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+              <div 
+                onClick={() => openDrillDown('funded_vsr')}
+                className="border border-slate-200/80 rounded-[12px] p-5 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)] cursor-pointer hover:border-emerald-300 transition-all"
+                title="Click to drill down into Monthly VSR Funding Cohort"
+              >
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <h3 className="text-base font-bold text-slate-900">

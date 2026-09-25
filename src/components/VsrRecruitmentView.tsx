@@ -48,6 +48,8 @@ export const VsrRecruitmentView: React.FC<VsrRecruitmentViewProps> = ({
 
   // Selected candidate modal
   const [selectedCandidate, setSelectedCandidate] = useState<VsrCandidate | null>(null);
+  const [kpiModalStage, setKpiModalStage] = useState<'All' | 'interview' | 'kyc_guarantors' | 'selected' | 'rejected' | null>(null);
+  const [kpiModalSearch, setKpiModalSearch] = useState<string>('');
 
   // New applicant modal
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -409,16 +411,19 @@ export const VsrRecruitmentView: React.FC<VsrRecruitmentViewProps> = ({
           </div>
         </div>
 
-        {/* Top Funnel KPI Cards (Click to filter list) */}
+        {/* Top Funnel KPI Cards (Click to filter list and open tabular modal) */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-5 pt-5 border-t border-slate-100">
           <div
-            onClick={() => setSelectedStageFilter('All')}
+            onClick={() => {
+              setSelectedStageFilter('All');
+              setKpiModalStage('All');
+            }}
             className={`rounded-xl p-3 border transition-all cursor-pointer shadow-xs ${
               selectedStageFilter === 'All'
                 ? 'bg-emerald-50/50 border-emerald-500 ring-2 ring-emerald-500/20'
                 : 'bg-slate-50 border-slate-200/80 hover:border-slate-300 hover:bg-slate-100/60'
             }`}
-            title="Click to view all applicants"
+            title="Click to view all applicants in a tabular ledger"
           >
             <span className="text-[10px] uppercase font-bold text-slate-500 block tracking-wider">
               Total Applicants
@@ -430,7 +435,10 @@ export const VsrRecruitmentView: React.FC<VsrRecruitmentViewProps> = ({
           </div>
 
           <div
-            onClick={() => setSelectedStageFilter('interview')}
+            onClick={() => {
+              setSelectedStageFilter('interview');
+              setKpiModalStage('interview');
+            }}
             className={`rounded-xl p-3 border transition-all cursor-pointer shadow-xs ${
               selectedStageFilter === 'interview'
                 ? 'bg-amber-50/50 border-amber-500 ring-2 ring-amber-500/20'
@@ -448,7 +456,10 @@ export const VsrRecruitmentView: React.FC<VsrRecruitmentViewProps> = ({
           </div>
 
           <div
-            onClick={() => setSelectedStageFilter('kyc_guarantors')}
+            onClick={() => {
+              setSelectedStageFilter('kyc_guarantors');
+              setKpiModalStage('kyc_guarantors');
+            }}
             className={`rounded-xl p-3 border transition-all cursor-pointer shadow-xs ${
               selectedStageFilter === 'kyc_guarantors'
                 ? 'bg-purple-50/50 border-purple-500 ring-2 ring-purple-500/20'
@@ -466,7 +477,10 @@ export const VsrRecruitmentView: React.FC<VsrRecruitmentViewProps> = ({
           </div>
 
           <div
-            onClick={() => setSelectedStageFilter('selected')}
+            onClick={() => {
+              setSelectedStageFilter('selected');
+              setKpiModalStage('selected');
+            }}
             className={`rounded-xl p-3 border transition-all cursor-pointer shadow-xs ${
               selectedStageFilter === 'selected'
                 ? 'bg-emerald-50/50 border-emerald-500 ring-2 ring-emerald-500/20'
@@ -484,7 +498,10 @@ export const VsrRecruitmentView: React.FC<VsrRecruitmentViewProps> = ({
           </div>
 
           <div
-            onClick={() => setSelectedStageFilter('selected')}
+            onClick={() => {
+              setSelectedStageFilter('selected');
+              setKpiModalStage('selected');
+            }}
             className={`rounded-xl p-3 border transition-all cursor-pointer shadow-xs ${
               selectedStageFilter === 'selected'
                 ? 'bg-sky-50/50 border-sky-500 ring-2 ring-sky-500/20'
@@ -502,7 +519,10 @@ export const VsrRecruitmentView: React.FC<VsrRecruitmentViewProps> = ({
           </div>
 
           <div
-            onClick={() => setSelectedStageFilter('rejected')}
+            onClick={() => {
+              setSelectedStageFilter('rejected');
+              setKpiModalStage('rejected');
+            }}
             className={`rounded-xl p-3 border transition-all cursor-pointer shadow-xs ${
               selectedStageFilter === 'rejected'
                 ? 'bg-rose-50/50 border-rose-500 ring-2 ring-rose-500/20'
@@ -1478,6 +1498,157 @@ export const VsrRecruitmentView: React.FC<VsrRecruitmentViewProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* FUNNEL KPI TABULAR DRILL-DOWN MODAL */}
+      {kpiModalStage && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-[16px] border border-slate-200/90 shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200">
+                  <Users className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                      Applicant Funnel Table
+                    </span>
+                  </div>
+                  <h3 className="text-base font-black text-slate-900 mt-0.5">
+                    {kpiModalStage === 'All' && 'All Registered Candidates in Pipeline'}
+                    {kpiModalStage === 'interview' && 'Candidates Under Interview & Pitch Assessment'}
+                    {kpiModalStage === 'kyc_guarantors' && 'Candidates in Reference Check & KYC Vetting'}
+                    {kpiModalStage === 'selected' && 'Approved Candidates Ready for Store Deployment'}
+                    {kpiModalStage === 'rejected' && 'Disqualified Candidates Ledger'}
+                  </h3>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleExportCSV}
+                  className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-500" />
+                  <span>CSV</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setKpiModalStage(null);
+                    setKpiModalSearch('');
+                  }}
+                  className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Search Bar */}
+            <div className="px-6 py-3 border-b border-slate-200 bg-white flex items-center justify-between gap-4">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search applicant name, phone, store, hub..."
+                  value={kpiModalSearch}
+                  onChange={(e) => setKpiModalSearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all text-slate-800 font-mono"
+                />
+              </div>
+              <div className="text-xs text-slate-500 font-mono">
+                Showing{' '}
+                <strong>
+                  {candidates.filter(c => kpiModalStage === 'All' ? true : c.stage === kpiModalStage).length}
+                </strong>{' '}
+                applicants
+              </div>
+            </div>
+
+            {/* Modal Body - Tabular List */}
+            <div className="overflow-y-auto flex-1 p-6">
+              <table className="w-full text-left text-xs text-slate-700">
+                <thead className="bg-slate-50 text-slate-600 font-mono text-[10px] uppercase tracking-wider border-b border-slate-200 sticky top-0">
+                  <tr>
+                    <th className="px-4 py-3">Applicant / Code</th>
+                    <th className="px-4 py-3">Branch Hub</th>
+                    <th className="px-4 py-3">Target Store</th>
+                    <th className="px-4 py-3">Assessment Score</th>
+                    <th className="px-4 py-3">Stage Status</th>
+                    <th className="px-4 py-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-mono">
+                  {candidates
+                    .filter(c => kpiModalStage === 'All' ? true : c.stage === kpiModalStage)
+                    .filter(c => {
+                      if (!kpiModalSearch.trim()) return true;
+                      const q = kpiModalSearch.toLowerCase();
+                      return (
+                        c.fullName.toLowerCase().includes(q) ||
+                        c.applicantNumber.toLowerCase().includes(q) ||
+                        c.phone.includes(q) ||
+                        c.targetStore.toLowerCase().includes(q) ||
+                        c.hub.toLowerCase().includes(q)
+                      );
+                    })
+                    .map((c) => (
+                      <tr key={c.id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="px-4 py-3 font-bold text-slate-900">
+                          <div>{c.fullName}</div>
+                          <span className="text-[10px] text-slate-400 font-normal">{c.applicantNumber} • {c.phone}</span>
+                        </td>
+                        <td className="px-4 py-3 text-slate-600">{c.hub}</td>
+                        <td className="px-4 py-3 font-semibold text-slate-800">{c.targetStore}</td>
+                        <td className="px-4 py-3">
+                          <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            {c.overallScore}% Score
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            c.stage === 'selected'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : c.stage === 'rejected'
+                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                              : 'bg-amber-50 text-amber-700 border border-amber-200'
+                          }`}>
+                            {c.stage.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            onClick={() => {
+                              setSelectedCandidate(c);
+                              setKpiModalStage(null);
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 text-[11px] font-bold transition-colors"
+                          >
+                            Inspect Profile ↗
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs">
+              <span className="text-slate-500 font-mono">Recruitment Pipeline System • Clean Light Design</span>
+              <button
+                onClick={() => {
+                  setKpiModalStage(null);
+                  setKpiModalSearch('');
+                }}
+                className="px-4 py-2 rounded-lg bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors"
+              >
+                Close Table
+              </button>
+            </div>
           </div>
         </div>
       )}
